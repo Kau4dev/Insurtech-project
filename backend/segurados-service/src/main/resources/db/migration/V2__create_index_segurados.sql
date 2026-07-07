@@ -1,0 +1,1 @@
+CREATE INDEX idx_segurados_cpf_cnpj ON segurados(cpf_cnpj);
