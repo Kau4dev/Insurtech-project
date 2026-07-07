@@ -1,9 +1,16 @@
 package com.insurtech.segurados.domain.model;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class Segurado {
 
     private UUID id;
