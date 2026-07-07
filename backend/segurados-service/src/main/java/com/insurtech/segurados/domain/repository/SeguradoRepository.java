@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface seguradoRepository {
+public interface SeguradoRepository {
     Segurado salvar(Segurado segurado);
     Optional<Segurado> buscarPorId(UUID id);
     Optional<Segurado> buscarPorCpfCnpj(String cpfCnpj);
