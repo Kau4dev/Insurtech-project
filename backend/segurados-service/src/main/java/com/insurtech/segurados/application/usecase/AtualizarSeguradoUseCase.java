@@ -19,7 +19,7 @@ public class AtualizarSeguradoUseCase {
     private final SeguradoRepository repository;
     private final SeguradoMapper mapper;
 
-    public SeguradoResponseDTO atualizarSegurado(UUID id, SeguradoUpdateDTO dto) {
+    public SeguradoResponseDTO atualizar(UUID id, SeguradoUpdateDTO dto) {
         Segurado segurado = repository.buscarPorId(id)
                 .orElseThrow(() -> new SeguradoNaoEncontradoException("Segurado não encontrado com o ID: " + id));
 
