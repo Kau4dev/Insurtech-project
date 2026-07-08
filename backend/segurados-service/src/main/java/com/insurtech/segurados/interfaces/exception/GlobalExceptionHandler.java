@@ -5,12 +5,15 @@ import com.insurtech.segurados.domain.exception.CpfCnpjJaCadastradoException;
 import com.insurtech.segurados.domain.exception.SeguradoNaoEncontradoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @RestControllerAdvice
@@ -28,6 +31,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request, null));
 
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidacao(
+            MethodArgumentNotValidException ex,
+            ServletWebRequest request) {
+
+        Map<String, String> errors = ex.getBindingResult().getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        FieldError::getDefaultMessage
+                ));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, "Erro de validação", request, errors));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenerico(
+            Exception ex,
+            ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno", request, null));
     }
 
     private ErrorResponse buildError(HttpStatus status,
