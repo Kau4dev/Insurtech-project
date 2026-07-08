@@ -1,6 +1,8 @@
 package com.insurtech.segurados.interfaces.exception;
 
+import com.insurtech.segurados.application.dto.ErrorResponse;
 import com.insurtech.segurados.domain.exception.CpfCnpjJaCadastradoException;
+import com.insurtech.segurados.domain.exception.SeguradoNaoEncontradoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,6 +23,13 @@ public class GlobalExceptionHandler {
                 .body(buildError(HttpStatus.CONFLICT, ex.getMessage(), request, null));
     }
 
+    @ExceptionHandler(SeguradoNaoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handleSeguradoNaoEncontrado(SeguradoNaoEncontradoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request, null));
+
+    }
+
     private ErrorResponse buildError(HttpStatus status,
                                      String message,
                                      ServletWebRequest request,
@@ -33,13 +42,5 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
     }
-
-    public record ErrorResponse(
-            int status,
-            String message,
-            String path,
-            Map<String, String> errors,
-            LocalDateTime timestamp
-    ) {
-    }
 }
+
