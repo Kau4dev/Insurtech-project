@@ -20,7 +20,7 @@ public class CadastrarSeguradoUseCase {
     private final SeguradoRepository repository;
     private final SeguradoMapper mapper;
 
-    public SeguradoResponseDTO cadastrar(SeguradoRequestDTO dto) {
+    public SeguradoResponseDTO executar(SeguradoRequestDTO dto) {
 
         repository.buscarPorCpfCnpj(dto.cpfCnpj())
                 .ifPresent(s -> { throw new CpfCnpjJaCadastradoException("CPF/CNPJ já cadastrado: " + dto.cpfCnpj()); });

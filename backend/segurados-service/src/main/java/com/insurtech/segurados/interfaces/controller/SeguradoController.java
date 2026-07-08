@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/v1/segurados")
@@ -30,25 +29,25 @@ public class SeguradoController {
 
     @PostMapping
     public ResponseEntity<SeguradoResponseDTO> cadastrarSegurado(@RequestBody @Valid SeguradoRequestDTO dto) {
-        SeguradoResponseDTO segurado = cadastrarSeguradoUseCase.cadastrar(dto);
+        SeguradoResponseDTO segurado = cadastrarSeguradoUseCase.executar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(segurado);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<SeguradoResponseDTO> buscarPorId(@PathVariable UUID id) {
-        SeguradoResponseDTO segurado = buscarPorIdSeguradoUseCase.buscarPorId(id);
+        SeguradoResponseDTO segurado = buscarPorIdSeguradoUseCase.executar(id);
         return ResponseEntity.status(HttpStatus.OK).body(segurado);
     }
 
     @GetMapping
-    public List<ResponseEntity<SeguradoResponseDTO>> listarSegurados(@Valid String nome, @Valid Pageable pageable) {
-        List<SeguradoResponseDTO> segurados = listarSeguradosUseCase.listar(nome, pageable);
-        return segurados.stream().map(segurado -> ResponseEntity.status(HttpStatus.OK).body(segurado)).collect(Collectors.toList());
+    public ResponseEntity<List<SeguradoResponseDTO>> listarSegurados(@RequestParam(required = false) String nome, Pageable pageable) {
+        List<SeguradoResponseDTO> segurados = listarSeguradosUseCase.executar(nome, pageable);
+        return ResponseEntity.ok(segurados);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<SeguradoResponseDTO> atualizarSegurado(@PathVariable UUID id, @RequestBody @Valid SeguradoUpdateDTO dto) {
-        SeguradoResponseDTO segurado = atualizarSeguradoUseCase.atualizar(id, dto);
+        SeguradoResponseDTO segurado = atualizarSeguradoUseCase.executar(id, dto);
         return ResponseEntity.status(HttpStatus.OK).body(segurado);
     }
 

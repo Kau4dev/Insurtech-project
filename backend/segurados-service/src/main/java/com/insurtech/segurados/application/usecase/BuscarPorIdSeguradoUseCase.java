@@ -17,7 +17,7 @@ public class BuscarPorIdSeguradoUseCase {
     private final SeguradoRepository repository;
     private final SeguradoMapper mapper;
 
-    public SeguradoResponseDTO buscarPorId(UUID id) {
+    public SeguradoResponseDTO executar(UUID id) {
         return repository.buscarPorId(id)
                 .map(mapper::toResponse)
                 .orElseThrow(() -> new SeguradoNaoEncontradoException("Segurado não encontrado com o ID: " + id));

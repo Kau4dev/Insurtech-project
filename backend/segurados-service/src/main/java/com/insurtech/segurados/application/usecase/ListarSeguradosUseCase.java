@@ -17,7 +17,7 @@ public class ListarSeguradosUseCase {
     private final SeguradoMapper mapper;
 
 
-    public List<SeguradoResponseDTO> listar(String nome, Pageable pageable) {
+    public List<SeguradoResponseDTO> executar(String nome, Pageable pageable) {
         return repository.listar(nome, pageable)
                 .map(mapper::toResponse)
                 .getContent();
