@@ -3,6 +3,7 @@ package com.insurtech.segurados.interfaces.exception;
 import com.insurtech.segurados.application.dto.ErrorResponse;
 import com.insurtech.segurados.domain.exception.CpfCnpjJaCadastradoException;
 import com.insurtech.segurados.domain.exception.SeguradoNaoEncontradoException;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -55,6 +56,19 @@ public class GlobalExceptionHandler {
             ServletWebRequest request) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno", request, null));
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ErrorResponse> handleSortInvalido(
+            PropertyReferenceException ex,
+            ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(
+                        HttpStatus.BAD_REQUEST,
+                        "Campo de ordenação inválido: " + ex.getPropertyName(),
+                        request,
+                        null
+                ));
     }
 
     private ErrorResponse buildError(HttpStatus status,
