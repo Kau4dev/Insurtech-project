@@ -23,17 +23,9 @@ public class AtualizarSeguradoUseCase {
         Segurado segurado = repository.buscarPorId(id)
                 .orElseThrow(() -> new SeguradoNaoEncontradoException("Segurado não encontrado com o ID: " + id));
 
-        segurado.setNomeRazaoSocial(dto.nomeRazaoSocial());
-        segurado.setEmail(dto.email());
-        segurado.setTelefone(dto.telefone());
-        segurado.setDataNascimento(dto.dataNascimento());
-        segurado.setEnderecoLogradouro(dto.enderecoLogradouro());
-        segurado.setEnderecoCidade(dto.enderecoCidade());
-        segurado.setEnderecoUf(dto.enderecoUf());
-        segurado.setEnderecoCep(dto.enderecoCep());
-        segurado.setUpdatedAt(Instant.now());
+        segurado.atualizar(dto);
+        segurado.validar();
 
-        Segurado atualizado = repository.salvar(segurado);
-        return mapper.toResponse(atualizado);
+        return mapper.toResponse(repository.salvar(segurado));
     }
 }
