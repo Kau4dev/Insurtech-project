@@ -9,12 +9,13 @@ import com.insurtech.segurados.application.usecase.CadastrarSeguradoUseCase;
 import com.insurtech.segurados.application.usecase.ListarSeguradosUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -40,13 +41,16 @@ public class SeguradoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SeguradoResponseDTO>> listarSegurados(@RequestParam(required = false) String nome, Pageable pageable) {
-        List<SeguradoResponseDTO> segurados = listarSeguradosUseCase.executar(nome, pageable);
-        return ResponseEntity.ok(segurados);
+    public ResponseEntity<Page<SeguradoResponseDTO>> listarSegurados(
+            @RequestParam(required = false) String nome,
+            @ParameterObject Pageable pageable) {
+        return ResponseEntity.ok(listarSeguradosUseCase.executar(nome, pageable));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SeguradoResponseDTO> atualizarSegurado(@PathVariable UUID id, @RequestBody @Valid SeguradoUpdateDTO dto) {
+    public ResponseEntity<SeguradoResponseDTO> atualizarSegurado(
+            @PathVariable UUID id,
+            @RequestBody @Valid SeguradoUpdateDTO dto) {
         SeguradoResponseDTO segurado = atualizarSeguradoUseCase.executar(id, dto);
         return ResponseEntity.status(HttpStatus.OK).body(segurado);
     }

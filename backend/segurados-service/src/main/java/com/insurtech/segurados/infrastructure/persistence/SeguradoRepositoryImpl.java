@@ -37,6 +37,10 @@ public class SeguradoRepositoryImpl implements SeguradoRepository {
 
     @Override
     public Page<Segurado> listar(String nome, Pageable pageable) {
-        return jpaRepository.findByNameContaining(nome, pageable).map(mapper::toDomain);
+        if (nome == null || nome.trim().isEmpty()) {
+            return jpaRepository.findAll(pageable).map(mapper::toDomain);
+        }
+        return jpaRepository.findByNomeRazaoSocialContainingIgnoreCase(nome, pageable)
+                .map(mapper::toDomain);
     }
 }
