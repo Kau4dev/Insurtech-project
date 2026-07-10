@@ -24,7 +24,7 @@ public class Segurado {
     private LocalDate dataNascimento; // se tipoPessoa for PF
     private String enderecoLogradouro;
     private String enderecoCidade;
-    private String enderecoUf;
+    private Uf enderecoUf;
     private String enderecoCep;
     private Instant createdAt;
     private Instant updatedAt;

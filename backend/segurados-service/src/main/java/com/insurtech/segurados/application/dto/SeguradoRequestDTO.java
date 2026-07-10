@@ -1,6 +1,8 @@
 package com.insurtech.segurados.application.dto;
 
 import com.insurtech.segurados.domain.model.TipoPessoa;
+import com.insurtech.segurados.domain.model.Uf;
+import com.insurtech.segurados.domain.validation.UfValido;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -40,8 +42,8 @@ public record SeguradoRequestDTO(
         @Size(max = 100)
         String enderecoCidade,
 
-        @Pattern(regexp = "^[A-Z]{2}$", message = "UF deve conter 2 letras maiúsculas")
-        String enderecoUf,
+        @UfValido
+        Uf enderecoUf,
 
         @Pattern(regexp = "^\\d{8}$", message = "CEP deve conter exatamente 8 dígitos numéricos")
         String enderecoCep

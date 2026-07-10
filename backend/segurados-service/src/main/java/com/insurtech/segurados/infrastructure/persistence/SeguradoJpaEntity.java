@@ -1,6 +1,7 @@
 package com.insurtech.segurados.infrastructure.persistence;
 
 import com.insurtech.segurados.domain.model.TipoPessoa;
+import com.insurtech.segurados.domain.model.Uf;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,8 +45,9 @@ public class SeguradoJpaEntity {
     @Column(name = "endereco_cidade", length = 100)
     private String enderecoCidade;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "endereco_uf", length = 2)
-    private String enderecoUf;
+    private Uf enderecoUf;
 
     @Column(name = "endereco_cep", length = 9)
     private String enderecoCep;
