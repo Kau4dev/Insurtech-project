@@ -1,5 +1,6 @@
 package com.insurtech.segurados.application.usecase;
 
+import com.insurtech.segurados.application.dto.PageResponseDTO;
 import com.insurtech.segurados.application.dto.SeguradoResponseDTO;
 import com.insurtech.segurados.domain.repository.SeguradoRepository;
 import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
@@ -17,8 +18,9 @@ public class ListarSeguradosUseCase {
     private final SeguradoMapper mapper;
 
 
-    public Page<SeguradoResponseDTO> executar(String nome, Pageable pageable) {
-        return repository.listar(nome, pageable)
+    public PageResponseDTO<SeguradoResponseDTO> executar(String nome, Pageable pageable) {
+        Page<SeguradoResponseDTO> page = repository.listar(nome, pageable)
                 .map(mapper::toResponse);
+        return PageResponseDTO.from(page);
     }
 }

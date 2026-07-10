@@ -1,5 +1,6 @@
 package com.insurtech.segurados.interfaces.controller;
 
+import com.insurtech.segurados.application.dto.PageResponseDTO;
 import com.insurtech.segurados.application.dto.SeguradoRequestDTO;
 import com.insurtech.segurados.application.dto.SeguradoResponseDTO;
 import com.insurtech.segurados.application.dto.SeguradoUpdateDTO;
@@ -41,7 +42,7 @@ public class SeguradoController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<SeguradoResponseDTO>> listarSegurados(
+    public ResponseEntity<PageResponseDTO<SeguradoResponseDTO>> listarSegurados(
             @RequestParam(required = false) String nome,
             @ParameterObject Pageable pageable) {
         return ResponseEntity.ok(listarSeguradosUseCase.executar(nome, pageable));
