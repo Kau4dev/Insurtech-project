@@ -6,6 +6,7 @@ import com.insurtech.segurados.application.usecase.AtualizarSeguradoUseCase;
 import com.insurtech.segurados.domain.exception.SeguradoNaoEncontradoException;
 import com.insurtech.segurados.domain.model.Segurado;
 import com.insurtech.segurados.domain.model.TipoPessoa;
+import com.insurtech.segurados.domain.model.Uf;
 import com.insurtech.segurados.domain.repository.SeguradoRepository;
 import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
 import org.junit.jupiter.api.Test;
@@ -49,15 +50,14 @@ class AtualizarSeguradoUseCaseTest {
 				"11912345678",
 				LocalDate.of(1990, 5, 15),
 				"Rua A, 123",
-				"Cidade",
-				"SP",
+				"Cidade", Uf.AC,
 				"01001000"
 		);
 
 		SeguradoResponseDTO responseDTO = new SeguradoResponseDTO(
 				id, TipoPessoa.PF, "Nome Atualizado", "12345678901",
 				"email@exemplo.com", "11912345678", LocalDate.of(1990,5,15),
-				"Rua A, 123", "Cidade", "SP", "01001000", Instant.now()
+				"Rua A, 123", "Cidade", Uf.AC, "01001000", Instant.now()
 		);
 
 		when(repository.buscarPorId(id)).thenReturn(Optional.of(segurado));
