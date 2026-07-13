@@ -18,4 +18,16 @@ public class Cobertura {
     private BigDecimal valorCobertura;
     private BigDecimal valorFranquia;
 
+    public void validar() {
+        if (valorFranquia != null && valorFranquia.compareTo(valorCobertura) > 0) {
+            throw new IllegalArgumentException(
+                    "Valor de franquia não pode exceder o valor de cobertura"
+            );
+        }
+        if (valorCobertura == null || valorCobertura.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException(
+                    "Valor de cobertura deve ser maior que zero"
+            );
+        }
+    }
 }
