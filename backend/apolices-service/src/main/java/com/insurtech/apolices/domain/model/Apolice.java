@@ -20,7 +20,7 @@ public class Apolice {
     private UUID seguradoId;
     private String numeroApolice;
     private TipoSeguro tipoSeguro;
-    private BigDecimal valorSegurodo;
+    private BigDecimal valorSeguro;
     private BigDecimal valorPremio;
     private LocalDate dataInicioVigencia;
     private LocalDate dataFimVigencia;
