@@ -1,6 +1,8 @@
 package com.insurtech.segurados.unit.domain;
 
 import com.insurtech.segurados.application.dto.SeguradoUpdateDTO;
+import com.insurtech.segurados.domain.exception.AtributoInvalidoPessoaJuridicaException;
+import com.insurtech.segurados.domain.exception.DataNascimentoObrigatoriaException;
 import com.insurtech.segurados.domain.model.Segurado;
 import com.insurtech.segurados.domain.model.TipoPessoa;
 import org.junit.jupiter.api.Test;
@@ -17,7 +19,7 @@ public class SeguradoTeste {
         segurado.setTipoPessoa(TipoPessoa.PF);
         segurado.setDataNascimento(null);
 
-        assertThrows(IllegalArgumentException.class, segurado::validar);
+        assertThrows(DataNascimentoObrigatoriaException.class, segurado::validar);
     }
 
     @Test
@@ -35,7 +37,7 @@ public class SeguradoTeste {
         segurado.setTipoPessoa(TipoPessoa.PJ);
         segurado.setDataNascimento(LocalDate.of(1990, 5, 15));
 
-        assertThrows(IllegalArgumentException.class, segurado::validar);
+        assertThrows(AtributoInvalidoPessoaJuridicaException.class, segurado::validar);
     }
 
     @Test

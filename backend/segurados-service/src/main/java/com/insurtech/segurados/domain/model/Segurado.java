@@ -1,6 +1,8 @@
 package com.insurtech.segurados.domain.model;
 
 import com.insurtech.segurados.application.dto.SeguradoUpdateDTO;
+import com.insurtech.segurados.domain.exception.AtributoInvalidoPessoaJuridicaException;
+import com.insurtech.segurados.domain.exception.DataNascimentoObrigatoriaException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,10 +38,10 @@ public class Segurado {
     public void validar(){
 
         if (isPessoaFisica() && dataNascimento == null){
-            throw new IllegalArgumentException("Data de nascimento obrigatória para Pessoa Física");
+            throw new DataNascimentoObrigatoriaException("Data de nascimento obrigatória para Pessoa Física");
         }
         if (!isPessoaFisica() && dataNascimento != null){
-            throw new IllegalArgumentException("Data de nascimento não deve ser informada para Pessoa Jurídica");
+            throw new AtributoInvalidoPessoaJuridicaException("Data de nascimento não deve ser informada para Pessoa Jurídica");
         }
     }
 
