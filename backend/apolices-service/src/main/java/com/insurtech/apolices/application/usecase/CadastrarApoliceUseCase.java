@@ -8,7 +8,7 @@ import com.insurtech.apolices.domain.model.Apolice;
 import com.insurtech.apolices.domain.model.Status;
 import com.insurtech.apolices.domain.repository.ApoliceRepository;
 import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
-import com.insurtech.apolices.interfaces.client.SeguradoClient;
+import com.insurtech.apolices.infrastructure.client.SeguradoClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import feign.FeignException;

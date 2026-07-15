@@ -1,6 +1,6 @@
-package com.insurtech.apolices.interfaces.client;
+package com.insurtech.apolices.infrastructure.client;
 
-import com.insurtech.segurados.application.dto.SeguradoResponseDTO;
+import com.insurtech.apolices.infrastructure.client.dto.SeguradoResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
