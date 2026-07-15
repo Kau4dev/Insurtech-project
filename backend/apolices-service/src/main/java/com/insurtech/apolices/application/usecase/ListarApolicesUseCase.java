@@ -26,10 +26,12 @@ public class ListarApolicesUseCase {
 
     public PageResponseDTO<ApoliceResponseDTO> executar(UUID seguradoId, Status status, TipoSeguro tipoSeguro, Pageable pageable) {
 
-        try {
-            client.buscarPorId(seguradoId);
-        } catch (FeignException.NotFound e) {
-            throw new SeguradoNaoEncontradoException("Segurado não encontrado: " + seguradoId);
+        if (seguradoId != null) {
+            try {
+                client.buscarPorId(seguradoId);
+            } catch (FeignException.NotFound e) {
+                throw new SeguradoNaoEncontradoException("Segurado não encontrado: " + seguradoId);
+            }
         }
 
         Page<ApoliceResponseDTO> page = repository.listar(seguradoId, status, tipoSeguro, pageable)

@@ -51,11 +51,11 @@ public class ApoliceController {
 
     @GetMapping
     public ResponseEntity<PageResponseDTO<ApoliceResponseDTO>> listarApolices(
-            @RequestParam(required = false) UUID numero,
+            @RequestParam(required = false) UUID IdSegurado,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) TipoSeguro tipoSeguro,
             @ParameterObject Pageable pageable) {
-        return ResponseEntity.ok(listarApolicesUseCase.executar(numero, status, tipoSeguro, pageable));
+        return ResponseEntity.ok(listarApolicesUseCase.executar(IdSegurado, status, tipoSeguro, pageable));
     }
 
     @PatchMapping("/{id}")

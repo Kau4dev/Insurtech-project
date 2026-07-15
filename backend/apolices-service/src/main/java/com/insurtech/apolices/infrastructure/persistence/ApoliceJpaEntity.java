@@ -1,6 +1,5 @@
 package com.insurtech.apolices.infrastructure.persistence;
 
-import com.insurtech.apolices.domain.model.Cobertura;
 import com.insurtech.apolices.domain.model.Status;
 import com.insurtech.apolices.domain.model.TipoSeguro;
 import jakarta.persistence.*;

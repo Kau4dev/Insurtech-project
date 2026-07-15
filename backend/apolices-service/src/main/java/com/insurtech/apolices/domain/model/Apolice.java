@@ -49,7 +49,7 @@ public class Apolice {
 
     public void suspender(){
         if(Status.ATIVA.equals(this.status)) {
-            throw new IllegalStateException("Apenas apólices suspensas podem ser reativadas");
+            throw new IllegalStateException("Apenas apólices ativas podem ser suspensas");
         }
         this.status = Status.SUSPENSA;
         this.updatedAt = Instant.now();
