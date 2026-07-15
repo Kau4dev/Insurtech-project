@@ -1,5 +1,6 @@
 package com.insurtech.apolices.domain.model;
 
+import com.insurtech.apolices.domain.exception.StatusApoliceInvalidoException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,10 +39,10 @@ public class Apolice {
 
     public void cancelar(){
         if(Status.CANCELADA.equals(this.status)) {
-            throw new IllegalStateException("Apolice já está cancelada");
+            throw new StatusApoliceInvalidoException("Apolice já está cancelada");
         }
         if(Status.EXPIRADA.equals(this.status)){
-            throw new IllegalStateException("Apólice expirada não pode ser cancelada");
+            throw new StatusApoliceInvalidoException("Apólice expirada não pode ser cancelada");
         }
         this.status = Status.CANCELADA;
         this.updatedAt = Instant.now();
@@ -49,7 +50,7 @@ public class Apolice {
 
     public void suspender(){
         if(Status.ATIVA.equals(this.status)) {
-            throw new IllegalStateException("Apenas apólices ativas podem ser suspensas");
+            throw new StatusApoliceInvalidoException("Apenas apólices ativas podem ser suspensas");
         }
         this.status = Status.SUSPENSA;
         this.updatedAt = Instant.now();
@@ -57,7 +58,7 @@ public class Apolice {
 
     public void reativar(){
         if(Status.SUSPENSA.equals(this.status)) {
-            throw new IllegalStateException("Apenas apólices suspensas podem ser reativadas");
+            throw new StatusApoliceInvalidoException("Apenas apólices suspensas podem ser reativadas");
         }
         this.status = Status.ATIVA;
         this.updatedAt = Instant.now();

@@ -1,9 +1,7 @@
 package com.insurtech.apolices.interfaces.exception;
 
 import com.insurtech.apolices.application.dto.ErrorResponse;
-import com.insurtech.apolices.domain.exception.ApoliceNaoEncontradaException;
-import com.insurtech.apolices.domain.exception.SeguradoNaoEncontradoException;
-import com.insurtech.apolices.domain.exception.StatusNaoSuportadoException;
+import com.insurtech.apolices.domain.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,6 +30,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(StatusNaoSuportadoException.class)
     public ResponseEntity<ErrorResponse> handleStatusNaoSuportado(StatusNaoSuportadoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
+    }
+
+    @ExceptionHandler(StatusApoliceInvalidoException.class)
+    public ResponseEntity<ErrorResponse> handleStatusApoliceInvalido(StatusApoliceInvalidoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
+    }
+
+    @ExceptionHandler(CoberturaInvalidaException.class)
+    public ResponseEntity<ErrorResponse> handleCoberturaInvalida(CoberturaInvalidaException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
+    }
+    @ExceptionHandler(FranquiaExcedeCoberturaException.class)
+    public ResponseEntity<ErrorResponse> handleFranquiaExcedeCobertura(FranquiaExcedeCoberturaException ex, ServletWebRequest request) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
     }

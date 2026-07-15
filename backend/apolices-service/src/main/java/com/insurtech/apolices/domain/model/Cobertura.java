@@ -1,5 +1,7 @@
 package com.insurtech.apolices.domain.model;
 
+import com.insurtech.apolices.domain.exception.CoberturaInvalidaException;
+import com.insurtech.apolices.domain.exception.FranquiaExcedeCoberturaException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,12 +22,12 @@ public class Cobertura {
 
     public void validar() {
         if (valorFranquia != null && valorFranquia.compareTo(valorCobertura) > 0) {
-            throw new IllegalArgumentException(
+            throw new FranquiaExcedeCoberturaException(
                     "Valor de franquia não pode exceder o valor de cobertura"
             );
         }
         if (valorCobertura == null || valorCobertura.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException(
+            throw new CoberturaInvalidaException(
                     "Valor de cobertura deve ser maior que zero"
             );
         }
