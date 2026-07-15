@@ -49,7 +49,7 @@ public class Apolice {
     }
 
     public void suspender(){
-        if(Status.ATIVA.equals(this.status)) {
+        if(!Status.ATIVA.equals(this.status)) {
             throw new StatusApoliceInvalidoException("Apenas apólices ativas podem ser suspensas");
         }
         this.status = Status.SUSPENSA;
@@ -57,7 +57,7 @@ public class Apolice {
     }
 
     public void reativar(){
-        if(Status.SUSPENSA.equals(this.status)) {
+        if(!Status.SUSPENSA.equals(this.status)) {
             throw new StatusApoliceInvalidoException("Apenas apólices suspensas podem ser reativadas");
         }
         this.status = Status.ATIVA;
