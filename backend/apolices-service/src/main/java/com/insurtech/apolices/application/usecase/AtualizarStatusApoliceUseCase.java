@@ -1,6 +1,9 @@
 package com.insurtech.apolices.application.usecase;
 
 import com.insurtech.apolices.application.dto.ApoliceResponseDTO;
+import com.insurtech.apolices.application.dto.AtualizarStatusApoliceDTO;
+import com.insurtech.apolices.domain.exception.ApoliceNaoEncontradaException;
+import com.insurtech.apolices.domain.exception.StatusNaoSuportadoException;
 import com.insurtech.apolices.domain.model.Apolice;
 import com.insurtech.apolices.domain.model.Status;
 import com.insurtech.apolices.domain.repository.ApoliceRepository;
@@ -17,16 +20,16 @@ public class AtualizarStatusApoliceUseCase {
     private final ApoliceRepository repository;
     private final ApoliceMapper mapper;
 
-    public ApoliceResponseDTO executar(UUID id, Status novoStatus) {
+    public ApoliceResponseDTO executar(UUID id, AtualizarStatusApoliceDTO novoStatus) throws StatusNaoSuportadoException {
 
         Apolice apolice = repository.buscarPorId(id)
-                .orElseThrow(() -> new RuntimeException("Apólice não encontrada com ID: " + id));
+                .orElseThrow(() -> new ApoliceNaoEncontradaException("Apólice não encontrada com ID: " + id));
 
-        switch (novoStatus) {
+        switch (novoStatus.status()) {
             case CANCELADA -> apolice.cancelar();
             case SUSPENSA -> apolice.suspender();
             case ATIVA -> apolice.reativar();
-            default -> throw new IllegalArgumentException("Status não suportado para atualização manual: " + novoStatus);
+            default -> throw new StatusNaoSuportadoException("Status não suportado para atualização manual: " + novoStatus);
         }
 
         repository.salvar(apolice);
