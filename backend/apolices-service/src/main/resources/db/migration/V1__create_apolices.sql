@@ -1,6 +1,6 @@
 CREATE TABLE apolices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    Segurado_id UUID NOT NULL REFERENCES segurados(id) ON DELETE CASCADE,
+    segurado_id UUID NOT NULL,
     numero_apolice VARCHAR(50) NOT NULL UNIQUE,
     tipo_seguro VARCHAR(30) NOT NULL,
     valor_seguro DECIMAL(14, 2) NOT NULL,
