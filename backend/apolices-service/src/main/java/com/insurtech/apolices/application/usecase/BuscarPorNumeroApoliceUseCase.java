@@ -16,10 +16,10 @@ public class BuscarPorNumeroApoliceUseCase {
     private final ApoliceRepository repository;
     private final ApoliceMapper mapper;
 
-    public ApoliceResponseDTO executar(UUID numeroApolice) {
-        return repository.buscarPorId(numeroApolice)
+    public ApoliceResponseDTO executar(String numeroApolice) {
+        return repository.buscarPorNumero(numeroApolice)
                 .map(mapper::toResponse)
-                .orElseThrow(() -> new ApoliceNaoEncontradaException("Apolice não encontrada com o ID: " + numeroApolice));
+                .orElseThrow(() -> new ApoliceNaoEncontradaException("Apolice não encontrada com o número: " + numeroApolice));
     }
 
 }
