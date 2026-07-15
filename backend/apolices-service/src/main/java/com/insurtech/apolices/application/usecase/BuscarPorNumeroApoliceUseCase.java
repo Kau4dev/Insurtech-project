@@ -7,7 +7,6 @@ import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

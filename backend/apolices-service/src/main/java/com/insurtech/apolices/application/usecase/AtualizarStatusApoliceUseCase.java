@@ -5,7 +5,6 @@ import com.insurtech.apolices.application.dto.AtualizarStatusApoliceDTO;
 import com.insurtech.apolices.domain.exception.ApoliceNaoEncontradaException;
 import com.insurtech.apolices.domain.exception.StatusNaoSuportadoException;
 import com.insurtech.apolices.domain.model.Apolice;
-import com.insurtech.apolices.domain.model.Status;
 import com.insurtech.apolices.domain.repository.ApoliceRepository;
 import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
 import lombok.RequiredArgsConstructor;

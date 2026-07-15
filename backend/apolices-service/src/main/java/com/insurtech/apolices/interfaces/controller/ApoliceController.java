@@ -42,7 +42,7 @@ public class ApoliceController {
         return ResponseEntity.status(HttpStatus.OK).body(apolice);
     }
 
-    @GetMapping("/{numeroApolice}")
+    @GetMapping("/numero/{numeroApolice}")
     public ResponseEntity<ApoliceResponseDTO> buscarPorNumero(@PathVariable String numeroApolice) {
         ApoliceResponseDTO apolice = buscarPorNumeroApoliceUseCase.executar(numeroApolice);
         return ResponseEntity.status(HttpStatus.OK).body(apolice);
