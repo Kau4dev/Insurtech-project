@@ -14,21 +14,21 @@ import java.time.LocalDate;
 
 public record SeguradoRequestDTO(
 
-        @NotNull
+        @NotNull(message = "Tipo de pessoa é obrigatório")
         TipoPessoa tipoPessoa,
 
         @NotBlank(message = "Nome/Razão Social é obrigatório")
-        @Size(max = 255)
+        @Size(message = "Nome/Razão Social deve ter entre 2 e 255 caracteres", max = 255)
         String nomeRazaoSocial,
 
         @NotBlank(message = "CPF/CNPJ é obrigatório")
-        @Size(min = 11, max = 14)
+        @Size(message = "CPF/CNPJ deve ter entre 11 e 14 caracteres", min = 11, max = 14)
         @Pattern(regexp = "^\\d{11}$|^\\d{14}$", message = "CPF deve ter 11 dígitos ou CNPJ 14 dígitos numéricos")
         String cpfCnpj,
 
         @NotBlank(message = "Email é obrigatório")
-        @Email
-        @Size(max = 255)
+        @Email(message = "Email inválido")
+        @Size(message = "Email deve ter no máximo 255 caracteres", max = 255)
         String email,
 
         @Pattern(regexp = "^\\d{10,11}$", message = "Telefone deve conter apenas números, 10 ou 11 dígitos")
@@ -36,13 +36,13 @@ public record SeguradoRequestDTO(
 
         LocalDate dataNascimento,
 
-        @Size(max = 255)
+        @Size(message = "Logradouro deve ter no máximo 255 caracteres", max = 255)
         String enderecoLogradouro,
 
-        @Size(max = 100)
+        @Size(message = "Cidade deve ter no máximo 100 caracteres", max = 100)
         String enderecoCidade,
 
-        @UfValido
+        @UfValido(message = "UF inválida")
         Uf enderecoUf,
 
         @Pattern(regexp = "^\\d{8}$", message = "CEP deve conter exatamente 8 dígitos numéricos")
