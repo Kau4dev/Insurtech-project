@@ -1,21 +1,20 @@
 package com.insurtech.apolices.application.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 
 public record CoberturaRequestDTO(
-        @NotBlank
+
+        @NotBlank(message = "Tipo de cobertura é obrigatório")
         String tipoCobertura,
 
-        @NotNull
-        @Positive
+        @NotNull(message = "Valor da cobertura é obrigatório")
+        @Positive(message = "Valor da cobertura deve ser positivo")
+        @Digits(integer = 14, fraction = 2, message = "Valor inválido")
         BigDecimal valorCobertura,
 
-        @PositiveOrZero
+        @PositiveOrZero(message = "Valor da franquia deve ser positivo ou zero")
         BigDecimal valorFranquia
 ) {
 }
