@@ -90,11 +90,32 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
-    void deveRetornar404_quandoApoliceNaoExistePorNumero() {
-        ResponseEntity<String> response = restTemplate.getForEntity(
-                "/api/v1/apolices/numero/IT-INEXISTENTE", String.class
+    void deveRetornar409_quandoApoliceJaCadastrada() {
+        UUID seguradoId = UUID.randomUUID();
+
+        when(seguradoClient.buscarPorId(seguradoId)).thenReturn(
+                new SeguradoResponseDTO(seguradoId, TipoPessoa.PF, "João Silva", "123", "a@a", "11", LocalDate.now(), null, null, null, null, null)
         );
 
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        ApoliceRequestDTO dto = new ApoliceRequestDTO(
+                seguradoId,
+                "IT-12345",
+                TipoSeguro.VIDA,
+                new BigDecimal("50000.00"),
+                new BigDecimal("150.00"),
+                LocalDate.now(),
+                LocalDate.now().plusYears(1),
+                null
+        );
+
+        restTemplate.postForEntity(
+                "/api/v1/apolices", dto, ApoliceResponseDTO.class
+        );
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                "/api/v1/apolices", dto, String.class
+        );
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
     }
 }

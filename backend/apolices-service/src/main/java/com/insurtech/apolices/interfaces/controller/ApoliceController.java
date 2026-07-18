@@ -25,7 +25,6 @@ public class ApoliceController {
 
     private final CadastrarApoliceUseCase cadastrarApoliceUseCase;
     private final BuscarPorIdApoliceUseCase buscarPorIdApoliceUseCase;
-    private final BuscarPorNumeroApoliceUseCase buscarPorNumeroApoliceUseCase;
     private final ListarApolicesUseCase listarApolicesUseCase;
     private final AtualizarStatusApoliceUseCase atualizarStatusApoliceUseCase;
 
@@ -41,13 +40,6 @@ public class ApoliceController {
         ApoliceResponseDTO apolice = buscarPorIdApoliceUseCase.executar(id);
         return ResponseEntity.status(HttpStatus.OK).body(apolice);
     }
-
-    @GetMapping("/numero/{numeroApolice}")
-    public ResponseEntity<ApoliceResponseDTO> buscarPorNumero(@PathVariable String numeroApolice) {
-        ApoliceResponseDTO apolice = buscarPorNumeroApoliceUseCase.executar(numeroApolice);
-        return ResponseEntity.status(HttpStatus.OK).body(apolice);
-    }
-
 
     @GetMapping
     public ResponseEntity<PageResponseDTO<ApoliceResponseDTO>> listarApolices(

@@ -55,6 +55,11 @@ public class GlobalExceptionHandler {
                 .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
     }
 
+    @ExceptionHandler(ApolicejaCadastradaException.class)
+    public ResponseEntity<ErrorResponse> handleApolicejaCadastrada(ApolicejaCadastradaException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(buildError(HttpStatus.CONFLICT, ex.getMessage(), request, null));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidacao(

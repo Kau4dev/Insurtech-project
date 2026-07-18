@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
+import static java.time.temporal.ChronoUnit.DAYS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -57,7 +58,9 @@ class AtualizarStatusApoliceUseCaseTest {
                 LocalDate.now().plusYears(1),
                 Status.CANCELADA,
                 Collections.emptyList(),
-                Instant.now()
+                Instant.now(),
+                Instant.now().minus(1, DAYS)
+
         );
 
         when(repository.buscarPorId(apoliceId)).thenReturn(Optional.of(apolice));
@@ -90,7 +93,9 @@ class AtualizarStatusApoliceUseCaseTest {
                 LocalDate.now().plusYears(1),
                 Status.SUSPENSA,
                 Collections.emptyList(),
-                Instant.now()
+                Instant.now(),
+                Instant.now().minus(1, DAYS)
+
         );
 
         when(repository.buscarPorId(apoliceId)).thenReturn(Optional.of(apolice));
@@ -123,7 +128,8 @@ class AtualizarStatusApoliceUseCaseTest {
                 LocalDate.now().plusYears(1),
                 Status.ATIVA,
                 Collections.emptyList(),
-                Instant.now()
+                Instant.now(),
+                Instant.now().minus(1, DAYS)
         );
 
         when(repository.buscarPorId(apoliceId)).thenReturn(Optional.of(apolice));
