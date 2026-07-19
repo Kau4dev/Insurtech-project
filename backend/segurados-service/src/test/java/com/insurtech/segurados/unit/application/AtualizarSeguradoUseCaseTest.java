@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
+import static java.time.temporal.ChronoUnit.DAYS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -55,9 +56,19 @@ class AtualizarSeguradoUseCaseTest {
 		);
 
 		SeguradoResponseDTO responseDTO = new SeguradoResponseDTO(
-				id, TipoPessoa.PF, "Nome Atualizado", "12345678901",
-				"email@exemplo.com", "11912345678", LocalDate.of(1990,5,15),
-				"Rua A, 123", "Cidade", Uf.AC, "01001000", Instant.now()
+				id, TipoPessoa.PF,
+				"Nome Atualizado",
+				"12345678901",
+				"email@exemplo.com",
+				"11912345678",
+				LocalDate.of(1990,5,15),
+				"Rua A, 123",
+				"Cidade",
+				Uf.AC,
+				"01001000",
+				Instant.now(),
+				Instant.now().minus(1, DAYS)
+
 		);
 
 		when(repository.buscarPorId(id)).thenReturn(Optional.of(segurado));

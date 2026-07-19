@@ -73,7 +73,8 @@ public class SeguradoMapper {
                 segurado.getEnderecoCidade(),
                 segurado.getEnderecoUf(),
                 segurado.getEnderecoCep(),
-                segurado.getCreatedAt()
+                segurado.getCreatedAt(),
+                segurado.getUpdatedAt()
         );
     }
 }

@@ -61,12 +61,12 @@ class ListarSeguradosUseCaseTest {
         SeguradoResponseDTO dto1 = new SeguradoResponseDTO(
                 segurado1.getId(), TipoPessoa.PF, "João Silva",
                 "12345678901", "joao@email.com", "11912345678",
-                LocalDate.of(1990, 5, 15), null, null, null, null, null
+                LocalDate.of(1990, 5, 15), null, null, null, null, null, null
         );
         SeguradoResponseDTO dto2 = new SeguradoResponseDTO(
                 segurado2.getId(), TipoPessoa.PF, "Maria Santos",
                 "98765432101", "maria@email.com", "11987654321",
-                LocalDate.of(1992, 8, 20), null, null, null, null, null
+                LocalDate.of(1992, 8, 20), null, null, null, null, null, null
         );
 
         when(repository.listar(null, pageable)).thenReturn(pageSegurados);
@@ -106,7 +106,7 @@ class ListarSeguradosUseCaseTest {
         SeguradoResponseDTO dto = new SeguradoResponseDTO(
                 segurado.getId(), TipoPessoa.PF, "João Silva",
                 "12345678901", "joao@email.com", "11912345678",
-                LocalDate.of(1990, 5, 15), null, null, null, null, null
+                LocalDate.of(1990, 5, 15), null, null, null, null, null, null
         );
 
         when(repository.listar(nome, pageable)).thenReturn(pageSegurados);
@@ -161,7 +161,7 @@ class ListarSeguradosUseCaseTest {
         SeguradoResponseDTO dto1 = new SeguradoResponseDTO(
                 segurado1.getId(), TipoPessoa.PF, "Segurado 1",
                 "12345678901", "seg1@email.com", "11912345678",
-                LocalDate.of(1990, 5, 15), null, null, null, null, null
+                LocalDate.of(1990, 5, 15), null, null, null, null, null, null
         );
 
         when(repository.listar(null, pageablePrimeira)).thenReturn(pageSegurados);
@@ -197,7 +197,7 @@ class ListarSeguradosUseCaseTest {
         SeguradoResponseDTO dto = new SeguradoResponseDTO(
                 segurado.getId(), TipoPessoa.PF, "Segurado Final",
                 "12345678901", "final@email.com", "11912345678",
-                LocalDate.of(1990, 5, 15), null, null, null, null, null
+                LocalDate.of(1990, 5, 15), null, null, null, null, null, null
         );
 
         when(repository.listar(null, pageable)).thenReturn(pageSegurados);

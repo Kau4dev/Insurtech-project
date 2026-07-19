@@ -1,5 +1,6 @@
 package com.insurtech.apolices.infrastructure.client.dto;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ public record SeguradoResponseDTO(
         String enderecoCidade,
         Uf enderecoUf,
         String enderecoCep,
-        java.time.Instant createdAt
+        Instant createdAt,
+        Instant UpdatedAt
 ) {
 }

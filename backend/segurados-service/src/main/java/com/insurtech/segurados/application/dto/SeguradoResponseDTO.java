@@ -19,6 +19,7 @@ public record SeguradoResponseDTO(
         String enderecoCidade,
         Uf enderecoUf,
         String enderecoCep,
-        Instant createdAt
+        Instant createdAt,
+        Instant updatedAt
 ) {
 }
