@@ -1,9 +1,7 @@
 package com.insurtech.segurados.interfaces.exception;
 
 import com.insurtech.segurados.application.dto.ErrorResponse;
-import com.insurtech.segurados.domain.exception.CpfCnpjJaCadastradoException;
-import com.insurtech.segurados.domain.exception.SeguradoNaoEncontradoException;
-import com.insurtech.segurados.domain.exception.UfInvalidaException;
+import com.insurtech.segurados.domain.exception.*;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -106,6 +104,26 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(buildError(HttpStatus.BAD_REQUEST, "UF inválida", request, errors));
+    }
+
+    @ExceptionHandler(AtributoInvalidoPessoaJuridicaException.class)
+    public ResponseEntity<ErrorResponse> handleAtributoInvalidoPessoaJuridica(
+            AtributoInvalidoPessoaJuridicaException ex, ServletWebRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("atributo", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, "Atributo inválido para pessoa jurídica", request, errors));
+    }
+
+    @ExceptionHandler(DataNascimentoObrigatoriaException.class)
+    public ResponseEntity<ErrorResponse> handleDataNascimentoObrigatoria(
+            DataNascimentoObrigatoriaException ex, ServletWebRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("dataNascimento", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, "Data de nascimento é obrigatória para pessoa física", request, errors));
     }
 
     private ErrorResponse buildError(HttpStatus status,

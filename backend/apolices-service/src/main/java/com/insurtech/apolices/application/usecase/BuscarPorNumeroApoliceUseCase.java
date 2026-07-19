@@ -1,0 +1,24 @@
+package com.insurtech.apolices.application.usecase;
+
+import com.insurtech.apolices.application.dto.ApoliceResponseDTO;
+import com.insurtech.apolices.domain.exception.ApoliceNaoEncontradaException;
+import com.insurtech.apolices.domain.repository.ApoliceRepository;
+import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+
+@Service
+@RequiredArgsConstructor
+public class BuscarPorNumeroApoliceUseCase {
+
+    private final ApoliceRepository repository;
+    private final ApoliceMapper mapper;
+
+    public ApoliceResponseDTO executar(String numeroApolice) {
+        return repository.buscarPorNumero(numeroApolice)
+                .map(mapper::toResponse)
+                .orElseThrow(() -> new ApoliceNaoEncontradaException("Apolice não encontrada com o número: " + numeroApolice));
+    }
+
+}
