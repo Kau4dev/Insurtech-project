@@ -9,6 +9,7 @@ import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -18,7 +19,7 @@ public class MostrarHistoricoStatusUseCase {
     private final SinistroRepository repository;
     private final SinistroMapper mapper;
 
-    public HistoricoSinistroResponseDTO executar(UUID id) {
+    public List<HistoricoSinistroResponseDTO> executar(UUID id) {
 
         Sinistro sinistro = repository.buscarPorId(id)
                 .orElseThrow(() -> new SinistroNaoEncontradoException("Sinistro não encontrado com o ID: " + id));
@@ -27,6 +28,6 @@ public class MostrarHistoricoStatusUseCase {
         historicoSinistro.setId(UUID.randomUUID());
         historicoSinistro.setSinistroId(sinistro.getId());
 
-        return mapper.toResponse(historicoSinistro);
+        return List.of(mapper.toResponse(historicoSinistro));
     }
 }
