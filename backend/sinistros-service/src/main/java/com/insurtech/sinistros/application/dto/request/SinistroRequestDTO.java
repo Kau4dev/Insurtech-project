@@ -9,6 +9,9 @@ import java.util.UUID;
 
 public record SinistroRequestDTO(
 
+        @NotBlank(message = "Número do sinistro é obrigatório")
+        String numeroSinistro,
+
         @NotNull(message = "ID da apólice é obrigatório")
         UUID apoliceId,
 
