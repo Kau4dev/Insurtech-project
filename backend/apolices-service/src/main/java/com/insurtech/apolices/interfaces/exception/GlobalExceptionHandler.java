@@ -44,8 +44,8 @@ public class GlobalExceptionHandler {
                 .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
     }
 
-    @ExceptionHandler(CoberturaInvalidaException.class)
-    public ResponseEntity<ErrorResponse> handleCoberturaInvalida(CoberturaInvalidaException ex, ServletWebRequest request) {
+    @ExceptionHandler(ValorCoberturaInvalidoException.class)
+    public ResponseEntity<ErrorResponse> handleCoberturaInvalida(ValorCoberturaInvalidoException ex, ServletWebRequest request) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
     }
