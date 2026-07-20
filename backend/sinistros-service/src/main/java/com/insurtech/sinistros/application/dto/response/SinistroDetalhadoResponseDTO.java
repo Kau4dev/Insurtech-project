@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public record SinistroDetalheResponseDTO(
+public record SinistroDetalhadoResponseDTO(
         UUID id,
         String numeroSinistro,
         UUID apoliceId,
