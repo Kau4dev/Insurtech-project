@@ -1,5 +1,8 @@
 package com.insurtech.sinistros.domain.model;
 
+import com.insurtech.sinistros.domain.exception.SinistroObrigatorioException;
+import com.insurtech.sinistros.domain.exception.StatusInvalidoException;
+import com.insurtech.sinistros.domain.exception.StatusNovoObrigatorioException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,15 +25,15 @@ public class HistoricoSinistro {
 
     public void validar() {
         if (statusNovo == null) {
-            throw new IllegalArgumentException("Status novo é obrigatório");
+            throw new StatusNovoObrigatorioException("Status novo é obrigatório");
         }
         if (statusNovo.equals(statusAnterior)) {
-            throw new IllegalArgumentException(
+            throw new StatusInvalidoException(
                     "Status novo não pode ser igual ao status anterior"
             );
         }
         if (sinistroId == null) {
-            throw new IllegalArgumentException("ID do sinistro é obrigatório");
+            throw new SinistroObrigatorioException("ID do sinistro é obrigatório");
         }
     }
 }

@@ -1,5 +1,8 @@
 package com.insurtech.sinistros.domain.model;
 
+import com.insurtech.sinistros.domain.exception.MotivoRejeicaoObrigatorioException;
+import com.insurtech.sinistros.domain.exception.StatusInvalidoException;
+import com.insurtech.sinistros.domain.exception.ValorInvalidoException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -52,7 +55,7 @@ public class Sinistro {
 
     public void iniciarAnalise(UUID analistaId) {
         if (!Status.REGISTRADO.equals(this.status)) {
-            throw new IllegalStateException(
+            throw new StatusInvalidoException(
                     "Sinistro precisa estar REGISTRADO para iniciar análise"
             );
         }
@@ -64,13 +67,13 @@ public class Sinistro {
 
     public void aprovar(BigDecimal valorAprovado, BigDecimal valorSeguradoApolice) {
         if (!Status.EM_ANALISE.equals(this.status)) {
-            throw new IllegalStateException("Sinistro precisa estar EM_ANALISE para ser aprovado");
+            throw new StatusInvalidoException("Sinistro precisa estar EM_ANALISE para ser aprovado");
         }
         if (valorAprovado == null || valorAprovado.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Valor aprovado deve ser maior que zero");
+            throw new ValorInvalidoException("Valor aprovado deve ser maior que zero");
         }
         if (valorAprovado.compareTo(valorSeguradoApolice) > 0) {
-            throw new IllegalArgumentException("Valor aprovado não pode exceder o valor segurado da apólice");
+            throw new ValorInvalidoException("Valor aprovado não pode exceder o valor segurado da apólice");
         }
         registrarHistorico(this.status, Status.APROVADO, null);
         this.valorAprovado = valorAprovado;
@@ -80,10 +83,10 @@ public class Sinistro {
 
     public void rejeitar(String motivoRejeicao) {
         if (!Status.EM_ANALISE.equals(this.status)) {
-            throw new IllegalStateException("Sinistro precisa estar EM_ANALISE para ser rejeitado");
+            throw new StatusInvalidoException("Sinistro precisa estar EM_ANALISE para ser rejeitado");
         }
         if (motivoRejeicao == null || motivoRejeicao.isBlank()) {
-            throw new IllegalArgumentException("Motivo de rejeição é obrigatório");
+            throw new MotivoRejeicaoObrigatorioException("Motivo de rejeição é obrigatório");
         }
         registrarHistorico(this.status, Status.REJEITADO, motivoRejeicao);
         this.motivoRejeicao = motivoRejeicao;
@@ -93,7 +96,7 @@ public class Sinistro {
 
     public void aguardarDocumentos() {
         if (!Status.EM_ANALISE.equals(this.status)) {
-            throw new IllegalStateException(
+            throw new StatusInvalidoException(
                     "Sinistro precisa estar EM_ANALISE para aguardar documentos"
             );
         }
@@ -111,7 +114,7 @@ public class Sinistro {
 
     public void marcarComoPago() {
         if (!Status.APROVADO.equals(this.status)) {
-            throw new IllegalStateException(
+            throw new StatusInvalidoException(
                     "Sinistro precisa estar APROVADO para ser marcado como PAGO"
             );
         }
