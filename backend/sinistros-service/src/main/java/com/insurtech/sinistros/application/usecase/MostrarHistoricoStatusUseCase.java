@@ -24,10 +24,8 @@ public class MostrarHistoricoStatusUseCase {
         Sinistro sinistro = repository.buscarPorId(id)
                 .orElseThrow(() -> new SinistroNaoEncontradoException("Sinistro não encontrado com o ID: " + id));
 
-        HistoricoSinistro historicoSinistro = new HistoricoSinistro();
-        historicoSinistro.setId(UUID.randomUUID());
-        historicoSinistro.setSinistroId(sinistro.getId());
-
-        return List.of(mapper.toResponse(historicoSinistro));
+        return sinistro.getHistorico().stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 }

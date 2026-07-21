@@ -2,9 +2,11 @@ package com.insurtech.sinistros.interfaces.exception;
 
 import com.insurtech.sinistros.application.dto.response.ErrorResponse;
 import com.insurtech.sinistros.domain.exception.*;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -46,6 +48,7 @@ public class GlobalExceptionHandler {
             MotivoRejeicaoObrigatorioException.class,
             NomeArquivoObrigatorioException.class,
             SinistroObrigatorioException.class,
+            AnalistaObrigatorioException.class,
             StatusInvalidoException.class,
             StatusNovoObrigatorioException.class,
             TipoDocumentoObrigatorioException.class,
@@ -96,6 +99,22 @@ public class GlobalExceptionHandler {
                         request,
                         null
                 ));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex,
+            ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(buildError(HttpStatus.CONFLICT, "Erro de integridade de dados: " + ex.getMostSpecificCause().getMessage(), request, null));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex,
+            ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, "Corpo da requisição inválido ou mal formatado", request, null));
     }
 
     private ErrorResponse buildError(HttpStatus status,

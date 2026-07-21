@@ -1,9 +1,6 @@
 package com.insurtech.sinistros.domain.model;
 
-import com.insurtech.sinistros.domain.exception.DocumentoObrigatorioException;
-import com.insurtech.sinistros.domain.exception.MotivoRejeicaoObrigatorioException;
-import com.insurtech.sinistros.domain.exception.StatusInvalidoException;
-import com.insurtech.sinistros.domain.exception.ValorInvalidoException;
+import com.insurtech.sinistros.domain.exception.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -42,12 +39,14 @@ public class Sinistro {
 
     private void registrarHistorico(Status anterior,
                                     Status novo,
+                                    UUID usuarioId,
                                     String observacao) {
         HistoricoSinistro registro = new HistoricoSinistro();
         registro.setId(UUID.randomUUID());
         registro.setSinistroId(this.id);
         registro.setStatusAnterior(anterior);
         registro.setStatusNovo(novo);
+        registro.setUsuarioId(usuarioId);
         registro.setObservacao(observacao);
         registro.setCreatedAt(Instant.now());
         registro.validar();
@@ -60,7 +59,7 @@ public class Sinistro {
                     "Sinistro precisa estar REGISTRADO para iniciar análise"
             );
         }
-        registrarHistorico(this.status, Status.EM_ANALISE, null);
+        registrarHistorico(this.status, Status.EM_ANALISE, analistaId, null);
         this.analistaId = analistaId;
         this.status = Status.EM_ANALISE;
         this.updatedAt = Instant.now();
@@ -79,7 +78,7 @@ public class Sinistro {
         if (this.documentos == null || this.documentos.isEmpty()) {
             throw new DocumentoObrigatorioException("Não é possível aprovar um sinistro sem documentos recebidos");
         }
-        registrarHistorico(this.status, Status.APROVADO, null);
+        registrarHistorico(this.status, Status.APROVADO, this.analistaId, null);
         this.valorAprovado = valorAprovado;
         this.status = Status.APROVADO;
         this.updatedAt = Instant.now();
@@ -92,7 +91,10 @@ public class Sinistro {
         if (motivoRejeicao == null || motivoRejeicao.isBlank()) {
             throw new MotivoRejeicaoObrigatorioException("Motivo de rejeição é obrigatório");
         }
-        registrarHistorico(this.status, Status.REJEITADO, motivoRejeicao);
+        if (this.documentos == null || this.documentos.isEmpty()) {
+            throw new DocumentoObrigatorioException("Não é possível rejeitar um sinistro sem documentos recebidos");
+        }
+        registrarHistorico(this.status, Status.REJEITADO, this.analistaId, motivoRejeicao);
         this.motivoRejeicao = motivoRejeicao;
         this.status = Status.REJEITADO;
         this.updatedAt = Instant.now();
@@ -104,12 +106,15 @@ public class Sinistro {
                     "Sinistro precisa estar EM_ANALISE para aguardar documentos"
             );
         }
-        registrarHistorico(this.status, Status.AGUARDANDO_DOCUMENTOS, null);
+        registrarHistorico(this.status, Status.AGUARDANDO_DOCUMENTOS, this.analistaId, null);
         this.status = Status.AGUARDANDO_DOCUMENTOS;
         this.updatedAt = Instant.now();
     }
 
     public void adicionarDocumento(DocumentoSinistro documento) {
+        if (this.analistaId == null) {
+            throw new AnalistaObrigatorioException("Não é possível adicionar documentos antes de atribuir um analista");
+        }
         documento.setSinistroId(this.id);
         documento.setDataUpload(Instant.now());
         documento.validar();
@@ -122,7 +127,7 @@ public class Sinistro {
                     "Sinistro precisa estar APROVADO para ser marcado como PAGO"
             );
         }
-        registrarHistorico(this.status, Status.PAGO, null);
+        registrarHistorico(this.status, Status.PAGO, this.analistaId, null);
         this.status = Status.PAGO;
         this.updatedAt = Instant.now();
     }
