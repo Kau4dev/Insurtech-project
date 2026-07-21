@@ -16,7 +16,7 @@ public class Cobertura {
 
     private UUID id;
     private UUID apoliceId;
-    private String tipoCobertura;
+    private TipoCobertura tipoCobertura;
     private BigDecimal valorCobertura;
     private BigDecimal valorFranquia;
 
