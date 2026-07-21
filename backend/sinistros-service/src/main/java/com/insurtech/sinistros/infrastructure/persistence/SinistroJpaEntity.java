@@ -44,13 +44,13 @@ public class SinistroJpaEntity {
     @Column(name = "data_ocorrencia", nullable = false)
     private LocalDate dataOcorrencia;
 
-    @Column(name = "data_registro", nullable = false)
+    @Column(name = "data_registro", nullable = false, insertable = false, updatable = false)
     private Instant dataRegistro;
 
     @Column(name = "valor_estimado", nullable = false, precision = 14, scale = 2)
     private BigDecimal valorEstimado;
 
-    @Column(name = "valor_aprovado", nullable = false, precision = 14, scale = 2)
+    @Column(name = "valor_aprovado", precision = 14, scale = 2)
     private BigDecimal valorAprovado;
 
     @Enumerated(EnumType.STRING)
@@ -60,7 +60,7 @@ public class SinistroJpaEntity {
     @Column(name = "motivo_rejeicao", columnDefinition = "TEXT")
     private String motivoRejeicao;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at")

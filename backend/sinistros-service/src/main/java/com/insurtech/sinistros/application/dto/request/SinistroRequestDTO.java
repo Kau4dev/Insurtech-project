@@ -18,7 +18,7 @@ public record SinistroRequestDTO(
         @NotNull(message = "ID do segurado é obrigatório")
         UUID seguradoId,
 
-        @NotBlank(message = "Tipo do sinistro é obrigatório")
+        @NotNull(message = "Tipo do sinistro é obrigatório")
         TipoSinistro tipoSinistro,
 
         @NotBlank(message = "Descrição é obrigatória")

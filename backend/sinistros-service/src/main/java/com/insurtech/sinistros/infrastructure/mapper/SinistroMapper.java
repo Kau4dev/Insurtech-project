@@ -25,7 +25,6 @@ public interface SinistroMapper {
     Sinistro toDomain(SinistroJpaEntity entity);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "numeroSinistro", ignore = true)
     @Mapping(target = "analistaId", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "motivoRejeicao", ignore = true)

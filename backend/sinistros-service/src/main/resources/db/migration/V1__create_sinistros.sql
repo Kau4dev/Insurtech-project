@@ -3,7 +3,7 @@ CREATE TABLE sinistros (
     numero_sinistro VARCHAR(50) NOT NULL UNIQUE,
     apolice_id UUID NOT NULL,
     segurado_id UUID NOT NULL,
-    analista_id UUID NOT NULL,
+    analista_id UUID NULL,
     tipo_sinistro VARCHAR(30) NOT NULL,
     descricao TEXT NOT NULL,
     data_ocorrencia DATE NOT NULL,
