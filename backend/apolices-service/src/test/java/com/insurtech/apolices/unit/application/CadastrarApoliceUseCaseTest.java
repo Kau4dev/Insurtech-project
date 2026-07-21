@@ -11,6 +11,7 @@ import com.insurtech.apolices.domain.model.Apolice;
 import com.insurtech.apolices.domain.model.Cobertura;
 import com.insurtech.apolices.domain.model.Status;
 import com.insurtech.apolices.domain.model.TipoSeguro;
+import com.insurtech.apolices.domain.model.TipoCobertura;
 import com.insurtech.apolices.domain.repository.ApoliceRepository;
 import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
 import com.insurtech.apolices.infrastructure.client.SeguradoClient;
@@ -97,7 +98,7 @@ class CadastrarApoliceUseCaseTest {
     void deveCadastrarApolice_comCoberturasGerandoIdsEapoliceId() {
         UUID seguradoId = UUID.randomUUID();
         CoberturaRequestDTO coberturaDTO = new CoberturaRequestDTO(
-                "INCENDIO",
+                TipoCobertura.MORTE,
                 new BigDecimal("10000.00"),
                 new BigDecimal("500.00")
         );
@@ -114,7 +115,7 @@ class CadastrarApoliceUseCaseTest {
         );
 
         Cobertura cobertura = new Cobertura();
-        cobertura.setTipoCobertura("INCENDIO");
+        cobertura.setTipoCobertura(TipoCobertura.MORTE);
         cobertura.setValorCobertura(new BigDecimal("10000.00"));
         cobertura.setValorFranquia(new BigDecimal("500.00"));
 
