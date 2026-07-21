@@ -49,6 +49,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
     }
+
     @ExceptionHandler(FranquiaExcedeCoberturaException.class)
     public ResponseEntity<ErrorResponse> handleFranquiaExcedeCobertura(FranquiaExcedeCoberturaException ex, ServletWebRequest request) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

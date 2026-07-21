@@ -1,6 +1,7 @@
 package com.insurtech.apolices.unit.domain;
 
 import com.insurtech.apolices.domain.exception.StatusApoliceInvalidoException;
+import com.insurtech.apolices.domain.exception.TipoCoberturaIncompativelException;
 import com.insurtech.apolices.domain.model.Apolice;
 import com.insurtech.apolices.domain.model.Cobertura;
 import com.insurtech.apolices.domain.model.Status;
@@ -121,6 +122,6 @@ public class ApoliceTeste {
         cobertura.setTipoCobertura(TipoCobertura.COLISAO);
         cobertura.setValorCobertura(new java.math.BigDecimal("1000.00"));
 
-        assertThrows(IllegalArgumentException.class, () -> apolice.adicionarCobertura(cobertura));
+        assertThrows(TipoCoberturaIncompativelException.class, () -> apolice.adicionarCobertura(cobertura));
     }
 }
