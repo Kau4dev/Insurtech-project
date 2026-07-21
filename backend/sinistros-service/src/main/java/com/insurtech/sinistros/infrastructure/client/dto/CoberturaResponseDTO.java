@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public record CoberturaResponseDTO(
         UUID id,
-        String tipoCobertura,
+        TipoCobertura tipoCobertura,
         BigDecimal valorCobertura,
         BigDecimal valorFranquia
 ) {
