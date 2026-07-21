@@ -50,6 +50,7 @@ public class GlobalExceptionHandler {
             StatusNovoObrigatorioException.class,
             TipoDocumentoObrigatorioException.class,
             UrlArquivoObrigatoria.class,
+            DocumentoObrigatorioException.class,
             ValorInvalidoException.class,
             IllegalArgumentException.class,
             IllegalStateException.class
