@@ -10,6 +10,8 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -66,4 +68,23 @@ public class SinistroJpaEntity {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    @OneToMany(mappedBy = "sinistro", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HistoricoSinistroJpaEntity> historico = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sinistro", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DocumentoSinistroJpaEntity> documentos = new ArrayList<>();
+
+    public void setHistorico(List<HistoricoSinistroJpaEntity> historico) {
+        this.historico = historico;
+        if (this.historico != null) {
+            this.historico.forEach(h -> h.setSinistro(this));
+        }
+    }
+
+    public void setDocumentos(List<DocumentoSinistroJpaEntity> documentos) {
+        this.documentos = documentos;
+        if (this.documentos != null) {
+            this.documentos.forEach(d -> d.setSinistro(this));
+        }
+    }
 }

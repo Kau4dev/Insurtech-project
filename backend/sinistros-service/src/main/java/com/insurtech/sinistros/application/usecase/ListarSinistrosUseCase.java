@@ -39,16 +39,20 @@ public class ListarSinistrosUseCase {
             Pageable pageable
     ) {
 
-        try {
-            seguradoClient.buscarPorId(seguradoId);
-        } catch (FeignException.NotFound e) {
-            throw new SeguradoNaoEncontradoException("Segurado não encontrado: " + seguradoId);
+        if (seguradoId != null) {
+            try {
+                seguradoClient.buscarPorId(seguradoId);
+            } catch (FeignException.NotFound e) {
+                throw new SeguradoNaoEncontradoException("Segurado não encontrado: " + seguradoId);
+            }
         }
 
-        try {
-            apoliceClient.buscarPorId(apoliceId);
-        } catch (FeignException.NotFound e) {
-            throw new ApoliceNaoEncontradaException("Apólice não encontrada: " + apoliceId);
+        if (apoliceId != null) {
+            try {
+                apoliceClient.buscarPorId(apoliceId);
+            } catch (FeignException.NotFound e) {
+                throw new ApoliceNaoEncontradaException("Apólice não encontrada: " + apoliceId);
+            }
         }
 
         Page<SinistroResponseDTO> page = repository.listar(

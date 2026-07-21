@@ -8,6 +8,8 @@ import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
 import com.insurtech.sinistros.domain.model.DocumentoSinistro;
 import com.insurtech.sinistros.domain.model.HistoricoSinistro;
 import com.insurtech.sinistros.domain.model.Sinistro;
+import com.insurtech.sinistros.infrastructure.persistence.DocumentoSinistroJpaEntity;
+import com.insurtech.sinistros.infrastructure.persistence.HistoricoSinistroJpaEntity;
 import com.insurtech.sinistros.infrastructure.persistence.SinistroJpaEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -44,4 +46,10 @@ public interface SinistroMapper {
     DocumentoSinistroResponseDTO toResponse(DocumentoSinistro documento);
 
     HistoricoSinistroResponseDTO toResponse(HistoricoSinistro historico);
+
+    @Mapping(target = "sinistro", ignore = true)
+    HistoricoSinistroJpaEntity toEntity(HistoricoSinistro domain);
+
+    @Mapping(target = "sinistro", ignore = true)
+    DocumentoSinistroJpaEntity toEntity(DocumentoSinistro domain);
 }

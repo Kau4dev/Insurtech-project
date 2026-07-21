@@ -1,5 +1,6 @@
 package com.insurtech.sinistros.domain.model;
 
+import com.insurtech.sinistros.domain.exception.DocumentoObrigatorioException;
 import com.insurtech.sinistros.domain.exception.MotivoRejeicaoObrigatorioException;
 import com.insurtech.sinistros.domain.exception.StatusInvalidoException;
 import com.insurtech.sinistros.domain.exception.ValorInvalidoException;
@@ -74,6 +75,9 @@ public class Sinistro {
         }
         if (valorAprovado.compareTo(valorSeguradoApolice) > 0) {
             throw new ValorInvalidoException("Valor aprovado não pode exceder o valor segurado da apólice");
+        }
+        if (this.documentos == null || this.documentos.isEmpty()) {
+            throw new DocumentoObrigatorioException("Não é possível aprovar um sinistro sem documentos recebidos");
         }
         registrarHistorico(this.status, Status.APROVADO, null);
         this.valorAprovado = valorAprovado;
