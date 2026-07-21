@@ -20,12 +20,10 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface SinistroMapper {
 
-    // Domain <-> Entity
     SinistroJpaEntity toEntity(Sinistro domain);
 
     Sinistro toDomain(SinistroJpaEntity entity);
 
-    // Request DTO -> Domain
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "numeroSinistro", ignore = true)
     @Mapping(target = "analistaId", ignore = true)
@@ -39,14 +37,11 @@ public interface SinistroMapper {
     @Mapping(target = "documentos", ignore = true)
     Sinistro toDomain(SinistroRequestDTO request);
 
-    // Domain -> Response DTO
     SinistroResponseDTO toResponse(Sinistro domain);
 
-    // Domain -> Detalhe Response DTO
     @Mapping(target = "historicos", source = "historico")
     SinistroDetalhadoResponseDTO toDetalhadoResponse(Sinistro domain);
 
-    // Subentities
     DocumentoSinistroResponseDTO toResponse(DocumentoSinistro documento);
 
     HistoricoSinistroResponseDTO toResponse(HistoricoSinistro historico);

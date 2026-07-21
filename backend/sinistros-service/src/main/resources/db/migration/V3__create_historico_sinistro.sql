@@ -5,5 +5,5 @@ CREATE TABLE historico_sinistro (
     status_novo VARCHAR(20) NOT NULL,
     usuario_id UUID NOT NULL,
     observacao TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    created_at TIMESTAMP NOT NULL DEFAULT now()
 );

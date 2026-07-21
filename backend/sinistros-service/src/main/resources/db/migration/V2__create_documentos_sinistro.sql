@@ -4,5 +4,5 @@ CREATE TABLE documentos_sinistro (
     tipo_documento VARCHAR(50) NOT NULL,
     nome_arquivo VARCHAR(255) NOT NULL,
     url_arquivo VARCHAR(500) NOT NULL,
-    data_upload TIMESTAMP NOT NULL DEFAULT now(),
+    data_upload TIMESTAMP NOT NULL DEFAULT now()
 );
