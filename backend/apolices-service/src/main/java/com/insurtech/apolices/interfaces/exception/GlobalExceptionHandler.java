@@ -61,6 +61,12 @@ public class GlobalExceptionHandler {
                 .body(buildError(HttpStatus.CONFLICT, ex.getMessage(), request, null));
     }
 
+    @ExceptionHandler(TipoCoberturaIncompativelException.class)
+    public ResponseEntity<ErrorResponse> handleTipoCoberturaIncompativel(TipoCoberturaIncompativelException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidacao(
             MethodArgumentNotValidException ex,
