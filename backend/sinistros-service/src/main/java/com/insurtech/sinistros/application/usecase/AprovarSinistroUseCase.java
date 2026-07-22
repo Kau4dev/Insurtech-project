@@ -2,6 +2,8 @@ package com.insurtech.sinistros.application.usecase;
 
 import com.insurtech.sinistros.application.dto.request.AprovarSinistroRequestDTO;
 import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
+import com.insurtech.sinistros.application.port.EventPublisherPort;
+import com.insurtech.sinistros.domain.event.SinistroAprovadoEvent;
 import com.insurtech.sinistros.domain.exception.ApoliceNaoEncontradaException;
 import com.insurtech.sinistros.domain.exception.SinistroNaoEncontradoException;
 import com.insurtech.sinistros.domain.model.Sinistro;
@@ -22,6 +24,7 @@ public class AprovarSinistroUseCase {
     private final SinistroRepository repository;
     private final SinistroMapper mapper;
     private final ApoliceClient client;
+    private final EventPublisherPort eventPublisher;
 
     public SinistroResponseDTO executar(UUID id, AprovarSinistroRequestDTO dto) {
 
@@ -38,7 +41,11 @@ public class AprovarSinistroUseCase {
         sinistro.aprovar(dto.valorAprovado(), apolice.valorPremio());
         Sinistro savedSinistro = repository.salvar(sinistro);
 
-      //  eventPublisher.publicarSinistroAprovado(new SinistroAprovadoEvent(savedSinistro.getId(), savedSinistro.getValorAprovado()));
+        eventPublisher.publicarSinistroAprovado(new SinistroAprovadoEvent(
+                savedSinistro.getId(),
+                savedSinistro.getSeguradoId(),
+                savedSinistro.getValorAprovado()
+        ));
 
         return mapper.toResponse(savedSinistro);
     }

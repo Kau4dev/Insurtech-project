@@ -2,6 +2,8 @@ package com.insurtech.sinistros.application.usecase;
 
 import com.insurtech.sinistros.application.dto.request.SinistroRequestDTO;
 import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
+import com.insurtech.sinistros.application.port.EventPublisherPort;
+import com.insurtech.sinistros.domain.event.SinistroRegistradoEvent;
 import com.insurtech.sinistros.domain.exception.ApoliceNaoEncontradaException;
 import com.insurtech.sinistros.domain.exception.SeguradoNaoEncontradoException;
 import com.insurtech.sinistros.domain.exception.SinistrojaCadastradaException;
@@ -25,6 +27,7 @@ public class CadastrarSinistroUseCase {
     private final SinistroMapper mapper;
     private final SeguradoClient seguradoClient;
     private final ApoliceClient apoliceClient;
+    private final EventPublisherPort eventPublisher;
 
 
     public SinistroResponseDTO executar(SinistroRequestDTO dto) {
@@ -49,6 +52,12 @@ public class CadastrarSinistroUseCase {
         sinistro.setId(UUID.randomUUID());
         sinistro.setStatus(Status.REGISTRADO);
         repository.salvar(sinistro);
+
+        eventPublisher.publicarSinistroRegistrado(new SinistroRegistradoEvent(
+                sinistro.getId(),
+                sinistro.getSeguradoId(),
+                sinistro.getNumeroSinistro()
+        ));
 
         return mapper.toResponse(sinistro);
     }
