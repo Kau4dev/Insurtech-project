@@ -20,6 +20,7 @@ public class SinistroTeste {
     void deveAprovarSinistro_comSucesso() {
         Sinistro sinistro = new Sinistro();
         sinistro.setId(UUID.randomUUID());
+        sinistro.setAnalistaId(UUID.randomUUID());
         sinistro.setStatus(Status.EM_ANALISE);
         
         DocumentoSinistro doc = new DocumentoSinistro();
