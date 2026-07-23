@@ -1,6 +1,6 @@
 package com.insurtech.apolices.infrastructure.persistence;
 
-
+import com.insurtech.apolices.domain.model.TipoCobertura;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,8 +23,9 @@ public class CoberturaJpaEntity {
     @JoinColumn(name = "apolice_id")
     private ApoliceJpaEntity apolice;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_cobertura", nullable = false, length = 50)
-    private String tipoCobertura;
+    private TipoCobertura tipoCobertura;
 
     @Column(name = "valor_cobertura", nullable = false, precision = 14, scale = 2)
     private BigDecimal valorCobertura;

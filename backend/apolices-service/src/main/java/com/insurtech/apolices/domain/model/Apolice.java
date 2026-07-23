@@ -1,6 +1,7 @@
 package com.insurtech.apolices.domain.model;
 
 import com.insurtech.apolices.domain.exception.StatusApoliceInvalidoException;
+import com.insurtech.apolices.domain.exception.TipoCoberturaIncompativelException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -65,6 +66,13 @@ public class Apolice {
     }
 
     public void adicionarCobertura(Cobertura cobertura) {
+        cobertura.validar();
+        if (!cobertura.getTipoCobertura().compativel(this.tipoSeguro)) {
+            throw new TipoCoberturaIncompativelException(
+                "Cobertura " + cobertura.getTipoCobertura() +
+                " não é compatível com apólice do tipo " + this.tipoSeguro
+            );
+        }
         cobertura.setApoliceId(this.id);
         this.coberturas.add(cobertura);
     }

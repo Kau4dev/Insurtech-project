@@ -45,7 +45,7 @@ class CadastrarSeguradoUseCaseTest {
         SeguradoResponseDTO responseDTO = new SeguradoResponseDTO(
                 UUID.randomUUID(), TipoPessoa.PF, "João Silva",
                 "12345678901", "joao@email.com", "11912345678",
-                LocalDate.of(1990, 5, 15), null, null, null, null, null
+                LocalDate.of(1990, 5, 15), null, null, null, null, null,null
         );
 
         when(repository.buscarPorCpfCnpj("12345678901")).thenReturn(Optional.empty());

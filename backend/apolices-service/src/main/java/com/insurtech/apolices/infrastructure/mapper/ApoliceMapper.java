@@ -113,7 +113,8 @@ public class ApoliceMapper {
                         c.getValorCobertura(),
                         c.getValorFranquia()
                 )).collect(Collectors.toList()) : null,
-                apolice.getCreatedAt()
+                apolice.getCreatedAt(),
+                apolice.getUpdatedAt()
         );
     }
 }

@@ -1,9 +1,12 @@
 package com.insurtech.apolices.unit.domain;
 
 import com.insurtech.apolices.domain.exception.StatusApoliceInvalidoException;
+import com.insurtech.apolices.domain.exception.TipoCoberturaIncompativelException;
 import com.insurtech.apolices.domain.model.Apolice;
 import com.insurtech.apolices.domain.model.Cobertura;
 import com.insurtech.apolices.domain.model.Status;
+import com.insurtech.apolices.domain.model.TipoCobertura;
+import com.insurtech.apolices.domain.model.TipoSeguro;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -97,11 +100,28 @@ public class ApoliceTeste {
     void deveAdicionarCobertura_comSucesso() {
         Apolice apolice = new Apolice();
         apolice.setId(UUID.randomUUID());
+        apolice.setTipoSeguro(TipoSeguro.AUTO);
+        
         Cobertura cobertura = new Cobertura();
+        cobertura.setTipoCobertura(TipoCobertura.COLISAO);
+        cobertura.setValorCobertura(new java.math.BigDecimal("1000.00"));
 
         apolice.adicionarCobertura(cobertura);
 
         assertEquals(1, apolice.getCoberturas().size());
         assertEquals(apolice.getId(), apolice.getCoberturas().get(0).getApoliceId());
+    }
+
+    @Test
+    void deveLancarExcecao_quandoAdicionarCoberturaIncompativel() {
+        Apolice apolice = new Apolice();
+        apolice.setId(UUID.randomUUID());
+        apolice.setTipoSeguro(TipoSeguro.VIDA);
+        
+        Cobertura cobertura = new Cobertura();
+        cobertura.setTipoCobertura(TipoCobertura.COLISAO);
+        cobertura.setValorCobertura(new java.math.BigDecimal("1000.00"));
+
+        assertThrows(TipoCoberturaIncompativelException.class, () -> apolice.adicionarCobertura(cobertura));
     }
 }

@@ -1,13 +1,13 @@
 package com.insurtech.apolices.application.dto;
-
+import com.insurtech.apolices.domain.model.TipoCobertura;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 
 public record CoberturaRequestDTO(
 
-        @NotBlank(message = "Tipo de cobertura é obrigatório")
-        String tipoCobertura,
+        @NotNull(message = "Tipo de cobertura é obrigatório")
+        TipoCobertura tipoCobertura,
 
         @NotNull(message = "Valor da cobertura é obrigatório")
         @Positive(message = "Valor da cobertura deve ser positivo")

@@ -38,7 +38,7 @@ class BuscarPorIdSeguradoUseCaseTest {
 
         when(repository.buscarPorId(id)).thenReturn(Optional.of(segurado));
         when(mapper.toResponse(segurado)).thenReturn(new SeguradoResponseDTO(
-                id, null, null, null, null, null, null, null, null, null, null, null
+                id, null, null, null, null, null, null, null, null, null, null, null,null
         ));
         SeguradoResponseDTO resultado = useCase.executar(id);
 

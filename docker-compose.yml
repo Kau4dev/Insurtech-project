@@ -9,6 +9,11 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U insurtech -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 #  kafka:
 #    image: apache/kafka:3.7.0

@@ -1,7 +1,7 @@
 package com.insurtech.apolices.domain.model;
 
-import com.insurtech.apolices.domain.exception.CoberturaInvalidaException;
 import com.insurtech.apolices.domain.exception.FranquiaExcedeCoberturaException;
+import com.insurtech.apolices.domain.exception.ValorCoberturaInvalidoException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,7 +16,7 @@ public class Cobertura {
 
     private UUID id;
     private UUID apoliceId;
-    private String tipoCobertura;
+    private TipoCobertura tipoCobertura;
     private BigDecimal valorCobertura;
     private BigDecimal valorFranquia;
 
@@ -27,7 +27,7 @@ public class Cobertura {
             );
         }
         if (valorCobertura == null || valorCobertura.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new CoberturaInvalidaException(
+            throw new ValorCoberturaInvalidoException(
                     "Valor de cobertura deve ser maior que zero"
             );
         }

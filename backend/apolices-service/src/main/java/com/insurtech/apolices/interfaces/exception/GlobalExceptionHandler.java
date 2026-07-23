@@ -44,17 +44,29 @@ public class GlobalExceptionHandler {
                 .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
     }
 
-    @ExceptionHandler(CoberturaInvalidaException.class)
-    public ResponseEntity<ErrorResponse> handleCoberturaInvalida(CoberturaInvalidaException ex, ServletWebRequest request) {
+    @ExceptionHandler(ValorCoberturaInvalidoException.class)
+    public ResponseEntity<ErrorResponse> handleCoberturaInvalida(ValorCoberturaInvalidoException ex, ServletWebRequest request) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
     }
+
     @ExceptionHandler(FranquiaExcedeCoberturaException.class)
     public ResponseEntity<ErrorResponse> handleFranquiaExcedeCobertura(FranquiaExcedeCoberturaException ex, ServletWebRequest request) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
     }
 
+    @ExceptionHandler(ApolicejaCadastradaException.class)
+    public ResponseEntity<ErrorResponse> handleApolicejaCadastrada(ApolicejaCadastradaException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(buildError(HttpStatus.CONFLICT, ex.getMessage(), request, null));
+    }
+
+    @ExceptionHandler(TipoCoberturaIncompativelException.class)
+    public ResponseEntity<ErrorResponse> handleTipoCoberturaIncompativel(TipoCoberturaIncompativelException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidacao(

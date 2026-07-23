@@ -5,11 +5,13 @@ import com.insurtech.apolices.application.dto.ApoliceResponseDTO;
 import com.insurtech.apolices.application.dto.CoberturaRequestDTO;
 import com.insurtech.apolices.application.usecase.CadastrarApoliceUseCase;
 import com.insurtech.apolices.domain.exception.ApoliceNaoEncontradaException;
+import com.insurtech.apolices.domain.exception.ApolicejaCadastradaException;
 import com.insurtech.apolices.domain.exception.SeguradoNaoEncontradoException;
 import com.insurtech.apolices.domain.model.Apolice;
 import com.insurtech.apolices.domain.model.Cobertura;
 import com.insurtech.apolices.domain.model.Status;
 import com.insurtech.apolices.domain.model.TipoSeguro;
+import com.insurtech.apolices.domain.model.TipoCobertura;
 import com.insurtech.apolices.domain.repository.ApoliceRepository;
 import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
 import com.insurtech.apolices.infrastructure.client.SeguradoClient;
@@ -26,6 +28,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
+import static java.time.temporal.ChronoUnit.DAYS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -74,7 +77,8 @@ class CadastrarApoliceUseCaseTest {
                 LocalDate.now().plusYears(1),
                 Status.ATIVA,
                 Collections.emptyList(),
-                Instant.now()
+                Instant.now(),
+                Instant.now().minus(1, DAYS)
         );
 
         when(client.buscarPorId(seguradoId)).thenReturn(null); // Assuming it returns a response or void on success
@@ -94,7 +98,7 @@ class CadastrarApoliceUseCaseTest {
     void deveCadastrarApolice_comCoberturasGerandoIdsEapoliceId() {
         UUID seguradoId = UUID.randomUUID();
         CoberturaRequestDTO coberturaDTO = new CoberturaRequestDTO(
-                "INCENDIO",
+                TipoCobertura.MORTE,
                 new BigDecimal("10000.00"),
                 new BigDecimal("500.00")
         );
@@ -111,7 +115,7 @@ class CadastrarApoliceUseCaseTest {
         );
 
         Cobertura cobertura = new Cobertura();
-        cobertura.setTipoCobertura("INCENDIO");
+        cobertura.setTipoCobertura(TipoCobertura.MORTE);
         cobertura.setValorCobertura(new BigDecimal("10000.00"));
         cobertura.setValorFranquia(new BigDecimal("500.00"));
 
@@ -133,7 +137,9 @@ class CadastrarApoliceUseCaseTest {
                 LocalDate.now().plusYears(1),
                 Status.ATIVA,
                 Collections.emptyList(),
-                Instant.now()
+                Instant.now(),
+                Instant.now().minus(1, DAYS)
+
         ));
 
         ApoliceResponseDTO resultado = useCase.executar(dto);
@@ -191,7 +197,7 @@ class CadastrarApoliceUseCaseTest {
         when(client.buscarPorId(seguradoId)).thenReturn(null);
         when(repository.buscarPorNumero("IT-12345")).thenReturn(Optional.of(new Apolice()));
 
-        assertThrows(ApoliceNaoEncontradaException.class, () -> useCase.executar(dto));
+        assertThrows(ApolicejaCadastradaException.class, () -> useCase.executar(dto));
         verify(repository, never()).salvar(any());
     }
 }

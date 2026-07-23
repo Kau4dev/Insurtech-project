@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static java.time.temporal.ChronoUnit.DAYS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -66,7 +67,10 @@ class ListarApolicesUseCaseTest {
                 LocalDate.now().plusYears(1),
                 Status.ATIVA,
                 Collections.emptyList(),
-                java.time.Instant.now()
+                Instant.now(),
+                Instant.now().minus(1, DAYS)
+
+
         );
 
         Page<Apolice> page = new PageImpl<>(List.of(apolice));
@@ -100,7 +104,9 @@ class ListarApolicesUseCaseTest {
                 LocalDate.now().plusYears(1),
                 Status.ATIVA,
                 Collections.emptyList(),
-                Instant.now()
+                Instant.now(),
+                Instant.now().minus(1, DAYS)
+
         );
 
         Page<Apolice> page = new PageImpl<>(List.of(apolice));

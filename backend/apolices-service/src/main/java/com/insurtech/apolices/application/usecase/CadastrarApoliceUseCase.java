@@ -3,6 +3,7 @@ package com.insurtech.apolices.application.usecase;
 import com.insurtech.apolices.application.dto.ApoliceRequestDTO;
 import com.insurtech.apolices.application.dto.ApoliceResponseDTO;
 import com.insurtech.apolices.domain.exception.ApoliceNaoEncontradaException;
+import com.insurtech.apolices.domain.exception.ApolicejaCadastradaException;
 import com.insurtech.apolices.domain.exception.SeguradoNaoEncontradoException;
 import com.insurtech.apolices.domain.model.Apolice;
 import com.insurtech.apolices.domain.model.Status;
@@ -33,7 +34,7 @@ public class CadastrarApoliceUseCase {
         }
 
         repository.buscarPorNumero(dto.numeroApolice())
-                .ifPresent(a -> { throw new ApoliceNaoEncontradaException("Apolice já cadastrada: " + dto.numeroApolice()); });
+                .ifPresent(a -> { throw new ApolicejaCadastradaException("Apolice já cadastrada: " + dto.numeroApolice()); });
 
         Apolice apolice = mapper.toDomain(dto);
         apolice.setId(UUID.randomUUID());

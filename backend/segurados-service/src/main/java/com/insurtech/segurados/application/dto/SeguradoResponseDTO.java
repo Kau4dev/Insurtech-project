@@ -3,6 +3,7 @@ package com.insurtech.segurados.application.dto;
 import com.insurtech.segurados.domain.model.TipoPessoa;
 import com.insurtech.segurados.domain.model.Uf;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ public record SeguradoResponseDTO(
         String enderecoCidade,
         Uf enderecoUf,
         String enderecoCep,
-        java.time.Instant createdAt
+        Instant createdAt,
+        Instant updatedAt
 ) {
 }
