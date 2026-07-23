@@ -1,6 +1,6 @@
 package com.insurtech.liquidacao.domain.model;
 
-public enum StatusPagamento {
+public enum Status {
     PENDENTE,
     PROCESSADO,
     FALHOU
