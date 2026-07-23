@@ -6,4 +6,5 @@ public interface EventoPagamentoRepository {
 
     EventoPagamento salvar(EventoPagamento eventoPagamento);
 
+    boolean existePorEventoIdOrigem(String eventoIdOrigem);
 }
