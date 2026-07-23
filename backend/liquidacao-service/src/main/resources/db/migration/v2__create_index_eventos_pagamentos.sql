@@ -1,0 +1,2 @@
+CREATE INDEX idx_eventos_pagamento_sinistro ON eventos_pagamento(sinistro_id);
+CREATE INDEX idx_eventos_pagamento_evento_origem ON eventos_pagamento(evento_id_origem);
