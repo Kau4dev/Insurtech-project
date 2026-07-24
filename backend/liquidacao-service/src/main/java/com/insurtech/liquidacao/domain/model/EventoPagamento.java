@@ -1,5 +1,6 @@
 package com.insurtech.liquidacao.domain.model;
 
+import com.insurtech.liquidacao.domain.exception.PagamentoProcessadoException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,7 +24,7 @@ public class EventoPagamento {
 
     public void processar(){
         if (!Status.PENDENTE.equals(this.status)) {
-            throw new IllegalStateException("Pagamento já foi processado");
+            throw new PagamentoProcessadoException("Pagamento já foi processado");
         }
         this.status = Status.PROCESSADO;
         this.dataProcessamento = Instant.now();

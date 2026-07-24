@@ -3,6 +3,7 @@ package com.insurtech.liquidacao.application.usecase;
 import com.insurtech.liquidacao.application.dto.PagamentoLiquidadoEventDTO;
 import com.insurtech.liquidacao.application.dto.SinistroAprovadoEventDTO;
 import com.insurtech.liquidacao.application.port.EventPublisherPort;
+import com.insurtech.liquidacao.domain.exception.PagamentoProcessadoException;
 import com.insurtech.liquidacao.domain.model.EventoPagamento;
 import com.insurtech.liquidacao.domain.model.Status;
 import com.insurtech.liquidacao.domain.repository.EventoPagamentoRepository;
@@ -53,6 +54,10 @@ public class ProcessarLiquidacaoUseCase {
             ));
 
             log.info("Liquidação processada com sucesso para sinistroId: {}", dto.sinistroId());
+
+        }catch (PagamentoProcessadoException e) {
+
+            log.warn("Tentativa de reprocessamento negada: {}", e.getMessage());
 
         } catch (Exception e) {
 
