@@ -40,7 +40,7 @@ public class ProcessarLiquidacaoUseCase {
 
         try {
             log.info("Processando liquidação para sinistroId: {}", dto.sinistroId());
-            Thread.sleep(2000); // simula integração com sistema de pagamento
+            Thread.sleep(2000);
 
             pagamento.processar();
             repository.salvar(pagamento);

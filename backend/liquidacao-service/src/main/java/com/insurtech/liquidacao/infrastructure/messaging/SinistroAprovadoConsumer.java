@@ -17,7 +17,7 @@ public class SinistroAprovadoConsumer {
 
     @KafkaListener(
             topics = "sinistro.aprovado",
-            groupId = "liquidacao-service",
+            groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void consumir(
