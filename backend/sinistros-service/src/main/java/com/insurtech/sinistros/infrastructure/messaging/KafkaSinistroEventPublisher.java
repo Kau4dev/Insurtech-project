@@ -29,7 +29,14 @@ public class KafkaSinistroEventPublisher implements EventPublisherPort {
     @Override
     public void publicarSinistroAprovado(SinistroAprovadoEvent event) {
         log.info("Publicando evento SinistroAprovado para sinistroId: {}", event.sinistroId());
-        kafkaTemplate.send(TOPIC_APROVADO, event.sinistroId().toString(), event);
+        kafkaTemplate.send(TOPIC_APROVADO, event.sinistroId().toString(), event)
+            .whenComplete((result, ex) -> {
+                if (ex != null) {
+                    log.error("Erro ao publicar evento SinistroAprovado", ex);
+                } else {
+                    log.info("Evento publicado com sucesso no topico: {}", result.getRecordMetadata().topic());
+                }
+            });
     }
 
     @Override
