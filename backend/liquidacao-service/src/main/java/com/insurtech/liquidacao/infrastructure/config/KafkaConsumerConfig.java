@@ -4,6 +4,7 @@ import com.insurtech.liquidacao.application.dto.SinistroAprovadoEventDTO;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.kafka.KafkaConnectionDetails;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -21,11 +22,14 @@ import java.util.Map;
 @Configuration
 public class KafkaConsumerConfig {
 
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String bootstrapServers;
+    private final KafkaConnectionDetails kafkaConnectionDetails;
 
     @Value("${spring.kafka.consumer.group-id}")
     private String groupId;
+
+    public KafkaConsumerConfig(KafkaConnectionDetails kafkaConnectionDetails) {
+        this.kafkaConnectionDetails = kafkaConnectionDetails;
+    }
 
     @Bean
     public ConsumerFactory<String, SinistroAprovadoEventDTO> consumerFactory() {
@@ -34,7 +38,7 @@ public class KafkaConsumerConfig {
         deserializer.addTrustedPackages("*");
 
         Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaConnectionDetails.getConsumerBootstrapServers());
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);

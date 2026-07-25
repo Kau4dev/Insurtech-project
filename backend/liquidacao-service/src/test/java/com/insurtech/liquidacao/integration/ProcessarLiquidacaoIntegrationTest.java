@@ -1,5 +1,6 @@
 package com.insurtech.liquidacao.integration;
 
+import com.insurtech.liquidacao.application.dto.SinistroAprovadoEventDTO;
 import com.insurtech.liquidacao.infrastructure.persistence.EventoPagamentoJpaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +10,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -18,7 +21,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
-// Removido o @Testcontainers para deixar o Spring Boot gerenciar nativamente via ServiceConnection
+@Testcontainers
 class ProcessarLiquidacaoIntegrationTest {
 
     @Container
@@ -39,7 +42,7 @@ class ProcessarLiquidacaoIntegrationTest {
     }
 
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
     private EventoPagamentoJpaRepository repository;
@@ -48,18 +51,15 @@ class ProcessarLiquidacaoIntegrationTest {
     void deveProcessarLiquidacaoEGravarNoBancoQuandoReceberEventoKafka() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
-        String eventoIdOrigem = UUID.randomUUID().toString();
+        BigDecimal valorAprovado = new BigDecimal("2500.00");
 
-        String jsonPayload = String.format("""
-            {
-                "sinistroId": "%s",
-                "seguradoId": "%s",
-                "valorAprovado": 2500.00,
-                "eventoIdOrigem": "%s"
-            }
-            """, sinistroId, seguradoId, eventoIdOrigem);
+        SinistroAprovadoEventDTO event = new SinistroAprovadoEventDTO(
+                sinistroId,
+                seguradoId,
+                valorAprovado
+        );
 
-        kafkaTemplate.send("sinistro.aprovado", sinistroId.toString(), jsonPayload);
+        kafkaTemplate.send("sinistro.aprovado", sinistroId.toString(), event);
 
         await()
                 .atMost(Duration.ofSeconds(10))
