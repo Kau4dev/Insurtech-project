@@ -12,11 +12,13 @@ import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
 import com.insurtech.apolices.infrastructure.client.SeguradoClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import feign.FeignException;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class CadastrarApoliceUseCase {

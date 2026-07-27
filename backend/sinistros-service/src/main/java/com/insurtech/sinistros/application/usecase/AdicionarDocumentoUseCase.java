@@ -8,9 +8,11 @@ import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class AdicionarDocumentoUseCase {

@@ -16,9 +16,11 @@ import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class CadastrarSinistroUseCase {
