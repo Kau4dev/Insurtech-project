@@ -29,6 +29,7 @@ public class SinistroController {
     private final BuscarPorIdSinistroUseCase buscarPorIdSinistroUseCase;
     private final ListarSinistrosUseCase listarSinistrosUseCase;
     private final AtribuirAnalistaUseCase atribuirAnalistaUseCase;
+    private final AguardarDocumentosUseCase aguardarDocumentosUseCase;
     private final AprovarSinistroUseCase aprovarSinistroUseCase;
     private final RejeitarSinistroUseCase rejeitarSinistroUseCase;
     private final AdicionarDocumentoUseCase adicionarDocumentoUseCase;
@@ -67,6 +68,13 @@ public class SinistroController {
         SinistroResponseDTO sinistro = atribuirAnalistaUseCase.executar(id, analistaId);
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
+
+    @PatchMapping("/{id}/aguardar-documentos")
+    public ResponseEntity<SinistroResponseDTO> aguardarDocumentos(@PathVariable UUID id) {
+        SinistroResponseDTO sinistro = aguardarDocumentosUseCase.executar(id);
+        return ResponseEntity.status(HttpStatus.OK).body(sinistro);
+    }
+
 
     @PatchMapping("/{id}/aprovar")
     public ResponseEntity<SinistroResponseDTO> aprovar(
