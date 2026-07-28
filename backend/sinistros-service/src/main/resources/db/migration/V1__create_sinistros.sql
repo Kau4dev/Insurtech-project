@@ -10,7 +10,7 @@ CREATE TABLE sinistros (
     data_registro TIMESTAMP NOT NULL DEFAULT now(),
     valor_estimado DECIMAL(14, 2) NOT NULL,
     valor_aprovado DECIMAL(14, 2) NULL,
-    status VARCHAR(20) NOT NULL,
+    status VARCHAR(30) NOT NULL,
     motivo_rejeicao TEXT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP
