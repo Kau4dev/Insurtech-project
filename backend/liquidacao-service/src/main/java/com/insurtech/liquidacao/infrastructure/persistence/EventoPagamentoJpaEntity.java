@@ -27,7 +27,7 @@ public class EventoPagamentoJpaEntity {
     private BigDecimal valorLiquidado;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     private Status status;
 
     @Column(name = "data_processamento")
