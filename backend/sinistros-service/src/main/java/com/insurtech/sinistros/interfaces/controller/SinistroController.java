@@ -23,7 +23,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("api/v1/sinistros")
 @RequiredArgsConstructor
-public class SinistroController {
+public class SinistroController implements SinistroControllerDocs {
 
     private final CadastrarSinistroUseCase cadastrarSinistroUseCase;
     private final BuscarPorIdSinistroUseCase buscarPorIdSinistroUseCase;
@@ -36,12 +36,14 @@ public class SinistroController {
     private final MostrarHistoricoStatusUseCase mostrarHistoricoStatusUseCase;
     private final MostrarMetricasUseCase mostrarMetricasUseCase;
 
+    @Override
     @PostMapping
     public ResponseEntity<SinistroResponseDTO> registrarSinistro(@RequestBody @Valid SinistroRequestDTO dto) {
         SinistroResponseDTO sinistro = cadastrarSinistroUseCase.executar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(sinistro);
     }
 
+    @Override
     @GetMapping
     public ResponseEntity<PageResponseDTO<SinistroResponseDTO>> listarSinistros(
             @RequestParam(required = false) UUID apoliceId,
@@ -55,12 +57,14 @@ public class SinistroController {
         return ResponseEntity.ok(listarSinistrosUseCase.executar(apoliceId, seguradoId, analistaId, status, tipoSinistro, dataInicio, dataFim, pageable));
     }
 
+    @Override
     @GetMapping("/{id}")
     public ResponseEntity<SinistroDetalhadoResponseDTO> buscarPorId(@PathVariable UUID id) {
         SinistroDetalhadoResponseDTO sinistro = buscarPorIdSinistroUseCase.executar(id);
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
 
+    @Override
     @PatchMapping("/{id}/atribuir")
     public ResponseEntity<SinistroResponseDTO> atribuirAnalista(
             @PathVariable UUID id,
@@ -69,6 +73,7 @@ public class SinistroController {
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
 
+    @Override
     @PatchMapping("/{id}/aguardar-documentos")
     public ResponseEntity<SinistroResponseDTO> aguardarDocumentos(@PathVariable UUID id) {
         SinistroResponseDTO sinistro = aguardarDocumentosUseCase.executar(id);
@@ -76,6 +81,7 @@ public class SinistroController {
     }
 
 
+    @Override
     @PatchMapping("/{id}/aprovar")
     public ResponseEntity<SinistroResponseDTO> aprovar(
             @PathVariable UUID id,
@@ -84,6 +90,7 @@ public class SinistroController {
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
 
+    @Override
     @PatchMapping("/{id}/rejeitar")
     public ResponseEntity<SinistroResponseDTO> rejeitar(
             @PathVariable UUID id,
@@ -92,6 +99,7 @@ public class SinistroController {
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
 
+    @Override
     @PostMapping("/{id}/documentos")
     public ResponseEntity<DocumentoSinistroResponseDTO> adicionarDocumento(
             @PathVariable UUID id,
@@ -100,12 +108,14 @@ public class SinistroController {
         return ResponseEntity.status(HttpStatus.CREATED).body(documento);
     }
 
+    @Override
     @GetMapping("/{id}/historico")
     public ResponseEntity<List<HistoricoSinistroResponseDTO>> mostrarHistorico(@PathVariable UUID id) {
         List<HistoricoSinistroResponseDTO> historico = mostrarHistoricoStatusUseCase.executar(id);
         return ResponseEntity.status(HttpStatus.OK).body(historico);
     }
 
+    @Override
     @GetMapping("/dashboard/resumo")
     public ResponseEntity<DashboardResponseDTO> mostrarMetricas() {
         DashboardResponseDTO metricas = mostrarMetricasUseCase.executar();

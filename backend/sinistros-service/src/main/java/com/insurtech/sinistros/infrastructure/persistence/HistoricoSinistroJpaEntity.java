@@ -34,7 +34,7 @@ public class HistoricoSinistroJpaEntity {
     @Column(name = "usuario_id")
     private UUID usuarioId;
 
-    @Column(name = "observacao", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String observacao;
 
     @Column(name = "created_at", nullable = false, updatable = false)

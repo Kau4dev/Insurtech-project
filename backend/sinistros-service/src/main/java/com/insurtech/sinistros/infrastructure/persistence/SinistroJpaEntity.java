@@ -40,7 +40,7 @@ public class SinistroJpaEntity {
     @Column(name = "tipo_sinistro", nullable = false)
     private TipoSinistro tipoSinistro;
 
-    @Column(name = "descricao", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String descricao;
 
     @Column(name = "data_ocorrencia", nullable = false)
@@ -56,7 +56,7 @@ public class SinistroJpaEntity {
     private BigDecimal valorAprovado;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     private Status status;
 
     @Column(name = "motivo_rejeicao", columnDefinition = "TEXT")

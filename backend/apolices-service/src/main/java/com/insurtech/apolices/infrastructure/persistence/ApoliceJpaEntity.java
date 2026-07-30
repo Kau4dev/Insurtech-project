@@ -47,7 +47,7 @@ public class ApoliceJpaEntity {
     private LocalDate dataFimVigencia;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(nullable = false, length = 20)
     private Status status;
 
     @OneToMany(mappedBy = "apolice", cascade = CascadeType.ALL, orphanRemoval = true)
