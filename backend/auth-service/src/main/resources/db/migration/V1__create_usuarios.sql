@@ -10,11 +10,11 @@ CREATE TABLE usuarios (
 
 INSERT INTO usuarios (id, nome, email, senha_hash, papel, ativo) VALUES
     (gen_random_uuid(), 'Admin', 'admin@insurtech.com',
-    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', -- senha: password
+    '$2a$12$lfHl6aOJtGfJf.6quhSILeN58.4AdACwTGhgOlY6qM0UjEWw9Exu6', -- senha: password
     'ADMIN', true),
     (gen_random_uuid(), 'Analista', 'analista@insurtech.com',
-    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.',
+    '$2a$12$lfHl6aOJtGfJf.6quhSILeN58.4AdACwTGhgOlY6qM0UjEWw9Exu6.',
     'ANALISTA', true),
     (gen_random_uuid(), 'Gestor', 'gestor@insurtech.com',
-    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.',
+    '$2a$12$lfHl6aOJtGfJf.6quhSILeN58.4AdACwTGhgOlY6qM0UjEWw9Exu6.',
     'GESTOR', true);

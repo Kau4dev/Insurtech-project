@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuarios")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,8 +25,8 @@ public class UsuarioJpaEntity {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
-    private String senha;
+    @Column(name = "senha_hash", nullable = false)
+    private String senhaHash;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

@@ -4,7 +4,6 @@ import com.insurtech.auth.application.dto.LoginRequestDTO;
 import com.insurtech.auth.application.dto.LoginResponseDTO;
 import com.insurtech.auth.domain.exception.EmailNaoEncontradoException;
 import com.insurtech.auth.domain.exception.SenhaIncorretaException;
-import com.insurtech.auth.domain.exception.UsuarioInativoException;
 import com.insurtech.auth.domain.model.Usuario;
 import com.insurtech.auth.domain.repository.UsuarioRepository;
 import com.insurtech.auth.infrastructure.security.JwtService;
@@ -28,8 +27,8 @@ public class LoginUseCase {
 
         usuario.validar();
 
-        if (!passwordEncoder.matches(dto.senha(), usuario.getSenha())) {
-            throw new SenhaIncorretaException("Credenciais inválidas");
+        if (!passwordEncoder.matches(dto.senha(), usuario.getSenhaHash())) {
+            throw new SenhaIncorretaException("Senha incorreta");
         }
         String token = jwtService.gerarToken(usuario);
 

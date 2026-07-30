@@ -19,7 +19,7 @@ public class Usuario {
     private UUID id;
     private String nome;
     private String email;
-    private String senha;
+    private String senhaHash;
     private Papel papel;
     private Boolean ativo;
     private Instant createdAt;
