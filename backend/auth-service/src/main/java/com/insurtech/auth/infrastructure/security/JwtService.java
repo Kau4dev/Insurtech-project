@@ -43,9 +43,12 @@ public class JwtService {
 
     public boolean isTokenValido(String token) {
         try {
+            if (token == null || token.trim().isEmpty()) {
+                return false;
+            }
             getClaims(token);
             return true;
-        } catch (JwtException e) {
+        } catch (Exception e) {
             return false;
         }
     }
