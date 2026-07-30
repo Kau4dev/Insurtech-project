@@ -22,25 +22,28 @@ import java.util.UUID;
 @RestController
 @RequestMapping("api/v1/segurados")
 @RequiredArgsConstructor
-public class SeguradoController {
+public class SeguradoController implements SeguradoControllerDocs {
 
     private final CadastrarSeguradoUseCase cadastrarSeguradoUseCase;
     private final BuscarPorIdSeguradoUseCase buscarPorIdSeguradoUseCase;
     private final ListarSeguradosUseCase listarSeguradosUseCase;
     private final AtualizarSeguradoUseCase atualizarSeguradoUseCase;
 
+    @Override
     @PostMapping
     public ResponseEntity<SeguradoResponseDTO> cadastrarSegurado(@RequestBody @Valid SeguradoRequestDTO dto) {
         SeguradoResponseDTO segurado = cadastrarSeguradoUseCase.executar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(segurado);
     }
 
+    @Override
     @GetMapping("/{id}")
     public ResponseEntity<SeguradoResponseDTO> buscarPorId(@PathVariable UUID id) {
         SeguradoResponseDTO segurado = buscarPorIdSeguradoUseCase.executar(id);
         return ResponseEntity.status(HttpStatus.OK).body(segurado);
     }
 
+    @Override
     @GetMapping
     public ResponseEntity<PageResponseDTO<SeguradoResponseDTO>> listarSegurados(
             @RequestParam(required = false) String nome,
@@ -48,6 +51,7 @@ public class SeguradoController {
         return ResponseEntity.ok(listarSeguradosUseCase.executar(nome, pageable));
     }
 
+    @Override
     @PutMapping("/{id}")
     public ResponseEntity<SeguradoResponseDTO> atualizarSegurado(
             @PathVariable UUID id,

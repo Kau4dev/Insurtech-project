@@ -21,7 +21,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("api/v1/apolices")
 @RequiredArgsConstructor
-public class ApoliceController {
+public class ApoliceController implements ApoliceControllerDocs {
 
     private final CadastrarApoliceUseCase cadastrarApoliceUseCase;
     private final BuscarPorIdApoliceUseCase buscarPorIdApoliceUseCase;
@@ -29,27 +29,31 @@ public class ApoliceController {
     private final AtualizarStatusApoliceUseCase atualizarStatusApoliceUseCase;
 
 
+    @Override
     @PostMapping
     public ResponseEntity<ApoliceResponseDTO> cadastrarApolice(@RequestBody @Valid ApoliceRequestDTO dto) {
         ApoliceResponseDTO apolice = cadastrarApoliceUseCase.executar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(apolice);
     }
 
+    @Override
     @GetMapping("/{id}")
     public ResponseEntity<ApoliceResponseDTO> buscarPorId(@PathVariable UUID id) {
         ApoliceResponseDTO apolice = buscarPorIdApoliceUseCase.executar(id);
         return ResponseEntity.status(HttpStatus.OK).body(apolice);
     }
 
+    @Override
     @GetMapping
     public ResponseEntity<PageResponseDTO<ApoliceResponseDTO>> listarApolices(
-            @RequestParam(required = false) UUID IdSegurado,
+            @RequestParam(required = false) UUID idSegurado,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) TipoSeguro tipoSeguro,
             @ParameterObject Pageable pageable) {
-        return ResponseEntity.ok(listarApolicesUseCase.executar(IdSegurado, status, tipoSeguro, pageable));
+        return ResponseEntity.ok(listarApolicesUseCase.executar(idSegurado, status, tipoSeguro, pageable));
     }
 
+    @Override
     @PatchMapping("/{id}")
     public ResponseEntity<ApoliceResponseDTO> atualizarStatus(
             @PathVariable UUID id,
