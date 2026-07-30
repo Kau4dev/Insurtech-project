@@ -36,7 +36,7 @@ public class LoginUseCase {
                 token,
                 "Bearer",
                 3600L,   // 1 hora em segundos
-                usuario.getPapel().name()
+                usuario.getPapel()
         );
     }
 }
