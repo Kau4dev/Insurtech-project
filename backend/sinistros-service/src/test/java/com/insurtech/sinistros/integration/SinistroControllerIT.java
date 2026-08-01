@@ -13,21 +13,29 @@ import com.insurtech.sinistros.domain.model.TipoDocumento;
 import com.insurtech.sinistros.domain.model.TipoSinistro;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.client.ApoliceClient;
+import com.insurtech.sinistros.infrastructure.client.AuthClient;
 import com.insurtech.sinistros.infrastructure.client.SeguradoClient;
 import com.insurtech.sinistros.infrastructure.client.dto.ApoliceResponseDTO;
+import com.insurtech.sinistros.infrastructure.client.dto.Papel;
+import com.insurtech.sinistros.infrastructure.client.dto.UsuarioResponseDTO;
+import feign.FeignException;
+import feign.Request;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,6 +59,9 @@ class SinistroControllerIT extends IntegrationTestBase {
 
     @MockitoBean
     private ApoliceClient apoliceClient;
+
+    @MockitoBean
+    private AuthClient authClient;
 
     @Test
     void deveCadastrarSinistro_retornar201() {
@@ -128,10 +139,19 @@ class SinistroControllerIT extends IntegrationTestBase {
 
         UUID analistaId = UUID.randomUUID();
 
+        when(authClient.buscarPorId(analistaId)).thenReturn(
+                new UsuarioResponseDTO(analistaId, "Analista", "analista@email.com", Papel.ANALISTA)
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "GESTOR");
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
         ResponseEntity<SinistroResponseDTO> response = restTemplate.exchange(
                 "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
                 HttpMethod.PATCH,
-                null,
+                entity,
                 SinistroResponseDTO.class
         );
 
@@ -139,6 +159,123 @@ class SinistroControllerIT extends IntegrationTestBase {
         assertNotNull(response.getBody());
         assertEquals(analistaId, response.getBody().analistaId());
         assertEquals(Status.EM_ANALISE, response.getBody().status());
+    }
+
+    @Test
+    void deveRetornar401_quandoAtribuirAnalistaSemAutenticacao() {
+        Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-401", Status.REGISTRADO);
+        sinistro.setAnalistaId(null);
+        repository.salvar(sinistro);
+
+        UUID analistaId = UUID.randomUUID();
+
+        // Sem headers
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
+                HttpMethod.PATCH,
+                null,
+                ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Usuário não autenticado", response.getBody().message());
+    }
+
+    @Test
+    void deveRetornar403_quandoAtribuirAnalistaSemPermissao() {
+        Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-403", Status.REGISTRADO);
+        sinistro.setAnalistaId(null);
+        repository.salvar(sinistro);
+
+        UUID analistaId = UUID.randomUUID();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "ANALISTA"); // Não tem permissão (apenas GESTOR ou ADMIN)
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
+                HttpMethod.PATCH,
+                entity,
+                ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Acesso negado. Apenas gestores ou administradores podem atribuir analistas.", response.getBody().message());
+    }
+
+    @Test
+    void deveRetornar404_quandoAnalistaNaoEncontradoNoAuth() {
+        Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-404", Status.REGISTRADO);
+        sinistro.setAnalistaId(null);
+        repository.salvar(sinistro);
+
+        UUID analistaId = UUID.randomUUID();
+
+        when(authClient.buscarPorId(analistaId)).thenThrow(feignNotFound());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "GESTOR");
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
+                HttpMethod.PATCH,
+                entity,
+                ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Analista não encontrado com o ID: " + analistaId, response.getBody().message());
+    }
+
+    @Test
+    void deveRetornar400_quandoAnalistaTemPapelInvalido() {
+        Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-400", Status.REGISTRADO);
+        sinistro.setAnalistaId(null);
+        repository.salvar(sinistro);
+
+        UUID analistaId = UUID.randomUUID();
+
+        when(authClient.buscarPorId(analistaId)).thenReturn(
+                new UsuarioResponseDTO(analistaId, "Admin", "admin@email.com", Papel.ADMIN)
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "GESTOR");
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
+                HttpMethod.PATCH,
+                entity,
+                ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("O usuário informado não possui papel de analista (ANALISTA ou GESTOR)", response.getBody().message());
+    }
+
+    private FeignException.NotFound feignNotFound() {
+        return (FeignException.NotFound) FeignException.NotFound.errorStatus(
+                "AuthClient#buscarPorId(UUID)",
+                feign.Response.builder()
+                        .status(404)
+                        .reason("Not Found")
+                        .request(Request.create(Request.HttpMethod.GET,
+                                "/api/v1/auth/usuarios",
+                                Collections.emptyMap(),
+                                new byte[0],
+                                Charset.defaultCharset()))
+                        .build()
+        );
     }
 
     @Test
