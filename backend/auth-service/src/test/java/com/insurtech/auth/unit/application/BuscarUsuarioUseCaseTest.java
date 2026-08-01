@@ -99,4 +99,46 @@ class BuscarUsuarioUseCaseTest {
         verify(repository, times(1)).buscarPorId(userId);
         verifyNoInteractions(mapper);
     }
+
+    @Test
+    void deveBuscarUsuarioPorId_comSucesso() {
+        UUID userId = UUID.randomUUID();
+
+        Usuario usuario = new Usuario();
+        usuario.setId(userId);
+        usuario.setNome("João Silva");
+        usuario.setEmail("joao@email.com");
+        usuario.setPapel(Papel.ANALISTA);
+        usuario.setAtivo(true);
+
+        UsuarioResponseDTO responseDTO = new UsuarioResponseDTO(userId, "João Silva", "joao@email.com", Papel.ANALISTA);
+
+        when(repository.buscarPorId(userId)).thenReturn(Optional.of(usuario));
+        when(mapper.toResponse(usuario)).thenReturn(responseDTO);
+
+        UsuarioResponseDTO response = buscarUsuarioUseCase.executarPorId(userId);
+
+        assertNotNull(response);
+        assertEquals(userId, response.id());
+        assertEquals("João Silva", response.nome());
+        assertEquals("joao@email.com", response.email());
+        assertEquals(Papel.ANALISTA, response.papel());
+
+        verify(repository, times(1)).buscarPorId(userId);
+        verify(mapper, times(1)).toResponse(usuario);
+        verifyNoInteractions(jwtService);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoUsuarioNaoEncontradoPorId() {
+        UUID userId = UUID.randomUUID();
+
+        when(repository.buscarPorId(userId)).thenReturn(Optional.empty());
+
+        assertThrows(UsuarioNaoEncontradoException.class, () -> buscarUsuarioUseCase.executarPorId(userId));
+
+        verify(repository, times(1)).buscarPorId(userId);
+        verifyNoInteractions(mapper);
+        verifyNoInteractions(jwtService);
+    }
 }

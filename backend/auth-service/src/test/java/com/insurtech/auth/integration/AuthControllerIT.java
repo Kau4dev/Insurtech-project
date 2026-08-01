@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class AuthControllerIT extends IntegrationTestBase {
@@ -109,5 +111,45 @@ class AuthControllerIT extends IntegrationTestBase {
         );
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    void deveBuscarUsuarioPorId_comSucesso() {
+        LoginRequestDTO loginDto = new LoginRequestDTO("admin@insurtech.com", "password");
+        ResponseEntity<LoginResponseDTO> loginResponse = restTemplate.postForEntity(
+                "/api/v1/auth/login", loginDto, LoginResponseDTO.class
+        );
+        assertEquals(HttpStatus.OK, loginResponse.getStatusCode());
+        assertNotNull(loginResponse.getBody());
+        String token = loginResponse.getBody().token();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+
+        ResponseEntity<UsuarioResponseDTO> validarResponse = restTemplate.exchange(
+                "/api/v1/auth/validar", HttpMethod.GET, new HttpEntity<>(headers), UsuarioResponseDTO.class
+        );
+        assertEquals(HttpStatus.OK, validarResponse.getStatusCode());
+        assertNotNull(validarResponse.getBody());
+        UUID adminId = validarResponse.getBody().id();
+
+        ResponseEntity<UsuarioResponseDTO> response = restTemplate.exchange(
+                "/api/v1/auth/usuarios/" + adminId, HttpMethod.GET, null, UsuarioResponseDTO.class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Admin", response.getBody().nome());
+        assertEquals("admin@insurtech.com", response.getBody().email());
+        assertEquals(Papel.ADMIN, response.getBody().papel());
+    }
+
+    @Test
+    void deveRetornar404_quandoUsuarioNaoExiste() {
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/v1/auth/usuarios/" + UUID.randomUUID(), HttpMethod.GET, null, String.class
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }
