@@ -25,8 +25,12 @@ public class BuscarUsuarioUseCase {
             throw new TokenInvalidoException("Token inválido ou expirado");
         }
         UUID usuarioId = jwtService.extrairUsuarioId(token);
-        Usuario usuario = repository.buscarPorId(usuarioId)
-                .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrada com o ID: " + usuarioId));
+        return executarPorId(usuarioId);
+    }
+
+    public UsuarioResponseDTO executarPorId(UUID id) {
+        Usuario usuario = repository.buscarPorId(id)
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com o ID: " + id));
         return mapper.toResponse(usuario);
     }
 }

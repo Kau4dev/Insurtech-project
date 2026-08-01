@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
+import java.util.UUID;
+
 @Tag(name = "Autenticação", description = "Endpoints para login de usuários e validação de tokens JWT")
 public interface AuthControllerDocs {
 
@@ -44,4 +46,15 @@ public interface AuthControllerDocs {
     })
     ResponseEntity<UsuarioResponseDTO> validarToken(
             @Parameter(description = "Token Bearer JWT enviado no cabeçalho Authorization", required = true) String authHeader);
+
+    @Operation(summary = "Buscar usuário por ID", description = "Retorna os dados de um usuário interno a partir do seu ID. Utilizado internamente pelos demais serviços (ex: sinistros-service) para validar a existência e o papel de um analista.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Usuário encontrado. Retorna os dados do usuário correspondente."),
+        @ApiResponse(responseCode = "404", description = "Usuário não encontrado", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(
+            @Parameter(description = "ID do usuário (UUID)", required = true) UUID id);
 }
