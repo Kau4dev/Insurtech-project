@@ -20,6 +20,18 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(UsuarioNaoAutenticadoException.class)
+    public ResponseEntity<ErrorResponse> handleUsuarioNaoAutenticado(UsuarioNaoAutenticadoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, null));
+    }
+
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ErrorResponse> handleAcessoNegado(AcessoNegadoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(buildError(HttpStatus.FORBIDDEN, ex.getMessage(), request, null));
+    }
+
     @ExceptionHandler(SeguradoNaoEncontradoException.class)
     public ResponseEntity<ErrorResponse> handleSeguradoNaoEncontrado(SeguradoNaoEncontradoException ex, ServletWebRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -34,6 +46,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SinistroNaoEncontradoException.class)
     public ResponseEntity<ErrorResponse> handleSinistroNaoEncontrado(SinistroNaoEncontradoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request, null));
+    }
+
+    @ExceptionHandler(AnalistaNaoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handleAnalistaNaoEncontrado(AnalistaNaoEncontradoException ex, ServletWebRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request, null));
     }
@@ -55,6 +73,7 @@ public class GlobalExceptionHandler {
             UrlArquivoObrigatoria.class,
             DocumentoObrigatorioException.class,
             ValorInvalidoException.class,
+            AnalistaInvalidoException.class,
             IllegalArgumentException.class,
             IllegalStateException.class
     })
