@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.web.bind.annotation.RequestHeader;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -67,10 +68,14 @@ public interface SinistroControllerDocs {
     ResponseEntity<SinistroDetalhadoResponseDTO> buscarPorId(
             @Parameter(description = "ID do sinistro (UUID)", required = true) UUID id);
 
-    @Operation(summary = "Atribuir analista ao sinistro", description = "Atribui um analista responsável para iniciar a análise técnica do sinistro.")
+    @Operation(summary = "Atribuir analista ao sinistro", description = "Atribui um analista responsável para iniciar a análise técnica do sinistro. Apenas usuários com papel GESTOR ou ADMIN podem realizar essa atribuição.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Analista atribuído com sucesso"),
         @ApiResponse(responseCode = "400", description = "Validação de domínio violada (ex: analista obrigatório, status inválido para atribuição)", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Não autorizado - Usuário não autenticado", 
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Acesso proibido - Apenas gestores ou administradores podem atribuir analistas", 
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "404", description = "Sinistro não encontrado", 
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
@@ -79,7 +84,9 @@ public interface SinistroControllerDocs {
     })
     ResponseEntity<SinistroResponseDTO> atribuirAnalista(
             @Parameter(description = "ID do sinistro (UUID)", required = true) UUID id,
-            @Parameter(description = "ID do analista (UUID)", required = true) UUID analistaId);
+            @Parameter(description = "ID do analista (UUID)", required = true) UUID analistaId,
+            @RequestHeader(value = "X-Usuario-Id", required = false) String usuarioId,
+            @RequestHeader(value = "X-Usuario-Papel", required = false) String usuarioPapel);
 
     @Operation(summary = "Alterar status para aguardar documentos", description = "Atualiza o status do sinistro sinalizando que há pendência de documentos complementares por parte do segurado.")
     @ApiResponses({
