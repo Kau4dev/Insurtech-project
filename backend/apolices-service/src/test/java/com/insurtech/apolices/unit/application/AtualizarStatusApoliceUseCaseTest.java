@@ -3,13 +3,18 @@ package com.insurtech.apolices.unit.application;
 import com.insurtech.apolices.application.dto.ApoliceResponseDTO;
 import com.insurtech.apolices.application.dto.AtualizarStatusApoliceDTO;
 import com.insurtech.apolices.application.usecase.AtualizarStatusApoliceUseCase;
+import com.insurtech.apolices.domain.exception.AcessoNegadoException;
 import com.insurtech.apolices.domain.exception.ApoliceNaoEncontradaException;
 import com.insurtech.apolices.domain.exception.StatusNaoSuportadoException;
+import com.insurtech.apolices.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.apolices.domain.model.Apolice;
 import com.insurtech.apolices.domain.model.Status;
 import com.insurtech.apolices.domain.model.TipoSeguro;
 import com.insurtech.apolices.domain.repository.ApoliceRepository;
 import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
+import com.insurtech.apolices.infrastructure.security.UserContext;
+import com.insurtech.apolices.infrastructure.security.UserContextHolder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,27 +45,31 @@ class AtualizarStatusApoliceUseCaseTest {
     @InjectMocks
     private AtualizarStatusApoliceUseCase useCase;
 
+    @AfterEach
+    void tearDown() {
+        UserContextHolder.clear();
+    }
+
+    private void setUserContext(String usuarioId, String papel) {
+        UserContext ctx = UserContextHolder.getContext();
+        ctx.setUsuarioId(usuarioId);
+        ctx.setUsuarioPapel(papel);
+    }
+
     @Test
-    void deveAtualizarStatusParaCancelada_comSucesso() throws StatusNaoSuportadoException {
+    void deveAtualizarStatusParaCancelada_comSucesso_comoGestor() throws StatusNaoSuportadoException {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
         UUID apoliceId = UUID.randomUUID();
         AtualizarStatusApoliceDTO dto = new AtualizarStatusApoliceDTO(Status.CANCELADA);
 
         UUID seguradoId = UUID.randomUUID();
         Apolice apolice = mock(Apolice.class);
         ApoliceResponseDTO responseDTO = new ApoliceResponseDTO(
-                apoliceId,
-                seguradoId,
-                "12345",
-                TipoSeguro.VIDA,
-                new BigDecimal("50000.00"),
-                new BigDecimal("150.00"),
-                LocalDate.now(),
-                LocalDate.now().plusYears(1),
-                Status.CANCELADA,
-                Collections.emptyList(),
-                Instant.now(),
-                Instant.now().minus(1, DAYS)
-
+                apoliceId, seguradoId, "12345", TipoSeguro.VIDA,
+                new BigDecimal("50000.00"), new BigDecimal("150.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), Status.CANCELADA,
+                Collections.emptyList(), Instant.now(), Instant.now().minus(1, DAYS)
         );
 
         when(repository.buscarPorId(apoliceId)).thenReturn(Optional.of(apolice));
@@ -76,26 +85,19 @@ class AtualizarStatusApoliceUseCaseTest {
     }
 
     @Test
-    void deveAtualizarStatusParaSuspensa_comSucesso() throws StatusNaoSuportadoException {
+    void deveAtualizarStatusParaSuspensa_comSucesso_comoAdmin() throws StatusNaoSuportadoException {
+        setUserContext(UUID.randomUUID().toString(), "ADMIN");
+
         UUID apoliceId = UUID.randomUUID();
         AtualizarStatusApoliceDTO dto = new AtualizarStatusApoliceDTO(Status.SUSPENSA);
 
         UUID seguradoId = UUID.randomUUID();
         Apolice apolice = mock(Apolice.class);
         ApoliceResponseDTO responseDTO = new ApoliceResponseDTO(
-                apoliceId,
-                seguradoId,
-                "12345",
-                TipoSeguro.VIDA,
-                new BigDecimal("50000.00"),
-                new BigDecimal("150.00"),
-                LocalDate.now(),
-                LocalDate.now().plusYears(1),
-                Status.SUSPENSA,
-                Collections.emptyList(),
-                Instant.now(),
-                Instant.now().minus(1, DAYS)
-
+                apoliceId, seguradoId, "12345", TipoSeguro.VIDA,
+                new BigDecimal("50000.00"), new BigDecimal("150.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), Status.SUSPENSA,
+                Collections.emptyList(), Instant.now(), Instant.now().minus(1, DAYS)
         );
 
         when(repository.buscarPorId(apoliceId)).thenReturn(Optional.of(apolice));
@@ -112,24 +114,18 @@ class AtualizarStatusApoliceUseCaseTest {
 
     @Test
     void deveAtualizarStatusParaAtiva_comSucesso() throws StatusNaoSuportadoException {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
         UUID apoliceId = UUID.randomUUID();
         AtualizarStatusApoliceDTO dto = new AtualizarStatusApoliceDTO(Status.ATIVA);
 
         UUID seguradoId = UUID.randomUUID();
         Apolice apolice = mock(Apolice.class);
         ApoliceResponseDTO responseDTO = new ApoliceResponseDTO(
-                apoliceId,
-                seguradoId,
-                "12345",
-                TipoSeguro.VIDA,
-                new BigDecimal("50000.00"),
-                new BigDecimal("150.00"),
-                LocalDate.now(),
-                LocalDate.now().plusYears(1),
-                Status.ATIVA,
-                Collections.emptyList(),
-                Instant.now(),
-                Instant.now().minus(1, DAYS)
+                apoliceId, seguradoId, "12345", TipoSeguro.VIDA,
+                new BigDecimal("50000.00"), new BigDecimal("150.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), Status.ATIVA,
+                Collections.emptyList(), Instant.now(), Instant.now().minus(1, DAYS)
         );
 
         when(repository.buscarPorId(apoliceId)).thenReturn(Optional.of(apolice));
@@ -145,7 +141,40 @@ class AtualizarStatusApoliceUseCaseTest {
     }
 
     @Test
+    void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
+        UUID apoliceId = UUID.randomUUID();
+        AtualizarStatusApoliceDTO dto = new AtualizarStatusApoliceDTO(Status.CANCELADA);
+
+        assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar(apoliceId, dto));
+        verifyNoInteractions(repository, mapper);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoPapelAnalista() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+
+        UUID apoliceId = UUID.randomUUID();
+        AtualizarStatusApoliceDTO dto = new AtualizarStatusApoliceDTO(Status.CANCELADA);
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(apoliceId, dto));
+        verifyNoInteractions(repository, mapper);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoPapelSegurado() {
+        setUserContext(UUID.randomUUID().toString(), "SEGURADO");
+
+        UUID apoliceId = UUID.randomUUID();
+        AtualizarStatusApoliceDTO dto = new AtualizarStatusApoliceDTO(Status.CANCELADA);
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(apoliceId, dto));
+        verifyNoInteractions(repository, mapper);
+    }
+
+    @Test
     void deveLancarExcecao_quandoApoliceNaoEncontrada() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
         UUID apoliceId = UUID.randomUUID();
         AtualizarStatusApoliceDTO dto = new AtualizarStatusApoliceDTO(Status.CANCELADA);
 
@@ -157,10 +186,11 @@ class AtualizarStatusApoliceUseCaseTest {
 
     @Test
     void deveLancarExcecao_quandoStatusNaoSuportado() {
-        UUID apoliceId = UUID.randomUUID();
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
+        UUID apoliceId = UUID.randomUUID();
         AtualizarStatusApoliceDTO dto = new AtualizarStatusApoliceDTO(Status.EXPIRADA);
-        
+
         Apolice apolice = new Apolice();
 
         when(repository.buscarPorId(apoliceId)).thenReturn(Optional.of(apolice));

@@ -4,19 +4,23 @@ import com.insurtech.apolices.application.dto.ApoliceRequestDTO;
 import com.insurtech.apolices.application.dto.ApoliceResponseDTO;
 import com.insurtech.apolices.application.dto.CoberturaRequestDTO;
 import com.insurtech.apolices.application.usecase.CadastrarApoliceUseCase;
-import com.insurtech.apolices.domain.exception.ApoliceNaoEncontradaException;
+import com.insurtech.apolices.domain.exception.AcessoNegadoException;
 import com.insurtech.apolices.domain.exception.ApolicejaCadastradaException;
 import com.insurtech.apolices.domain.exception.SeguradoNaoEncontradoException;
+import com.insurtech.apolices.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.apolices.domain.model.Apolice;
 import com.insurtech.apolices.domain.model.Cobertura;
 import com.insurtech.apolices.domain.model.Status;
-import com.insurtech.apolices.domain.model.TipoSeguro;
 import com.insurtech.apolices.domain.model.TipoCobertura;
+import com.insurtech.apolices.domain.model.TipoSeguro;
 import com.insurtech.apolices.domain.repository.ApoliceRepository;
-import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
 import com.insurtech.apolices.infrastructure.client.SeguradoClient;
+import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
+import com.insurtech.apolices.infrastructure.security.UserContext;
+import com.insurtech.apolices.infrastructure.security.UserContextHolder;
 import feign.FeignException;
 import feign.Request;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,39 +53,39 @@ class CadastrarApoliceUseCaseTest {
     @InjectMocks
     private CadastrarApoliceUseCase useCase;
 
+    @AfterEach
+    void tearDown() {
+        UserContextHolder.clear();
+    }
+
+    private void setUserContext(String usuarioId, String papel) {
+        UserContext ctx = UserContextHolder.getContext();
+        ctx.setUsuarioId(usuarioId);
+        ctx.setUsuarioPapel(papel);
+    }
+
     @Test
-    void deveCadastrarApolice_comSucesso() {
+    void deveCadastrarApolice_comSucesso_comoGestor() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
         UUID seguradoId = UUID.randomUUID();
         ApoliceRequestDTO dto = new ApoliceRequestDTO(
-                seguradoId,
-                "IT-12345",
-                TipoSeguro.VIDA,
-                new BigDecimal("50000.00"),
-                new BigDecimal("150.00"),
-                LocalDate.now(),
-                LocalDate.now().plusYears(1),
-                null
+                seguradoId, "IT-12345", TipoSeguro.VIDA,
+                new BigDecimal("50000.00"), new BigDecimal("150.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), null
         );
 
         Apolice apolice = new Apolice();
         UUID apoliceId = UUID.randomUUID();
-        
+
         ApoliceResponseDTO responseDTO = new ApoliceResponseDTO(
-                apoliceId,
-                seguradoId,
-                "IT-12345",
-                TipoSeguro.VIDA,
-                new BigDecimal("50000.00"),
-                new BigDecimal("150.00"),
-                LocalDate.now(),
-                LocalDate.now().plusYears(1),
-                Status.ATIVA,
-                Collections.emptyList(),
-                Instant.now(),
-                Instant.now().minus(1, DAYS)
+                apoliceId, seguradoId, "IT-12345", TipoSeguro.VIDA,
+                new BigDecimal("50000.00"), new BigDecimal("150.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), Status.ATIVA,
+                Collections.emptyList(), Instant.now(), Instant.now().minus(1, DAYS)
         );
 
-        when(client.buscarPorId(seguradoId)).thenReturn(null); // Assuming it returns a response or void on success
+        when(client.buscarPorId(seguradoId)).thenReturn(null);
         when(repository.buscarPorNumero("IT-12345")).thenReturn(Optional.empty());
         when(mapper.toDomain(dto)).thenReturn(apolice);
         when(repository.salvar(any())).thenReturn(apolice);
@@ -95,23 +99,79 @@ class CadastrarApoliceUseCaseTest {
     }
 
     @Test
+    void deveCadastrarApolice_comSucesso_comoAdmin() {
+        setUserContext(UUID.randomUUID().toString(), "ADMIN");
+
+        UUID seguradoId = UUID.randomUUID();
+        ApoliceRequestDTO dto = new ApoliceRequestDTO(
+                seguradoId, "IT-ADMIN", TipoSeguro.VIDA,
+                new BigDecimal("50000.00"), new BigDecimal("150.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), null
+        );
+
+        Apolice apolice = new Apolice();
+        when(client.buscarPorId(seguradoId)).thenReturn(null);
+        when(repository.buscarPorNumero("IT-ADMIN")).thenReturn(Optional.empty());
+        when(mapper.toDomain(dto)).thenReturn(apolice);
+        when(repository.salvar(any())).thenReturn(apolice);
+        when(mapper.toResponse(apolice)).thenReturn(mock(ApoliceResponseDTO.class));
+
+        assertDoesNotThrow(() -> useCase.executar(dto));
+    }
+
+    @Test
+    void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
+        ApoliceRequestDTO dto = new ApoliceRequestDTO(
+                UUID.randomUUID(), "IT-AUTH", TipoSeguro.VIDA,
+                new BigDecimal("1000.00"), new BigDecimal("100.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), null
+        );
+
+        assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar(dto));
+        verifyNoInteractions(repository, client, mapper);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoPapelAnalista() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+
+        ApoliceRequestDTO dto = new ApoliceRequestDTO(
+                UUID.randomUUID(), "IT-403", TipoSeguro.VIDA,
+                new BigDecimal("1000.00"), new BigDecimal("100.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), null
+        );
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(dto));
+        verifyNoInteractions(repository, client, mapper);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoPapelSegurado() {
+        setUserContext(UUID.randomUUID().toString(), "SEGURADO");
+
+        ApoliceRequestDTO dto = new ApoliceRequestDTO(
+                UUID.randomUUID(), "IT-403", TipoSeguro.VIDA,
+                new BigDecimal("1000.00"), new BigDecimal("100.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), null
+        );
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(dto));
+        verifyNoInteractions(repository, client, mapper);
+    }
+
+    @Test
     void deveCadastrarApolice_comCoberturasGerandoIdsEapoliceId() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
         UUID seguradoId = UUID.randomUUID();
         CoberturaRequestDTO coberturaDTO = new CoberturaRequestDTO(
-                TipoCobertura.MORTE,
-                new BigDecimal("10000.00"),
-                new BigDecimal("500.00")
+                TipoCobertura.MORTE, new BigDecimal("10000.00"), new BigDecimal("500.00")
         );
 
         ApoliceRequestDTO dto = new ApoliceRequestDTO(
-                seguradoId,
-                "IT-99999",
-                TipoSeguro.VIDA,
-                new BigDecimal("50000.00"),
-                new BigDecimal("150.00"),
-                LocalDate.now(),
-                LocalDate.now().plusYears(1),
-                List.of(coberturaDTO)
+                seguradoId, "IT-99999", TipoSeguro.VIDA,
+                new BigDecimal("50000.00"), new BigDecimal("150.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), List.of(coberturaDTO)
         );
 
         Cobertura cobertura = new Cobertura();
@@ -126,21 +186,7 @@ class CadastrarApoliceUseCaseTest {
         when(repository.buscarPorNumero("IT-99999")).thenReturn(Optional.empty());
         when(mapper.toDomain(dto)).thenReturn(apolice);
         when(repository.salvar(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(mapper.toResponse(any())).thenReturn(new ApoliceResponseDTO(
-                UUID.randomUUID(),
-                seguradoId,
-                "IT-99999",
-                TipoSeguro.VIDA,
-                new BigDecimal("50000.00"),
-                new BigDecimal("150.00"),
-                LocalDate.now(),
-                LocalDate.now().plusYears(1),
-                Status.ATIVA,
-                Collections.emptyList(),
-                Instant.now(),
-                Instant.now().minus(1, DAYS)
-
-        ));
+        when(mapper.toResponse(any(Apolice.class))).thenReturn(mock(ApoliceResponseDTO.class));
 
         ApoliceResponseDTO resultado = useCase.executar(dto);
 
@@ -159,16 +205,13 @@ class CadastrarApoliceUseCaseTest {
 
     @Test
     void deveLancarExcecao_quandoSeguradoNaoEncontrado() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
         UUID seguradoId = UUID.randomUUID();
         ApoliceRequestDTO dto = new ApoliceRequestDTO(
-                seguradoId, 
-                "IT-12345",
-                TipoSeguro.VIDA, 
-                new BigDecimal("1000.00"), 
-                new BigDecimal("100.00"), 
-                LocalDate.now(), 
-                LocalDate.now().plusYears(1),
-                null
+                seguradoId, "IT-12345", TipoSeguro.VIDA,
+                new BigDecimal("1000.00"), new BigDecimal("100.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), null
         );
 
         Request request = Request.create(Request.HttpMethod.GET, "url", Collections.emptyMap(), null, null, null);
@@ -182,16 +225,13 @@ class CadastrarApoliceUseCaseTest {
 
     @Test
     void deveLancarExcecao_quandoApoliceJaCadastrada() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
         UUID seguradoId = UUID.randomUUID();
         ApoliceRequestDTO dto = new ApoliceRequestDTO(
-                seguradoId, 
-                "IT-12345",
-                TipoSeguro.VIDA, 
-                new BigDecimal("1000.00"), 
-                new BigDecimal("100.00"), 
-                LocalDate.now(), 
-                LocalDate.now().plusYears(1),
-                null
+                seguradoId, "IT-12345", TipoSeguro.VIDA,
+                new BigDecimal("1000.00"), new BigDecimal("100.00"),
+                LocalDate.now(), LocalDate.now().plusYears(1), null
         );
 
         when(client.buscarPorId(seguradoId)).thenReturn(null);

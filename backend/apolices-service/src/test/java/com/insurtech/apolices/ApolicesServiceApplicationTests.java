@@ -1,10 +1,9 @@
 package com.insurtech.apolices;
 
+import com.insurtech.apolices.integration.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class ApolicesServiceApplicationTests {
+class ApolicesServiceApplicationTests extends IntegrationTestBase {
 
 	@Test
 	void contextLoads() {
