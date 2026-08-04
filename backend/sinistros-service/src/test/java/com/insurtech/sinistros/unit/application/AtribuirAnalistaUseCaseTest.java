@@ -15,8 +15,11 @@ import com.insurtech.sinistros.infrastructure.client.AuthClient;
 import com.insurtech.sinistros.infrastructure.client.dto.Papel;
 import com.insurtech.sinistros.infrastructure.client.dto.UsuarioResponseDTO;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
+import com.insurtech.sinistros.infrastructure.security.UserContext;
+import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
 import feign.FeignException;
 import feign.Request;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,16 +50,28 @@ class AtribuirAnalistaUseCaseTest {
     @InjectMocks
     private AtribuirAnalistaUseCase useCase;
 
+    @AfterEach
+    void tearDown() {
+        UserContextHolder.clear();
+    }
+
+    private void setUserContext(String usuarioId, String papel) {
+        UserContext ctx = UserContextHolder.getContext();
+        ctx.setUsuarioId(usuarioId);
+        ctx.setUsuarioPapel(papel);
+    }
+
+    // ── Sucesso: GESTOR atribui qualquer analista ──────────────────────────────
+
     @Test
-    void deveAtribuirAnalista_comSucesso() {
+    void deveAtribuirAnalista_comoGestor_comSucesso() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
-        String usuarioId = UUID.randomUUID().toString();
-        String usuarioPapel = "GESTOR";
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
         Sinistro sinistro = new Sinistro();
         sinistro.setId(sinistroId);
-        sinistro.setStatus(Status.REGISTRADO); // Status válido para iniciar análise
+        sinistro.setStatus(Status.REGISTRADO);
 
         SinistroResponseDTO responseDTO = mock(SinistroResponseDTO.class);
 
@@ -65,12 +80,11 @@ class AtribuirAnalistaUseCaseTest {
         when(repository.salvar(any(Sinistro.class))).thenReturn(sinistro);
         when(mapper.toResponse(sinistro)).thenReturn(responseDTO);
 
-        SinistroResponseDTO resultado = useCase.executar(sinistroId, analistaId, usuarioId, usuarioPapel);
+        SinistroResponseDTO resultado = useCase.executar(sinistroId, analistaId);
 
         assertNotNull(resultado);
         assertEquals(Status.EM_ANALISE, sinistro.getStatus());
         assertEquals(analistaId, sinistro.getAnalistaId());
-        
         verify(authClient, times(1)).buscarPorId(analistaId);
         verify(repository, times(1)).buscarPorId(sinistroId);
         verify(repository, times(1)).salvar(sinistro);
@@ -78,98 +92,144 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    void deveAtribuirAnalista_comoAdmin_comSucesso() {
+        UUID sinistroId = UUID.randomUUID();
+        UUID analistaId = UUID.randomUUID();
+        setUserContext(UUID.randomUUID().toString(), "ADMIN");
+
+        Sinistro sinistro = new Sinistro();
+        sinistro.setId(sinistroId);
+        sinistro.setStatus(Status.REGISTRADO);
+
+        when(authClient.buscarPorId(analistaId)).thenReturn(new UsuarioResponseDTO(analistaId, "Analista", "analista@email.com", Papel.ANALISTA));
+        when(repository.buscarPorId(sinistroId)).thenReturn(Optional.of(sinistro));
+        when(repository.salvar(any(Sinistro.class))).thenReturn(sinistro);
+        when(mapper.toResponse(sinistro)).thenReturn(mock(SinistroResponseDTO.class));
+
+        assertDoesNotThrow(() -> useCase.executar(sinistroId, analistaId));
+    }
+
+    // ── Sucesso: ANALISTA se auto-atribui ─────────────────────────────────────
+
+    @Test
+    void deveAtribuirAnalista_comoAnalista_autoAtribuicao_comSucesso() {
+        UUID analistaId = UUID.randomUUID(); // usuário logado = analista a ser atribuído
+        UUID sinistroId = UUID.randomUUID();
+        setUserContext(analistaId.toString(), "ANALISTA");
+
+        Sinistro sinistro = new Sinistro();
+        sinistro.setId(sinistroId);
+        sinistro.setStatus(Status.REGISTRADO);
+
+        when(authClient.buscarPorId(analistaId)).thenReturn(new UsuarioResponseDTO(analistaId, "Analista", "analista@email.com", Papel.ANALISTA));
+        when(repository.buscarPorId(sinistroId)).thenReturn(Optional.of(sinistro));
+        when(repository.salvar(any(Sinistro.class))).thenReturn(sinistro);
+        when(mapper.toResponse(sinistro)).thenReturn(mock(SinistroResponseDTO.class));
+
+        assertDoesNotThrow(() -> useCase.executar(sinistroId, analistaId));
+    }
+
+    // ── Falha: ANALISTA tenta atribuir a outro ────────────────────────────────
+
+    @Test
+    void deveLancarExcecao_quandoAnalistaTentaAtribuirAOutroAnalista() {
+        UUID analistaLogadoId = UUID.randomUUID();
+        UUID outroAnalistaId = UUID.randomUUID(); // diferente do logado
+        UUID sinistroId = UUID.randomUUID();
+        setUserContext(analistaLogadoId.toString(), "ANALISTA");
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(sinistroId, outroAnalistaId));
+        verifyNoInteractions(authClient, repository, mapper);
+    }
+
+    // ── Falha: sem autenticação ────────────────────────────────────────────────
+
+    @Test
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
+        // Contexto vazio — usuarioId null
 
-        assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar(sinistroId, analistaId, null, "GESTOR"));
-        assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar(sinistroId, analistaId, "  ", "GESTOR"));
-
-        verifyNoInteractions(repository);
-        verifyNoInteractions(mapper);
-        verifyNoInteractions(authClient);
+        assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar(sinistroId, analistaId));
+        verifyNoInteractions(repository, mapper, authClient);
     }
+
+    // ── Falha: papel inválido (ex: SEGURADO) ──────────────────────────────────
 
     @Test
     void deveLancarExcecao_quandoUsuarioNaoTemPermissao() {
+        setUserContext(UUID.randomUUID().toString(), "SEGURADO");
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
-        String usuarioId = UUID.randomUUID().toString();
 
-        assertThrows(AcessoNegadoException.class, () -> useCase.executar(sinistroId, analistaId, usuarioId, "ANALISTA"));
-        assertThrows(AcessoNegadoException.class, () -> useCase.executar(sinistroId, analistaId, usuarioId, "INVALID_ROLE"));
-
-        verifyNoInteractions(repository);
-        verifyNoInteractions(mapper);
-        verifyNoInteractions(authClient);
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(sinistroId, analistaId));
+        verifyNoInteractions(repository, mapper, authClient);
     }
+
+    // ── Falha: analista não encontrado no auth-service ────────────────────────
 
     @Test
     void deveLancarExcecao_quandoAnalistaNaoEncontrado() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
-        String usuarioId = UUID.randomUUID().toString();
-        String usuarioPapel = "GESTOR";
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
         when(authClient.buscarPorId(analistaId)).thenThrow(feignNotFound());
 
-        assertThrows(AnalistaNaoEncontradoException.class, () -> useCase.executar(sinistroId, analistaId, usuarioId, usuarioPapel));
-
+        assertThrows(AnalistaNaoEncontradoException.class, () -> useCase.executar(sinistroId, analistaId));
         verify(authClient, times(1)).buscarPorId(analistaId);
-        verifyNoInteractions(repository);
-        verifyNoInteractions(mapper);
+        verifyNoInteractions(repository, mapper);
     }
+
+    // ── Falha: analista tem papel inválido (ex: ADMIN) ─────────────────────────
 
     @Test
     void deveLancarExcecao_quandoAnalistaTemPapelInvalido() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
-        String usuarioId = UUID.randomUUID().toString();
-        String usuarioPapel = "GESTOR";
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
-        when(authClient.buscarPorId(analistaId)).thenReturn(new UsuarioResponseDTO(analistaId, "Cliente", "cliente@email.com", Papel.ADMIN));
+        when(authClient.buscarPorId(analistaId)).thenReturn(new UsuarioResponseDTO(analistaId, "Admin", "admin@email.com", Papel.ADMIN));
 
-        assertThrows(AnalistaInvalidoException.class, () -> useCase.executar(sinistroId, analistaId, usuarioId, usuarioPapel));
-
+        assertThrows(AnalistaInvalidoException.class, () -> useCase.executar(sinistroId, analistaId));
         verify(authClient, times(1)).buscarPorId(analistaId);
-        verifyNoInteractions(repository);
-        verifyNoInteractions(mapper);
+        verifyNoInteractions(repository, mapper);
     }
+
+    // ── Falha: sinistro não encontrado ────────────────────────────────────────
 
     @Test
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
-        String usuarioId = UUID.randomUUID().toString();
-        String usuarioPapel = "GESTOR";
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
         when(authClient.buscarPorId(analistaId)).thenReturn(new UsuarioResponseDTO(analistaId, "Analista", "analista@email.com", Papel.ANALISTA));
         when(repository.buscarPorId(sinistroId)).thenReturn(Optional.empty());
 
-        assertThrows(SinistroNaoEncontradoException.class, () -> useCase.executar(sinistroId, analistaId, usuarioId, usuarioPapel));
-
+        assertThrows(SinistroNaoEncontradoException.class, () -> useCase.executar(sinistroId, analistaId));
         verify(authClient, times(1)).buscarPorId(analistaId);
         verify(repository, times(1)).buscarPorId(sinistroId);
         verify(repository, never()).salvar(any());
         verifyNoInteractions(mapper);
     }
 
+    // ── Falha: status inválido ─────────────────────────────────────────────────
+
     @Test
     void deveLancarExcecao_quandoStatusInvalido() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
-        String usuarioId = UUID.randomUUID().toString();
-        String usuarioPapel = "GESTOR";
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
         Sinistro sinistro = new Sinistro();
         sinistro.setId(sinistroId);
-        sinistro.setStatus(Status.EM_ANALISE); // Já em análise (inválido para iniciarAnálise novamente)
+        sinistro.setStatus(Status.EM_ANALISE); // Já em análise → inválido
 
         when(authClient.buscarPorId(analistaId)).thenReturn(new UsuarioResponseDTO(analistaId, "Analista", "analista@email.com", Papel.ANALISTA));
         when(repository.buscarPorId(sinistroId)).thenReturn(Optional.of(sinistro));
 
-        assertThrows(StatusInvalidoException.class, () -> useCase.executar(sinistroId, analistaId, usuarioId, usuarioPapel));
-
+        assertThrows(StatusInvalidoException.class, () -> useCase.executar(sinistroId, analistaId));
         verify(authClient, times(1)).buscarPorId(analistaId);
         verify(repository, times(1)).buscarPorId(sinistroId);
         verify(repository, never()).salvar(any());

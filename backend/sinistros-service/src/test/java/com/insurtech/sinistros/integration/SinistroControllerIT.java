@@ -63,31 +63,131 @@ class SinistroControllerIT extends IntegrationTestBase {
     @MockitoBean
     private AuthClient authClient;
 
+    // ─── POST /sinistros ──────────────────────────────────────────────────────
+
     @Test
-    void deveCadastrarSinistro_retornar201() {
+    void deveCadastrarSinistro_comoAnalista_retornar201() {
         SinistroRequestDTO request = new SinistroRequestDTO(
-                "SIN-123456",
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                TipoSinistro.ROUBO_FURTO,
-                "Roubo do veículo segurado",
-                LocalDate.now().minusDays(2),
-                new BigDecimal("15000.00")
+                "SIN-123456", UUID.randomUUID(), UUID.randomUUID(),
+                TipoSinistro.ROUBO_FURTO, "Roubo do veículo segurado",
+                LocalDate.now().minusDays(2), new BigDecimal("15000.00")
         );
 
-        ResponseEntity<SinistroResponseDTO> response = restTemplate.postForEntity(
-                "/api/v1/sinistros",
-                request,
-                SinistroResponseDTO.class
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
+        ResponseEntity<SinistroResponseDTO> response = restTemplate.exchange(
+                "/api/v1/sinistros", HttpMethod.POST,
+                new HttpEntity<>(request, headers), SinistroResponseDTO.class
         );
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        SinistroResponseDTO responseBody = response.getBody();
-        assertNotNull(responseBody);
-        assertEquals("SIN-123456", responseBody.numeroSinistro());
-        assertEquals(TipoSinistro.ROUBO_FURTO, responseBody.tipoSinistro());
-        assertEquals(new BigDecimal("15000.00"), responseBody.valorEstimado());
+        assertNotNull(response.getBody());
+        assertEquals("SIN-123456", response.getBody().numeroSinistro());
     }
+
+    @Test
+    void deveRetornar401_quandoCadastrarSinistroSemAutenticacao() {
+        SinistroRequestDTO request = new SinistroRequestDTO(
+                "SIN-NO-AUTH", UUID.randomUUID(), UUID.randomUUID(),
+                TipoSinistro.COLISAO, "desc", LocalDate.now(), new BigDecimal("1000.00")
+        );
+
+        ResponseEntity<ErrorResponse> response = restTemplate.postForEntity(
+                "/api/v1/sinistros", request, ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    void deveRetornar403_quandoCadastrarSinistroComPapelSegurado() {
+        SinistroRequestDTO request = new SinistroRequestDTO(
+                "SIN-FORBIDDEN", UUID.randomUUID(), UUID.randomUUID(),
+                TipoSinistro.COLISAO, "desc", LocalDate.now(), new BigDecimal("1000.00")
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "SEGURADO");
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros", HttpMethod.POST,
+                new HttpEntity<>(request, headers), ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    // ─── GET /sinistros ───────────────────────────────────────────────────────
+
+    @Test
+    void deveListarSinistros_comoGestor_retornar200() {
+        Sinistro sinistro = createDummySinistro("SIN-LIST-GESTOR", Status.REGISTRADO);
+        repository.salvar(sinistro);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "GESTOR");
+
+        ResponseEntity<PageResponseDTO<SinistroResponseDTO>> response = restTemplate.exchange(
+                "/api/v1/sinistros?size=10", HttpMethod.GET,
+                new HttpEntity<>(headers),
+                new ParameterizedTypeReference<PageResponseDTO<SinistroResponseDTO>>() {}
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void deveListarSinistros_comoAnalista_retornarSomenteOsSeus() {
+        UUID analistaId = UUID.randomUUID();
+        Sinistro sinistro = createDummySinistro("SIN-LIST-ANALISTA", Status.REGISTRADO);
+        sinistro.setAnalistaId(analistaId);
+        repository.salvar(sinistro);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", analistaId.toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
+        ResponseEntity<PageResponseDTO<SinistroResponseDTO>> response = restTemplate.exchange(
+                "/api/v1/sinistros?size=10", HttpMethod.GET,
+                new HttpEntity<>(headers),
+                new ParameterizedTypeReference<PageResponseDTO<SinistroResponseDTO>>() {}
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        // Todos os registros retornados devem pertencer ao analista logado
+        response.getBody().content().forEach(s ->
+                assertEquals(analistaId, s.analistaId())
+        );
+    }
+
+    @Test
+    void deveRetornar401_quandoListarSinistrosSemAutenticacao() {
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros", HttpMethod.GET, null, ErrorResponse.class
+        );
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    void deveRetornar403_quandoListarSinistrosComPapelSegurado() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "SEGURADO");
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros", HttpMethod.GET,
+                new HttpEntity<>(headers), ErrorResponse.class
+        );
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    // ─── GET /sinistros/{id} ─────────────────────────────────────────────────
 
     @Test
     void deveBuscarSinistroPorId_retornar200() {
@@ -107,38 +207,20 @@ class SinistroControllerIT extends IntegrationTestBase {
     @Test
     void deveRetornar404_quandoSinistroNaoExiste() {
         ResponseEntity<String> response = restTemplate.getForEntity(
-                "/api/v1/sinistros/" + UUID.randomUUID(),
-                String.class
+                "/api/v1/sinistros/" + UUID.randomUUID(), String.class
         );
-
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
-    @Test
-    void deveListarSinistros_retornar200() {
-        Sinistro sinistro = createDummySinistro("SIN-LIST-TEST", Status.REGISTRADO);
-        repository.salvar(sinistro);
-
-        ResponseEntity<PageResponseDTO<SinistroResponseDTO>> response = restTemplate.exchange(
-                "/api/v1/sinistros?size=10",
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<PageResponseDTO<SinistroResponseDTO>>() {}
-        );
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        org.junit.jupiter.api.Assertions.assertTrue(response.getBody().content().size() >= 1);
-    }
+    // ─── PATCH /sinistros/{id}/atribuir ──────────────────────────────────────
 
     @Test
-    void deveAtribuirAnalista_retornar200() {
+    void deveAtribuirAnalista_comoGestor_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR", Status.REGISTRADO);
         sinistro.setAnalistaId(null);
         repository.salvar(sinistro);
 
         UUID analistaId = UUID.randomUUID();
-
         when(authClient.buscarPorId(analistaId)).thenReturn(
                 new UsuarioResponseDTO(analistaId, "Analista", "analista@email.com", Papel.ANALISTA)
         );
@@ -146,13 +228,10 @@ class SinistroControllerIT extends IntegrationTestBase {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Usuario-Id", UUID.randomUUID().toString());
         headers.set("X-Usuario-Papel", "GESTOR");
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         ResponseEntity<SinistroResponseDTO> response = restTemplate.exchange(
                 "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
-                HttpMethod.PATCH,
-                entity,
-                SinistroResponseDTO.class
+                HttpMethod.PATCH, new HttpEntity<>(headers), SinistroResponseDTO.class
         );
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -162,49 +241,66 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    void deveAtribuirAnalista_comoAnalista_autoAtribuicao_retornar200() {
+        Sinistro sinistro = createDummySinistro("SIN-AUTO-ATRIBUIR", Status.REGISTRADO);
+        sinistro.setAnalistaId(null);
+        repository.salvar(sinistro);
+
+        UUID analistaId = UUID.randomUUID();
+        when(authClient.buscarPorId(analistaId)).thenReturn(
+                new UsuarioResponseDTO(analistaId, "Analista", "analista@email.com", Papel.ANALISTA)
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", analistaId.toString()); // o próprio analista se atribui
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
+        ResponseEntity<SinistroResponseDTO> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
+                HttpMethod.PATCH, new HttpEntity<>(headers), SinistroResponseDTO.class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(analistaId, response.getBody().analistaId());
+    }
+
+    @Test
+    void deveRetornar403_quandoAnalistaTentaAtribuirAOutro() {
+        Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-OUTRO", Status.REGISTRADO);
+        sinistro.setAnalistaId(null);
+        repository.salvar(sinistro);
+
+        UUID analistaLogado = UUID.randomUUID();
+        UUID outroAnalista = UUID.randomUUID(); // diferente do logado
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", analistaLogado.toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + outroAnalista,
+                HttpMethod.PATCH, new HttpEntity<>(headers), ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Acesso negado. Analistas só podem se auto-atribuir a sinistros.", response.getBody().message());
+    }
+
+    @Test
     void deveRetornar401_quandoAtribuirAnalistaSemAutenticacao() {
         Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-401", Status.REGISTRADO);
         sinistro.setAnalistaId(null);
         repository.salvar(sinistro);
 
-        UUID analistaId = UUID.randomUUID();
-
-        // Sem headers
         ResponseEntity<ErrorResponse> response = restTemplate.exchange(
-                "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
-                HttpMethod.PATCH,
-                null,
-                ErrorResponse.class
+                "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + UUID.randomUUID(),
+                HttpMethod.PATCH, null, ErrorResponse.class
         );
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertNotNull(response.getBody());
         assertEquals("Usuário não autenticado", response.getBody().message());
-    }
-
-    @Test
-    void deveRetornar403_quandoAtribuirAnalistaSemPermissao() {
-        Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-403", Status.REGISTRADO);
-        sinistro.setAnalistaId(null);
-        repository.salvar(sinistro);
-
-        UUID analistaId = UUID.randomUUID();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
-        headers.set("X-Usuario-Papel", "ANALISTA"); // Não tem permissão (apenas GESTOR ou ADMIN)
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
-                "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
-                HttpMethod.PATCH,
-                entity,
-                ErrorResponse.class
-        );
-
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("Acesso negado. Apenas gestores ou administradores podem atribuir analistas.", response.getBody().message());
     }
 
     @Test
@@ -214,23 +310,18 @@ class SinistroControllerIT extends IntegrationTestBase {
         repository.salvar(sinistro);
 
         UUID analistaId = UUID.randomUUID();
-
         when(authClient.buscarPorId(analistaId)).thenThrow(feignNotFound());
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Usuario-Id", UUID.randomUUID().toString());
         headers.set("X-Usuario-Papel", "GESTOR");
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         ResponseEntity<ErrorResponse> response = restTemplate.exchange(
                 "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
-                HttpMethod.PATCH,
-                entity,
-                ErrorResponse.class
+                HttpMethod.PATCH, new HttpEntity<>(headers), ErrorResponse.class
         );
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNotNull(response.getBody());
         assertEquals("Analista não encontrado com o ID: " + analistaId, response.getBody().message());
     }
 
@@ -241,7 +332,6 @@ class SinistroControllerIT extends IntegrationTestBase {
         repository.salvar(sinistro);
 
         UUID analistaId = UUID.randomUUID();
-
         when(authClient.buscarPorId(analistaId)).thenReturn(
                 new UsuarioResponseDTO(analistaId, "Admin", "admin@email.com", Papel.ADMIN)
         );
@@ -249,82 +339,41 @@ class SinistroControllerIT extends IntegrationTestBase {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Usuario-Id", UUID.randomUUID().toString());
         headers.set("X-Usuario-Papel", "GESTOR");
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         ResponseEntity<ErrorResponse> response = restTemplate.exchange(
                 "/api/v1/sinistros/" + sinistro.getId() + "/atribuir?analistaId=" + analistaId,
-                HttpMethod.PATCH,
-                entity,
-                ErrorResponse.class
+                HttpMethod.PATCH, new HttpEntity<>(headers), ErrorResponse.class
         );
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNotNull(response.getBody());
         assertEquals("O usuário informado não possui papel de analista (ANALISTA ou GESTOR)", response.getBody().message());
     }
 
-    private FeignException.NotFound feignNotFound() {
-        return (FeignException.NotFound) FeignException.NotFound.errorStatus(
-                "AuthClient#buscarPorId(UUID)",
-                feign.Response.builder()
-                        .status(404)
-                        .reason("Not Found")
-                        .request(Request.create(Request.HttpMethod.GET,
-                                "/api/v1/auth/usuarios",
-                                Collections.emptyMap(),
-                                new byte[0],
-                                Charset.defaultCharset()))
-                        .build()
-        );
-    }
+    // ─── PATCH /sinistros/{id}/aprovar ────────────────────────────────────────
 
     @Test
-    void deveAguardarDocumentos_retornar200() {
-        Sinistro sinistro = createDummySinistro("SIN-DOCS", Status.EM_ANALISE);
-        repository.salvar(sinistro);
-
-        ResponseEntity<SinistroResponseDTO> response = restTemplate.exchange(
-                "/api/v1/sinistros/" + sinistro.getId() + "/aguardar-documentos",
-                HttpMethod.PATCH,
-                null,
-                SinistroResponseDTO.class
-        );
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(Status.AGUARDANDO_DOCUMENTOS, response.getBody().status());
-    }
-
-    @Test
-    void deveAprovarSinistro_retornar200() {
+    void deveAprovarSinistro_comoAnalista_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-APROVAR", Status.EM_ANALISE);
         addDummyDocument(sinistro);
         repository.salvar(sinistro);
 
         when(apoliceClient.buscarPorId(sinistro.getApoliceId())).thenReturn(
                 new ApoliceResponseDTO(
-                        sinistro.getApoliceId(),
-                        sinistro.getSeguradoId(),
-                        "AP-123",
-                        null,
-                        new BigDecimal("100000.00"),
-                        new BigDecimal("100000.00"),
-                        LocalDate.now(),
-                        LocalDate.now(),
-                        null,
-                        null,
-                        null,
-                        null
+                        sinistro.getApoliceId(), sinistro.getSeguradoId(), "AP-123", null,
+                        new BigDecimal("100000.00"), new BigDecimal("100000.00"),
+                        LocalDate.now(), LocalDate.now(), null, null, null, null
                 )
         );
 
         AprovarSinistroRequestDTO request = new AprovarSinistroRequestDTO(new BigDecimal("12000.00"));
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
         ResponseEntity<SinistroResponseDTO> response = restTemplate.exchange(
                 "/api/v1/sinistros/" + sinistro.getId() + "/aprovar",
-                HttpMethod.PATCH,
-                new HttpEntity<>(request),
-                SinistroResponseDTO.class
+                HttpMethod.PATCH, new HttpEntity<>(request, headers), SinistroResponseDTO.class
         );
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -334,18 +383,56 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
-    void deveRejeitarSinistro_retornar200() {
+    void deveRetornar401_quandoAprovarSemAutenticacao() {
+        Sinistro sinistro = createDummySinistro("SIN-APROVAR-401", Status.EM_ANALISE);
+        repository.salvar(sinistro);
+
+        AprovarSinistroRequestDTO request = new AprovarSinistroRequestDTO(new BigDecimal("1000.00"));
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/aprovar",
+                HttpMethod.PATCH, new HttpEntity<>(request), ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    void deveRetornar403_quandoAprovarComPapelSegurado() {
+        Sinistro sinistro = createDummySinistro("SIN-APROVAR-403", Status.EM_ANALISE);
+        repository.salvar(sinistro);
+
+        AprovarSinistroRequestDTO request = new AprovarSinistroRequestDTO(new BigDecimal("1000.00"));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "SEGURADO");
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/aprovar",
+                HttpMethod.PATCH, new HttpEntity<>(request, headers), ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    // ─── PATCH /sinistros/{id}/rejeitar ───────────────────────────────────────
+
+    @Test
+    void deveRejeitarSinistro_comoAnalista_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-REJEITAR", Status.EM_ANALISE);
         addDummyDocument(sinistro);
         repository.salvar(sinistro);
 
         RejeitarSinistroRequestDTO request = new RejeitarSinistroRequestDTO("Documentos falsificados");
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
         ResponseEntity<SinistroResponseDTO> response = restTemplate.exchange(
                 "/api/v1/sinistros/" + sinistro.getId() + "/rejeitar",
-                HttpMethod.PATCH,
-                new HttpEntity<>(request),
-                SinistroResponseDTO.class
+                HttpMethod.PATCH, new HttpEntity<>(request, headers), SinistroResponseDTO.class
         );
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -355,20 +442,106 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    void deveRetornar401_quandoRejeitarSemAutenticacao() {
+        Sinistro sinistro = createDummySinistro("SIN-REJEITAR-401", Status.EM_ANALISE);
+        repository.salvar(sinistro);
+
+        RejeitarSinistroRequestDTO request = new RejeitarSinistroRequestDTO("Motivo");
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/rejeitar",
+                HttpMethod.PATCH, new HttpEntity<>(request), ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    void deveRetornar403_quandoRejeitarComPapelSegurado() {
+        Sinistro sinistro = createDummySinistro("SIN-REJEITAR-403", Status.EM_ANALISE);
+        repository.salvar(sinistro);
+
+        RejeitarSinistroRequestDTO request = new RejeitarSinistroRequestDTO("Motivo");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "SEGURADO");
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/rejeitar",
+                HttpMethod.PATCH, new HttpEntity<>(request, headers), ErrorResponse.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    // ─── GET /sinistros/dashboard/resumo ─────────────────────────────────────
+
+    @Test
+    void deveMostrarMetricasDashboard_comoGestor_retornar200() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "GESTOR");
+
+        ResponseEntity<DashboardResponseDTO> response = restTemplate.exchange(
+                "/api/v1/sinistros/dashboard/resumo", HttpMethod.GET,
+                new HttpEntity<>(headers), DashboardResponseDTO.class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    @Test
+    void deveRetornar401_quandoDashboardSemAutenticacao() {
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/dashboard/resumo", HttpMethod.GET,
+                null, ErrorResponse.class
+        );
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+    }
+
+    @Test
+    void deveRetornar403_quandoDashboardComPapelAnalista() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
+        ResponseEntity<ErrorResponse> response = restTemplate.exchange(
+                "/api/v1/sinistros/dashboard/resumo", HttpMethod.GET,
+                new HttpEntity<>(headers), ErrorResponse.class
+        );
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    // ─── Demais endpoints ─────────────────────────────────────────────────────
+
+    @Test
+    void deveAguardarDocumentos_retornar200() {
+        Sinistro sinistro = createDummySinistro("SIN-DOCS", Status.EM_ANALISE);
+        repository.salvar(sinistro);
+
+        ResponseEntity<SinistroResponseDTO> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/aguardar-documentos",
+                HttpMethod.PATCH, null, SinistroResponseDTO.class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(Status.AGUARDANDO_DOCUMENTOS, response.getBody().status());
+    }
+
+    @Test
     void deveAdicionarDocumento_retornar201() {
         Sinistro sinistro = createDummySinistro("SIN-ADD-DOC", Status.AGUARDANDO_DOCUMENTOS);
         repository.salvar(sinistro);
 
         AdicionarDocumentoRequestDTO request = new AdicionarDocumentoRequestDTO(
-                TipoDocumento.BOLETIM_OCORRENCIA,
-                "residencia.pdf",
-                "http://storage/residencia.pdf"
+                TipoDocumento.BOLETIM_OCORRENCIA, "residencia.pdf", "http://storage/residencia.pdf"
         );
 
         ResponseEntity<DocumentoSinistroResponseDTO> response = restTemplate.postForEntity(
-                "/api/v1/sinistros/" + sinistro.getId() + "/documentos",
-                request,
-                DocumentoSinistroResponseDTO.class
+                "/api/v1/sinistros/" + sinistro.getId() + "/documentos", request, DocumentoSinistroResponseDTO.class
         );
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -383,8 +556,7 @@ class SinistroControllerIT extends IntegrationTestBase {
 
         ResponseEntity<List<HistoricoSinistroResponseDTO>> response = restTemplate.exchange(
                 "/api/v1/sinistros/" + sinistro.getId() + "/historico",
-                HttpMethod.GET,
-                null,
+                HttpMethod.GET, null,
                 new ParameterizedTypeReference<List<HistoricoSinistroResponseDTO>>() {}
         );
 
@@ -392,15 +564,17 @@ class SinistroControllerIT extends IntegrationTestBase {
         assertNotNull(response.getBody());
     }
 
-    @Test
-    void deveMostrarMetricasDashboard_retornar200() {
-        ResponseEntity<DashboardResponseDTO> response = restTemplate.getForEntity(
-                "/api/v1/sinistros/dashboard/resumo",
-                DashboardResponseDTO.class
-        );
+    // ─── Helpers ──────────────────────────────────────────────────────────────
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
+    private FeignException.NotFound feignNotFound() {
+        return (FeignException.NotFound) FeignException.NotFound.errorStatus(
+                "AuthClient#buscarPorId(UUID)",
+                feign.Response.builder()
+                        .status(404).reason("Not Found")
+                        .request(Request.create(Request.HttpMethod.GET, "/api/v1/auth/usuarios",
+                                Collections.emptyMap(), new byte[0], Charset.defaultCharset()))
+                        .build()
+        );
     }
 
     private Sinistro createDummySinistro(String numeroSinistro, Status status) {

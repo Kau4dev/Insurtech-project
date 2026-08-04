@@ -84,9 +84,7 @@ public interface SinistroControllerDocs {
     })
     ResponseEntity<SinistroResponseDTO> atribuirAnalista(
             @Parameter(description = "ID do sinistro (UUID)", required = true) UUID id,
-            @Parameter(description = "ID do analista (UUID)", required = true) UUID analistaId,
-            @RequestHeader(value = "X-Usuario-Id", required = false) String usuarioId,
-            @RequestHeader(value = "X-Usuario-Papel", required = false) String usuarioPapel);
+            @Parameter(description = "ID do analista (UUID)", required = true) UUID analistaId);
 
     @Operation(summary = "Alterar status para aguardar documentos", description = "Atualiza o status do sinistro sinalizando que há pendência de documentos complementares por parte do segurado.")
     @ApiResponses({

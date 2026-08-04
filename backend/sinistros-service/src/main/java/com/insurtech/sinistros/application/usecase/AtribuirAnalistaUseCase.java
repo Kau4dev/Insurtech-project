@@ -13,6 +13,7 @@ import com.insurtech.sinistros.infrastructure.client.AuthClient;
 import com.insurtech.sinistros.infrastructure.client.dto.Papel;
 import com.insurtech.sinistros.infrastructure.client.dto.UsuarioResponseDTO;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
+import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,13 +31,20 @@ public class AtribuirAnalistaUseCase {
     private final SinistroMapper mapper;
     private final AuthClient authClient;
 
-    public SinistroResponseDTO executar(UUID sinistroId, UUID analistaId, String usuarioId, String usuarioPapel) {
+    public SinistroResponseDTO executar(UUID sinistroId, UUID analistaId) {
+        String usuarioId = UserContextHolder.getContext().getUsuarioId();
+        String usuarioPapel = UserContextHolder.getContext().getUsuarioPapel();
+
         if (usuarioId == null || usuarioId.isBlank()) {
             throw new UsuarioNaoAutenticadoException("Usuário não autenticado");
         }
 
-        if (!"GESTOR".equals(usuarioPapel) && !"ADMIN".equals(usuarioPapel)) {
-            throw new AcessoNegadoException("Acesso negado. Apenas gestores ou administradores podem atribuir analistas.");
+        if (!"ANALISTA".equals(usuarioPapel) && !"GESTOR".equals(usuarioPapel) && !"ADMIN".equals(usuarioPapel)) {
+            throw new AcessoNegadoException("Acesso negado. Apenas analistas, gestores ou administradores podem atribuir analistas.");
+        }
+
+        if ("ANALISTA".equals(usuarioPapel) && !usuarioId.equals(analistaId.toString())) {
+            throw new AcessoNegadoException("Acesso negado. Analistas só podem se auto-atribuir a sinistros.");
         }
 
         validarAnalista(analistaId);

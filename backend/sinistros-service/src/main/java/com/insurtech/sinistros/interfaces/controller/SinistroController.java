@@ -68,10 +68,8 @@ public class SinistroController implements SinistroControllerDocs {
     @PatchMapping("/{id}/atribuir")
     public ResponseEntity<SinistroResponseDTO> atribuirAnalista(
             @PathVariable UUID id,
-            @RequestParam UUID analistaId,
-            @RequestHeader(value = "X-Usuario-Id", required = false) String usuarioId,
-            @RequestHeader(value = "X-Usuario-Papel", required = false) String usuarioPapel) {
-        SinistroResponseDTO sinistro = atribuirAnalistaUseCase.executar(id, analistaId, usuarioId, usuarioPapel);
+            @RequestParam UUID analistaId) {
+        SinistroResponseDTO sinistro = atribuirAnalistaUseCase.executar(id, analistaId);
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
 

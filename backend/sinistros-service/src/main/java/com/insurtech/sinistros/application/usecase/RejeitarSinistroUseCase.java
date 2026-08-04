@@ -4,9 +4,12 @@ import com.insurtech.sinistros.application.dto.request.RejeitarSinistroRequestDT
 import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
 import com.insurtech.sinistros.application.port.EventPublisherPort;
 import com.insurtech.sinistros.domain.event.SinistroRejeitadoEvent;
+import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
+import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
+import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,17 @@ public class RejeitarSinistroUseCase {
     private final EventPublisherPort eventPublisher;
 
     public SinistroResponseDTO executar(UUID id, RejeitarSinistroRequestDTO dto) {
+        String usuarioId = UserContextHolder.getContext().getUsuarioId();
+        String usuarioPapel = UserContextHolder.getContext().getUsuarioPapel();
+
+        if (usuarioId == null || usuarioId.isBlank()) {
+            throw new UsuarioNaoAutenticadoException("Usuário não autenticado");
+        }
+
+        if (!"ANALISTA".equals(usuarioPapel) && !"GESTOR".equals(usuarioPapel) && !"ADMIN".equals(usuarioPapel)) {
+            throw new AcessoNegadoException("Acesso negado. Apenas analistas, gestores ou administradores podem rejeitar sinistros.");
+        }
+
         var sinistro = repository.buscarPorId(id)
                 .orElseThrow(() -> new RuntimeException("Sinistro não encontrado com o ID: " + id));
 
