@@ -15,7 +15,7 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeExchange(auth -> auth
-                        .pathMatchers("/api/auth/login").permitAll()
+                        .pathMatchers("/api/v1/auth/login").permitAll()
                         .pathMatchers("/actuator/health").permitAll()
                         .anyExchange().permitAll() // o JwtAuthFilter já controla
                 )

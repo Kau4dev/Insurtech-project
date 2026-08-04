@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -25,10 +26,27 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     private static final String AUTH_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
     // rotas que não precisam de token
     private static final List<String> PUBLIC_ROUTES = List.of(
-            "/api/auth/login",
-            "/actuator/health"
+            "/api/v1/auth/login",
+            "/actuator/health",
+            // Swagger UI (agregado no gateway)
+            "/swagger-ui",
+            "/swagger-ui.html",
+            "/webjars/swagger-ui",
+            // OpenAPI specs dos serviços downstream (via gateway)
+            "/api/v1/sinistros/v3/api-docs",
+            "/api/v1/segurados/v3/api-docs",
+            "/api/v1/apolices/v3/api-docs",
+            "/api/v1/auth/v3/api-docs",
+            "/api/v1/notificacao/v3/api-docs",
+            "/api/v1/liquidacao/v3/api-docs",
+            // OpenAPI spec do próprio gateway
+            "/v3/api-docs",
+            "/swagger-resources"
     );
 
     @Override
@@ -108,10 +126,6 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     }
 
     private SecretKey getSigningKey() {
-        String secret = System.getenv().getOrDefault(
-                "JWT_SECRET",
-                "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
-        );
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 }

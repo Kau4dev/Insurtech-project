@@ -1,4 +1,4 @@
-package com.insurtech.auth.infrastructure.config;
+package com.insurtech.segurados.infrastructure.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -20,9 +20,9 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
         return new OpenAPI()
                 .info(new Info()
-                        .title("Auth Service API")
+                        .title("Segurados Service API")
                         .version("v1")
-                        .description("Serviço de Autenticação e Autorização da plataforma InsurTech"))
+                        .description("Serviço de Segurados da plataforma InsurTech"))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new Components()
                         .addSecuritySchemes(securitySchemeName,
