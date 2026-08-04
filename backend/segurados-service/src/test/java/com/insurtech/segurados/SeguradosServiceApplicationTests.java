@@ -1,10 +1,9 @@
 package com.insurtech.segurados;
 
+import com.insurtech.segurados.integration.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class SeguradosServiceApplicationTests {
+class SeguradosServiceApplicationTests extends IntegrationTestBase {
 
 	@Test
 	void contextLoads() {
