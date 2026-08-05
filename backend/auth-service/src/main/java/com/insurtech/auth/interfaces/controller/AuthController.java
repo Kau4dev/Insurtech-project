@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -29,5 +31,11 @@ public class AuthController implements AuthControllerDocs {
     public ResponseEntity<UsuarioResponseDTO> validarToken(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         return ResponseEntity.ok(buscarUsuarioUseCase.executarPorToken(token));
+    }
+
+    @Override
+    @GetMapping("/usuarios/{id}")
+    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(@PathVariable UUID id) {
+        return ResponseEntity.ok(buscarUsuarioUseCase.executarPorId(id));
     }
 }

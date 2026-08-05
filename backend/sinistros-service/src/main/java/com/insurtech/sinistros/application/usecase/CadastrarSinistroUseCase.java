@@ -4,15 +4,18 @@ import com.insurtech.sinistros.application.dto.request.SinistroRequestDTO;
 import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
 import com.insurtech.sinistros.application.port.EventPublisherPort;
 import com.insurtech.sinistros.domain.event.SinistroRegistradoEvent;
+import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
 import com.insurtech.sinistros.domain.exception.ApoliceNaoEncontradaException;
 import com.insurtech.sinistros.domain.exception.SeguradoNaoEncontradoException;
 import com.insurtech.sinistros.domain.exception.SinistrojaCadastradaException;
+import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.client.ApoliceClient;
 import com.insurtech.sinistros.infrastructure.client.SeguradoClient;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
+import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,17 @@ public class CadastrarSinistroUseCase {
 
 
     public SinistroResponseDTO executar(SinistroRequestDTO dto) {
+        String usuarioId = UserContextHolder.getContext().getUsuarioId();
+        String usuarioPapel = UserContextHolder.getContext().getUsuarioPapel();
+
+        if (usuarioId == null || usuarioId.isBlank()) {
+            throw new UsuarioNaoAutenticadoException("Usuário não autenticado");
+        }
+
+        if (!"ANALISTA".equals(usuarioPapel) && !"GESTOR".equals(usuarioPapel) && !"ADMIN".equals(usuarioPapel)) {
+            throw new AcessoNegadoException("Acesso negado. Apenas analistas, gestores ou administradores podem registrar sinistros.");
+        }
+
 
         try {
             seguradoClient.buscarPorId(dto.seguradoId());

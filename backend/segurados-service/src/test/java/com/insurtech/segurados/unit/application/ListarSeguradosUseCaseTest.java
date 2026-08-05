@@ -3,10 +3,15 @@ package com.insurtech.segurados.unit.application;
 import com.insurtech.segurados.application.dto.PageResponseDTO;
 import com.insurtech.segurados.application.dto.SeguradoResponseDTO;
 import com.insurtech.segurados.application.usecase.ListarSeguradosUseCase;
+import com.insurtech.segurados.domain.exception.AcessoNegadoException;
+import com.insurtech.segurados.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.segurados.domain.model.Segurado;
 import com.insurtech.segurados.domain.model.TipoPessoa;
 import com.insurtech.segurados.domain.repository.SeguradoRepository;
 import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
+import com.insurtech.segurados.infrastructure.security.UserContext;
+import com.insurtech.segurados.infrastructure.security.UserContextHolder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,8 +43,20 @@ class ListarSeguradosUseCaseTest {
     @InjectMocks
     private ListarSeguradosUseCase useCase;
 
+    @AfterEach
+    void tearDown() {
+        UserContextHolder.clear();
+    }
+
+    private void setUserContext(String usuarioId, String papel) {
+        UserContext ctx = UserContextHolder.getContext();
+        ctx.setUsuarioId(usuarioId);
+        ctx.setUsuarioPapel(papel);
+    }
+
     @Test
     void deveListarTodosSegurados_semFiltro_comSucesso() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
         Pageable pageable = PageRequest.of(0, 10);
 
         Segurado segurado1 = new Segurado();
@@ -53,9 +70,7 @@ class ListarSeguradosUseCaseTest {
         segurado2.setTipoPessoa(TipoPessoa.PF);
 
         Page<Segurado> pageSegurados = new PageImpl<>(
-                Arrays.asList(segurado1, segurado2),
-                pageable,
-                2
+                Arrays.asList(segurado1, segurado2), pageable, 2
         );
 
         SeguradoResponseDTO dto1 = new SeguradoResponseDTO(
@@ -89,6 +104,7 @@ class ListarSeguradosUseCaseTest {
 
     @Test
     void deveListarSegurados_comFiltroNome_comSucesso() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
         Pageable pageable = PageRequest.of(0, 10);
         String nome = "João";
 
@@ -98,9 +114,7 @@ class ListarSeguradosUseCaseTest {
         segurado.setTipoPessoa(TipoPessoa.PF);
 
         Page<Segurado> pageSegurados = new PageImpl<>(
-                Collections.singletonList(segurado),
-                pageable,
-                1
+                Collections.singletonList(segurado), pageable, 1
         );
 
         SeguradoResponseDTO dto = new SeguradoResponseDTO(
@@ -123,12 +137,11 @@ class ListarSeguradosUseCaseTest {
 
     @Test
     void deveRetornarListaVazia_quandoNaoExistemSegurados() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
         Pageable pageable = PageRequest.of(0, 10);
 
         Page<Segurado> pageSegurados = new PageImpl<>(
-                Collections.emptyList(),
-                pageable,
-                0
+                Collections.emptyList(), pageable, 0
         );
 
         when(repository.listar(null, pageable)).thenReturn(pageSegurados);
@@ -145,6 +158,7 @@ class ListarSeguradosUseCaseTest {
 
     @Test
     void deveListarSegurados_comPaginacao_multiplasPaginas() {
+        setUserContext(UUID.randomUUID().toString(), "ADMIN");
         Pageable pageablePrimeira = PageRequest.of(0, 5);
 
         Segurado segurado1 = new Segurado();
@@ -153,9 +167,7 @@ class ListarSeguradosUseCaseTest {
         segurado1.setTipoPessoa(TipoPessoa.PF);
 
         Page<Segurado> pageSegurados = new PageImpl<>(
-                Collections.singletonList(segurado1),
-                pageablePrimeira,
-                15
+                Collections.singletonList(segurado1), pageablePrimeira, 15
         );
 
         SeguradoResponseDTO dto1 = new SeguradoResponseDTO(
@@ -181,6 +193,7 @@ class ListarSeguradosUseCaseTest {
 
     @Test
     void deveListarSegurados_ultimaPagina() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
         Pageable pageable = PageRequest.of(2, 5);
 
         Segurado segurado = new Segurado();
@@ -189,9 +202,7 @@ class ListarSeguradosUseCaseTest {
         segurado.setTipoPessoa(TipoPessoa.PF);
 
         Page<Segurado> pageSegurados = new PageImpl<>(
-                Collections.singletonList(segurado),
-                pageable,
-                15
+                Collections.singletonList(segurado), pageable, 15
         );
 
         SeguradoResponseDTO dto = new SeguradoResponseDTO(
@@ -213,5 +224,22 @@ class ListarSeguradosUseCaseTest {
         assertEquals(3, resultado.totalPages());
         assertTrue(resultado.last());
         verify(repository, times(1)).listar(null, pageable);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
+        Pageable pageable = PageRequest.of(0, 10);
+
+        assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar(null, pageable));
+        verifyNoInteractions(repository, mapper);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoPapelSegurado() {
+        setUserContext(UUID.randomUUID().toString(), "SEGURADO");
+        Pageable pageable = PageRequest.of(0, 10);
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(null, pageable));
+        verifyNoInteractions(repository, mapper);
     }
 }

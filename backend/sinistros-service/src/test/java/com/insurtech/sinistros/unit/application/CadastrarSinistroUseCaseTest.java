@@ -5,9 +5,11 @@ import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
 import com.insurtech.sinistros.application.usecase.CadastrarSinistroUseCase;
 import com.insurtech.sinistros.application.port.EventPublisherPort;
 import com.insurtech.sinistros.domain.event.SinistroRegistradoEvent;
+import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
 import com.insurtech.sinistros.domain.exception.ApoliceNaoEncontradaException;
 import com.insurtech.sinistros.domain.exception.SeguradoNaoEncontradoException;
 import com.insurtech.sinistros.domain.exception.SinistrojaCadastradaException;
+import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.model.TipoSinistro;
@@ -15,8 +17,12 @@ import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.client.ApoliceClient;
 import com.insurtech.sinistros.infrastructure.client.SeguradoClient;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
+import com.insurtech.sinistros.infrastructure.security.UserContext;
+import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
 import feign.FeignException;
 import feign.Request;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -55,11 +61,24 @@ class CadastrarSinistroUseCaseTest {
     @InjectMocks
     private CadastrarSinistroUseCase useCase;
 
+    @AfterEach
+    void tearDown() {
+        UserContextHolder.clear();
+    }
+
+    private void setUserContext(String usuarioId, String papel) {
+        UserContext ctx = UserContextHolder.getContext();
+        ctx.setUsuarioId(usuarioId);
+        ctx.setUsuarioPapel(papel);
+    }
+
     @Test
-    void deveCadastrarSinistro_comSucesso() {
+    void deveCadastrarSinistro_comSucesso_comoAnalista() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
-        
+
         SinistroRequestDTO dto = new SinistroRequestDTO(
                 "SIN-12345",
                 apoliceId,
@@ -75,22 +94,12 @@ class CadastrarSinistroUseCaseTest {
         sinistro.setId(sinistroId);
         sinistro.setSeguradoId(seguradoId);
         sinistro.setNumeroSinistro("SIN-12345");
-        
+
         SinistroResponseDTO responseDTO = new SinistroResponseDTO(
-                sinistroId,
-                "SIN-12345",
-                apoliceId,
-                seguradoId,
-                null,
-                TipoSinistro.COLISAO,
-                "Batida de carro",
-                LocalDate.now(),
-                new BigDecimal("5000.00"),
-                null,
-                Status.REGISTRADO,
-                null,
-                Instant.now(),
-                Instant.now()
+                sinistroId, "SIN-12345", apoliceId, seguradoId,
+                null, TipoSinistro.COLISAO, "Batida de carro",
+                LocalDate.now(), new BigDecimal("5000.00"),
+                null, Status.REGISTRADO, null, Instant.now(), Instant.now()
         );
 
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
@@ -110,18 +119,69 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
-    void deveLancarExcecao_quandoSeguradoNaoEncontrado() {
+    void deveCadastrarSinistro_comSucesso_comoGestor() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
-        
         SinistroRequestDTO dto = new SinistroRequestDTO(
-                "SIN-12345",
-                apoliceId,
-                seguradoId,
-                TipoSinistro.COLISAO,
-                "Batida de carro",
-                LocalDate.now(),
-                new BigDecimal("5000.00")
+                "SIN-GESTOR",
+                apoliceId, seguradoId,
+                TipoSinistro.COLISAO, "desc",
+                LocalDate.now(), new BigDecimal("1000.00")
+        );
+
+        Sinistro sinistro = new Sinistro();
+        sinistro.setId(UUID.randomUUID());
+        sinistro.setSeguradoId(seguradoId);
+        sinistro.setNumeroSinistro("SIN-GESTOR");
+
+        when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(null);
+        when(repository.buscarPorNumero("SIN-GESTOR")).thenReturn(Optional.empty());
+        when(mapper.toDomain(dto)).thenReturn(sinistro);
+        when(repository.salvar(any())).thenReturn(sinistro);
+        when(mapper.toResponse(sinistro)).thenReturn(mock(SinistroResponseDTO.class));
+
+        assertDoesNotThrow(() -> useCase.executar(dto));
+    }
+
+    @Test
+    void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
+        // Contexto vazio — usuarioId null
+        SinistroRequestDTO dto = new SinistroRequestDTO(
+                "SIN-AUTH", UUID.randomUUID(), UUID.randomUUID(),
+                TipoSinistro.COLISAO, "desc", LocalDate.now(), new BigDecimal("1000.00")
+        );
+
+        assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar(dto));
+        verifyNoInteractions(repository, seguradoClient, apoliceClient, eventPublisher);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoPapelNaoPermitido() {
+        setUserContext(UUID.randomUUID().toString(), "SEGURADO");
+
+        SinistroRequestDTO dto = new SinistroRequestDTO(
+                "SIN-403", UUID.randomUUID(), UUID.randomUUID(),
+                TipoSinistro.COLISAO, "desc", LocalDate.now(), new BigDecimal("1000.00")
+        );
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(dto));
+        verifyNoInteractions(repository, seguradoClient, apoliceClient, eventPublisher);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoSeguradoNaoEncontrado() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+
+        UUID seguradoId = UUID.randomUUID();
+        UUID apoliceId = UUID.randomUUID();
+
+        SinistroRequestDTO dto = new SinistroRequestDTO(
+                "SIN-12345", apoliceId, seguradoId,
+                TipoSinistro.COLISAO, "Batida de carro",
+                LocalDate.now(), new BigDecimal("5000.00")
         );
 
         Request request = Request.create(Request.HttpMethod.GET, "url", Collections.emptyMap(), null, null, null);
@@ -136,17 +196,15 @@ class CadastrarSinistroUseCaseTest {
 
     @Test
     void deveLancarExcecao_quandoApoliceNaoEncontrada() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
-        
+
         SinistroRequestDTO dto = new SinistroRequestDTO(
-                "SIN-12345",
-                apoliceId,
-                seguradoId,
-                TipoSinistro.COLISAO,
-                "Batida de carro",
-                LocalDate.now(),
-                new BigDecimal("5000.00")
+                "SIN-12345", apoliceId, seguradoId,
+                TipoSinistro.COLISAO, "Batida de carro",
+                LocalDate.now(), new BigDecimal("5000.00")
         );
 
         Request request = Request.create(Request.HttpMethod.GET, "url", Collections.emptyMap(), null, null, null);
@@ -162,17 +220,15 @@ class CadastrarSinistroUseCaseTest {
 
     @Test
     void deveLancarExcecao_quandoSinistroJaCadastrado() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
-        
+
         SinistroRequestDTO dto = new SinistroRequestDTO(
-                "SIN-12345",
-                apoliceId,
-                seguradoId,
-                TipoSinistro.COLISAO,
-                "Batida de carro",
-                LocalDate.now(),
-                new BigDecimal("5000.00")
+                "SIN-12345", apoliceId, seguradoId,
+                TipoSinistro.COLISAO, "Batida de carro",
+                LocalDate.now(), new BigDecimal("5000.00")
         );
 
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);

@@ -54,7 +54,7 @@ public class ApoliceController implements ApoliceControllerDocs {
     }
 
     @Override
-    @PatchMapping("/{id}")
+    @PatchMapping("/{id}/status")
     public ResponseEntity<ApoliceResponseDTO> atualizarStatus(
             @PathVariable UUID id,
             @RequestBody @Valid AtualizarStatusApoliceDTO dto) throws StatusNaoSuportadoException {

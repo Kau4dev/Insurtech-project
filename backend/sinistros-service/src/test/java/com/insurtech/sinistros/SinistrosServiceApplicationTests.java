@@ -1,10 +1,9 @@
 package com.insurtech.sinistros;
 
+import com.insurtech.sinistros.integration.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class SinistrosServiceApplicationTests {
+class SinistrosServiceApplicationTests extends IntegrationTestBase {
 
 	@Test
 	void contextLoads() {

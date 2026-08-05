@@ -18,6 +18,18 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(UsuarioNaoAutenticadoException.class)
+    public ResponseEntity<ErrorResponse> handleUsuarioNaoAutenticado(UsuarioNaoAutenticadoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, null));
+    }
+
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ResponseEntity<ErrorResponse> handleAcessoNegado(AcessoNegadoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(buildError(HttpStatus.FORBIDDEN, ex.getMessage(), request, null));
+    }
+
     @ExceptionHandler(SeguradoNaoEncontradoException.class)
     public ResponseEntity<ErrorResponse> handleSeguradoNaoEncontrado(SeguradoNaoEncontradoException ex, ServletWebRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)

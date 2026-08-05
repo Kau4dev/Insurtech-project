@@ -3,12 +3,17 @@ package com.insurtech.segurados.unit.application;
 import com.insurtech.segurados.application.dto.SeguradoResponseDTO;
 import com.insurtech.segurados.application.dto.SeguradoUpdateDTO;
 import com.insurtech.segurados.application.usecase.AtualizarSeguradoUseCase;
+import com.insurtech.segurados.domain.exception.AcessoNegadoException;
 import com.insurtech.segurados.domain.exception.SeguradoNaoEncontradoException;
+import com.insurtech.segurados.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.segurados.domain.model.Segurado;
 import com.insurtech.segurados.domain.model.TipoPessoa;
 import com.insurtech.segurados.domain.model.Uf;
 import com.insurtech.segurados.domain.repository.SeguradoRepository;
 import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
+import com.insurtech.segurados.infrastructure.security.UserContext;
+import com.insurtech.segurados.infrastructure.security.UserContextHolder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,70 +33,124 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AtualizarSeguradoUseCaseTest {
 
-	@Mock
-	private SeguradoRepository repository;
+    @Mock
+    private SeguradoRepository repository;
 
-	@Mock
-	private SeguradoMapper mapper;
+    @Mock
+    private SeguradoMapper mapper;
 
-	@InjectMocks
-	private AtualizarSeguradoUseCase useCase;
+    @InjectMocks
+    private AtualizarSeguradoUseCase useCase;
 
-	@Test
-	void deveAtualizarSegurado_comSucesso() {
-		UUID id = UUID.randomUUID();
-		Segurado segurado = new Segurado();
-		segurado.setId(id);
-		segurado.setTipoPessoa(TipoPessoa.PF);
-		Segurado updatedSegurado = new Segurado();
+    @AfterEach
+    void tearDown() {
+        UserContextHolder.clear();
+    }
 
-		SeguradoUpdateDTO dto = new SeguradoUpdateDTO(
-				"Nome Atualizado",
-				"email@exemplo.com",
-				"11912345678",
-				LocalDate.of(1990, 5, 15),
-				"Rua A, 123",
-				"Cidade", Uf.AC,
-				"01001000"
-		);
+    private void setUserContext(String usuarioId, String papel) {
+        UserContext ctx = UserContextHolder.getContext();
+        ctx.setUsuarioId(usuarioId);
+        ctx.setUsuarioPapel(papel);
+    }
 
-		SeguradoResponseDTO responseDTO = new SeguradoResponseDTO(
-				id, TipoPessoa.PF,
-				"Nome Atualizado",
-				"12345678901",
-				"email@exemplo.com",
-				"11912345678",
-				LocalDate.of(1990,5,15),
-				"Rua A, 123",
-				"Cidade",
-				Uf.AC,
-				"01001000",
-				Instant.now(),
-				Instant.now().minus(1, DAYS)
+    @Test
+    void deveAtualizarSegurado_comSucesso_comoGestor() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
-		);
+        UUID id = UUID.randomUUID();
+        Segurado segurado = new Segurado();
+        segurado.setId(id);
+        segurado.setTipoPessoa(TipoPessoa.PF);
+        Segurado updatedSegurado = new Segurado();
 
-		when(repository.buscarPorId(id)).thenReturn(Optional.of(segurado));
-		when(repository.salvar(any())).thenReturn(updatedSegurado);
-		when(mapper.toResponse(updatedSegurado)).thenReturn(responseDTO);
+        SeguradoUpdateDTO dto = new SeguradoUpdateDTO(
+                "Nome Atualizado", "email@exemplo.com", "11912345678",
+                LocalDate.of(1990, 5, 15), "Rua A, 123", "Cidade", Uf.AC, "01001000"
+        );
 
-		SeguradoResponseDTO resultado = useCase.executar(id, dto);
+        SeguradoResponseDTO responseDTO = new SeguradoResponseDTO(
+                id, TipoPessoa.PF, "Nome Atualizado", "12345678901",
+                "email@exemplo.com", "11912345678", LocalDate.of(1990, 5, 15),
+                "Rua A, 123", "Cidade", Uf.AC, "01001000",
+                Instant.now(), Instant.now().minus(1, DAYS)
+        );
 
-		assertNotNull(resultado);
-		assertEquals("Nome Atualizado", resultado.nomeRazaoSocial());
-		verify(repository, times(1)).buscarPorId(id);
-		verify(repository, times(1)).salvar(any());
-	}
+        when(repository.buscarPorId(id)).thenReturn(Optional.of(segurado));
+        when(repository.salvar(any())).thenReturn(updatedSegurado);
+        when(mapper.toResponse(updatedSegurado)).thenReturn(responseDTO);
 
-	@Test
-	void deveLancarExcecao_quandoSeguradoNaoEncontrado() {
-		UUID id = UUID.randomUUID();
-		SeguradoUpdateDTO dto = new SeguradoUpdateDTO(null, null, null, null, null, null, null, null);
+        SeguradoResponseDTO resultado = useCase.executar(id, dto);
 
-		when(repository.buscarPorId(id)).thenReturn(Optional.empty());
+        assertNotNull(resultado);
+        assertEquals("Nome Atualizado", resultado.nomeRazaoSocial());
+        verify(repository, times(1)).buscarPorId(id);
+        verify(repository, times(1)).salvar(any());
+    }
 
-		assertThrows(SeguradoNaoEncontradoException.class, () -> useCase.executar(id, dto));
-		verify(repository, times(1)).buscarPorId(id);
-		verify(repository, never()).salvar(any());
-	}
+    @Test
+    void deveAtualizarSegurado_comSucesso_comoAdmin() {
+        setUserContext(UUID.randomUUID().toString(), "ADMIN");
+
+        UUID id = UUID.randomUUID();
+        Segurado segurado = new Segurado();
+        segurado.setId(id);
+        segurado.setTipoPessoa(TipoPessoa.PF);
+        Segurado updatedSegurado = new Segurado();
+
+        SeguradoUpdateDTO dto = new SeguradoUpdateDTO(
+                "Admin Update", "admin@email.com", "11900000000",
+                LocalDate.of(1985, 1, 1), null, null, null, null
+        );
+
+        when(repository.buscarPorId(id)).thenReturn(Optional.of(segurado));
+        when(repository.salvar(any())).thenReturn(updatedSegurado);
+        when(mapper.toResponse(updatedSegurado)).thenReturn(mock(SeguradoResponseDTO.class));
+
+        assertDoesNotThrow(() -> useCase.executar(id, dto));
+    }
+
+    @Test
+    void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
+        UUID id = UUID.randomUUID();
+        SeguradoUpdateDTO dto = new SeguradoUpdateDTO(null, null, null, null, null, null, null, null);
+
+        assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar(id, dto));
+        verifyNoInteractions(repository, mapper);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoPapelAnalista() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+
+        UUID id = UUID.randomUUID();
+        SeguradoUpdateDTO dto = new SeguradoUpdateDTO(null, null, null, null, null, null, null, null);
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(id, dto));
+        verifyNoInteractions(repository, mapper);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoPapelSegurado() {
+        setUserContext(UUID.randomUUID().toString(), "SEGURADO");
+
+        UUID id = UUID.randomUUID();
+        SeguradoUpdateDTO dto = new SeguradoUpdateDTO(null, null, null, null, null, null, null, null);
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(id, dto));
+        verifyNoInteractions(repository, mapper);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoSeguradoNaoEncontrado() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
+        UUID id = UUID.randomUUID();
+        SeguradoUpdateDTO dto = new SeguradoUpdateDTO(null, null, null, null, null, null, null, null);
+
+        when(repository.buscarPorId(id)).thenReturn(Optional.empty());
+
+        assertThrows(SeguradoNaoEncontradoException.class, () -> useCase.executar(id, dto));
+        verify(repository, times(1)).buscarPorId(id);
+        verify(repository, never()).salvar(any());
+    }
 }

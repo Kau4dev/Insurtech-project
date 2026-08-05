@@ -79,6 +79,6 @@ class BuscarPorIdApoliceUseCaseTest {
 
         assertThrows(ApoliceNaoEncontradaException.class, () -> useCase.executar(apoliceId));
         verify(repository, times(1)).buscarPorId(apoliceId);
-        verify(mapper, never()).toResponse(any());
+        verify(mapper, never()).toResponse(any(Apolice.class));
     }
 }

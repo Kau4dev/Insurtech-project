@@ -63,6 +63,7 @@ services:
 #      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
 #      SERVICES_APOLICES_URL: http://apolices-service:8086
 #      SERVICES_SEGURADOS_URL: http://segurados-service:8085
+#      SERVICES_AUTH_URL: http://auth-service:8084
 #
 #  liquidacao-service:
 #    build: ./backend/liquidacao-service
