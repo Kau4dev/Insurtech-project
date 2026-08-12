@@ -15,5 +15,5 @@ React 19 + TypeScript + Vite 8 + Tailwind v4, targeted by the repo's `AGENTS.md`
 - Locked-in libs (declared deps): `react-router-dom` v7, `@tanstack/react-query`, `react-hook-form` + `@hookform/resolvers` + `zod` v4, `axios`. Reuse these; don't add new state/data/form libs.
 - `src/` is still the scaffold placeholder (`App.tsx` renders the brand only); routing/auth/API pages are not built yet.
 - Follow the design reference wired via `opencode.json` → `references.meu-outro-projeto` (`/home/kau4dev/Downloads/open-design-open-design-v0.17.0/.od/projects/4789db93-...`).
-- Auth is JWT via gateway: login through `POST /api/v1/auth`, send `Authorization: Bearer <token>`; downstream services identify the user from `X-Usuario-Id` / `X-Usuario-Papel` headers set by the gateway.
+- Auth is JWT via gateway: login through `POST /api/v1/auth/login` (returns `{token, tipo, expiresIn, papel}`), `GET /api/v1/auth/validar` and `GET /api/v1/auth/usuarios/{id}` also exist; send `Authorization: Bearer <token>`; downstream services identify the user from `X-Usuario-Id` / `X-Usuario-Papel` headers set by the gateway. `Papel` values are `ANALISTA | GESTOR | ADMIN`.
 - UI text in Portuguese (matches repo standard).
