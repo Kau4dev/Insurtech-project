@@ -1,4 +1,4 @@
-export type Endereco = {
+export interface Endereco {
     rua?: string;
     numero?: string;
     bairro?: string;

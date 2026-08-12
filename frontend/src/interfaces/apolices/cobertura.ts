@@ -1,7 +1,8 @@
+import type { TipoCobertura } from "../enums";
 
-export type Cobertura = {
+export interface Cobertura {
     id?: string;
-    tipoCobertura: string; // fazer validação dos tipos no componente, muito grande pra interface.
+    tipoCobertura: TipoCobertura;
     valorCobertura: number;
     valorFranquia: number;
 }

@@ -1,16 +1,16 @@
-
+import type { StatusApolice, TipoSeguro } from "../enums";
 import type { Cobertura } from "./cobertura";
 
-export type Apolice = {
+export interface Apolice {
     id?: string;
     seguradoId: string;
     numeroApolice: string;
-    tipoSeguro: 'AUTO' | 'RESIDENCIAL' | 'VIDA' | 'PATRIMONIAL' | 'EMPRESARIAL';
+    tipoSeguro: TipoSeguro;
     valorSeguro: number;
     valorPremio: number;
     dataInicioVigencia: string;
     dataFimVigencia: string;
-    status: 'ATIVA' | 'CANCELADA' | 'EXPIRADA' | 'SUSPENSA';
+    status: StatusApolice;
     coberturas?: Cobertura[];
     createdAt?: string;
     updatedAt?: string;

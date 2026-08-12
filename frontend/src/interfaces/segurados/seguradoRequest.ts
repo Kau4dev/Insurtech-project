@@ -1,5 +1,7 @@
-export type SeguradoRequest = {
-    tipoPessoa: 'PF' | 'PJ';
+import type { TipoPessoa } from "../enums";
+
+export interface SeguradoRequest {
+    tipoPessoa: TipoPessoa;
     nomeRazaoSocial: string;
     cpfCnpj: string;
     email: string;

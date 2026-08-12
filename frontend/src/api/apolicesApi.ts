@@ -6,9 +6,9 @@ import type {RespostaPaginada} from "../interfaces/respostaPaginada";
 
 export const apolicesApi = {
 
-    criar: async (apolice: ApoliceRequest): Promise<Apolice> => {
+    criar: async (dto: ApoliceRequest): Promise<Apolice> => {
 
-        const response = await axiosClient.post<Apolice>('/apolices', apolice);
+        const response = await axiosClient.post<Apolice>('/apolices', dto);
         return response.data;
     },
 

@@ -1,7 +1,8 @@
+import type { StatusApolice, TipoSeguro } from "../enums";
 
-export type FiltrosApolices = {
-    status?: 'ATIVA' | 'CANCELADA' | 'EXPIRADA' | 'SUSPENSA';
-    tipoSeguro?: 'AUTO' | 'RESIDENCIAL' | 'VIDA' | 'PATRIMONIAL' | 'EMPRESARIAL';
+export interface FiltrosApolices {
+    status?: StatusApolice;
+    tipoSeguro?: TipoSeguro;
     seguradoId?: string;
     page?: number;
     size?: number;

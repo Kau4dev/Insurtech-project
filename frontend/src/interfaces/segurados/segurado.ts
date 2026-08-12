@@ -1,8 +1,8 @@
+import type { TipoPessoa } from "../enums";
 
-
-export type Segurado = {
+export interface Segurado {
     id?: string;
-    tipoPessoa: 'PF' | 'PJ';
+    tipoPessoa: TipoPessoa;
     nomeRazaoSocial: string;
     cpfCnpj: string;
     email: string;

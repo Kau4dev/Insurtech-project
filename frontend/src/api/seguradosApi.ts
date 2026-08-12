@@ -1,5 +1,5 @@
 import { axiosClient } from "./axiosClient";
-import type { FiltrosSegurado } from "../interfaces/segurados/filtrosSegurados";
+import type { FiltrosSegurados } from "../interfaces/segurados/filtrosSegurados";
 import type { Segurado } from "../interfaces/segurados/segurado";
 import type { SeguradoRequest, SeguradoUpdateRequest } from "../interfaces/segurados/seguradoRequest";
 import type { RespostaPaginada } from "../interfaces/respostaPaginada";
@@ -8,8 +8,8 @@ import type { RespostaPaginada } from "../interfaces/respostaPaginada";
 export const seguradoApi = {
 
 
-    criar: async (segurado: SeguradoRequest): Promise<Segurado> => {
-        const response = await axiosClient.post<Segurado>('/segurados', segurado);
+    criar: async (dto: SeguradoRequest): Promise<Segurado> => {
+        const response = await axiosClient.post<Segurado>('/segurados', dto);
         return response.data;
     },
 
@@ -18,14 +18,13 @@ export const seguradoApi = {
         return response.data;
     },
 
-    listar: async (filtros?: FiltrosSegurado): Promise<RespostaPaginada<Segurado>>  => {
-
+    listar: async (filtros?: FiltrosSegurados): Promise<RespostaPaginada<Segurado>>  => {
         const response = await axiosClient.get('/segurados', { params: filtros });
         return response.data;
     },
   
-    atualizar: async (id: string, segurado: SeguradoUpdateRequest): Promise<Segurado> => {
-        const response = await axiosClient.put<Segurado>(`/segurados/${id}`, segurado);
+    atualizar: async (id: string, dto: SeguradoUpdateRequest): Promise<Segurado> => {
+        const response = await axiosClient.put<Segurado>(`/segurados/${id}`, dto);
         return response.data;
     },
 }

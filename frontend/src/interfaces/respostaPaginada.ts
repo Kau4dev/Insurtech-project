@@ -1,4 +1,5 @@
-export type RespostaPaginada<T> = {
+
+export interface RespostaPaginada<T> {
   content: T[];
   page: number;
   size: number;

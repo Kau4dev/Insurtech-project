@@ -1,15 +1,13 @@
+import type { TipoSeguro } from "../enums";
+import type { Cobertura } from "./cobertura";
 
-export type ApoliceRequest = {
+export interface ApoliceRequest {
     seguradoId: string;
     numeroApolice: string;
-    tipoSeguro: 'AUTO' | 'RESIDENCIAL' | 'VIDA' | 'PATRIMONIAL' | 'EMPRESARIAL';
+    tipoSeguro: TipoSeguro;
     valorSeguro: number;
     valorPremio: number;
     dataInicioVigencia: string;
     dataFimVigencia: string;
-    coberturas: {
-        tipoCobertura: string; // fazer validação dos tipos no componente, muito grande pra interface.
-        valorCobertura: number;
-        valorFranquia: number;
-    }[];
+    coberturas: Omit<Cobertura, 'id'>[];
 }
