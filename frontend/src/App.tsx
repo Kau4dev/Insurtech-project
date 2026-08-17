@@ -1,11 +1,12 @@
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes/AppRouter.tsx';
 import './App.css'
 
+
 function App() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-      <h1 className="text-2xl font-bold">InsurTech Platform</h1>
-    </div>
-  )
+
+return <RouterProvider router={router} />
+  
 }
 
 export default App
