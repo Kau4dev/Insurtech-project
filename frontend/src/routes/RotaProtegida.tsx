@@ -7,23 +7,23 @@ interface RotaProtegidaProps {
     papeisPermitidos?: PapelUsuario[];
 }
 
-export const RotaProtegida: React.FC<RotaProtegidaProps> = ({papeisPermitidos}) => {
+export const RotaProtegida: React.FC<RotaProtegidaProps> = ({ papeisPermitidos }) => {
 
-    const { isAuthenticated, usuario, isLoading = true} = useAuth();
+    const { isAuthenticated, usuario, isLoading = true } = useAuth();
 
-    if(isLoading) {
-        return( 
-        <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
                 <p className="text-lg animate-pulse">Carregando sessão...</p>
-        </div>
-)
+            </div>
+        )
     }
 
-    if(!isAuthenticated) {
+    if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }
 
-    if(papeisPermitidos && usuario && !papeisPermitidos.includes(usuario.papel)) {
+    if (papeisPermitidos && usuario && !papeisPermitidos.includes(usuario.papel)) {
         return <Navigate to="/acesso-negado" replace />;
     }
 
