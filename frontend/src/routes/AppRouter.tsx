@@ -1,43 +1,45 @@
 import { createBrowserRouter } from "react-router-dom";
-import { LoginPage} from "../pages/LoginPage";
+import { LoginPage } from "../pages/LoginPage";
 import { RotaProtegida } from "./RotaProtegida";
+import { AppLayout } from "../components/layout/AppLayout";
 
 const DashboardPlaceHolder = () => {
     return (
-          <div className="p-8 bg-slate-900 text-white min-h-screen">
-        <h1 className="text-3xl font-bold">Dashboard (Privado)</h1>
-    </div>
-    )
+        <div className="p-8">
+            <h1 className="text-2xl font-[600] text-(--fg)">Dashboard</h1>
+            <p className="mt-2 text-(--muted)">Bem-vindo ao InsurTech.</p>
+        </div>
+    );
 }
 
-export const router = createBrowserRouter([
+const LayoutProtegido: React.FC = () => (
+    <RotaProtegida>
+        <AppLayout />
+    </RotaProtegida>
+);
 
+export const router = createBrowserRouter([
     {
         path: "/login",
         element: <LoginPage />
     },
 
     {
-        element: <RotaProtegida/>,
+        element: <LayoutProtegido />,
         children: [
             {
                 path: "/",
                 element: <DashboardPlaceHolder />
             },
             {
-                path:"/dashboard",
+                path: "/dashboard",
                 element: <DashboardPlaceHolder />
             },
-            
-              // Você adicionará as outras telas aqui futuramente:
-            // { path: "/segurados", element: <SeguradosPage /> }
         ]
     },
 
     {
-        path:"*",
-        element: <div className="p-8 text-white bg-slate-900 min-h-screen">Página não encontrada</div>,
+        path: "*",
+        element: <div className="p-8 text-(--fg)">Página não encontrada</div>,
     }
-
-    
 ]);

@@ -165,7 +165,7 @@ export const LoginPage: React.FC = () => {
               className={`w-full h-10 px-3 border rounded-lg bg-(--surface) focus:outline-none focus:ring-2 focus:ring-(--accent-soft) focus:border-(--accent) transition-all ${
                 errors.email ? "border-red-500" : "border-(--border-strong)"
               }`}
-              placeholder="ana.beatriz@serena.example"
+              placeholder="ana.beatriz@insurtech.example"
             />
             {errors.email && (
               <span className="text-red-500 text-[12px] mt-1 block">
