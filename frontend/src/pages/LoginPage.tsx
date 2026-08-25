@@ -56,7 +56,7 @@ export const LoginPage: React.FC = () => {
         <div>
           <div className="flex gap-2.5 items-center">
             <div className="w-9 h-9 rounded-[10px] bg-(--accent) text-[oklch(99%_0_0)] grid place-items-center font-[750] text-lg tracking-[0.02em]">
-              S
+              I
             </div>
             <div className="">
               <div className="text-base font-[650]">Insurtech</div>

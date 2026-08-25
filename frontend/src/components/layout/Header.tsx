@@ -33,12 +33,8 @@ export const Header: React.FC = () => {
         <header className="px-4 sticky top-0 z-30 flex items-center gap-4 h-[60px] bg-(--surface) border-b border-(--border)">
             {/* Logo / Brand */}
             <div className="flex items-center gap-2 shrink-0">
-                <div className="w-7 h-7 rounded-lg bg-(--accent) flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
-                </div>
-                <span className="text-[14px] font-[600] text-(--fg) tracking-tight hidden sm:inline">InsurTech</span>
+               
+                <span className="text-[14px] font-[600] text-(--fg) tracking-tight hidden sm:inline">Dashboard</span>
             </div>
 
             {/* Search */}
