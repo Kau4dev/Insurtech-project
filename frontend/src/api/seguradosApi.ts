@@ -7,8 +7,8 @@ import type { RespostaPaginada } from "../interfaces/respostaPaginada";
 
 export const seguradoApi = {
 
-
-    criar: async (dto: SeguradoRequest): Promise<Segurado> => {
+    
+    cadastrar: async (dto: SeguradoRequest): Promise<Segurado> => {
         const response = await axiosClient.post<Segurado>('/segurados', dto);
         return response.data;
     },

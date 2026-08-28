@@ -8,8 +8,8 @@ import type { FiltrosSinistros } from "../interfaces/sinistros/filtrosSinistros"
 import type { RespostaPaginada } from "../interfaces/respostaPaginada";
 
 export const sinistrosApi = {
-
-    registrar: async (dto: SinistroRequest): Promise<Sinistro> => {
+    
+    cadastrar: async (dto: SinistroRequest): Promise<Sinistro> => {
         const response = await axiosClient.post<Sinistro>('/sinistros', dto);
         return response.data;
     },
