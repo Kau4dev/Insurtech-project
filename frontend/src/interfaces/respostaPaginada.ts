@@ -1,4 +1,3 @@
-
 export interface RespostaPaginada<T> {
   content: T[];
   page: number;
