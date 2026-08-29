@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { LoginPage } from "../pages/LoginPage";
+import { SeguradosListPage } from "../pages/SeguradosListPage";
 import { RotaProtegida } from "./RotaProtegida";
 import { AppLayout } from "../components/layout/AppLayout";
 
@@ -34,6 +35,10 @@ export const router = createBrowserRouter([
             {
                 path: "/dashboard",
                 element: <DashboardPlaceHolder />
+            },
+            {
+                path: "/segurados",
+                element: <SeguradosListPage />
             },
         ]
     },
