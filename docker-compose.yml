@@ -33,61 +33,55 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
 
-  auth-service:
-    build: ./backend/auth-service
-    depends_on: [postgres]
-    ports: ["8084:8084"]
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+#  auth-service:
+#    build: ./auth-service
+#    depends_on: [postgres]
+#    ports: ["8084:8084"]
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
 
-  segurados-service:
-    build: ./backend/segurados-service
-    depends_on: [postgres]
-    ports: ["8085:8085"]
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/segurados_db
+#  segurados-service:
+#    build: ./backend/segurados-service
+#    depends_on: [postgres]
+#    ports: ["8085:8085"]
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/segurados_db
 
-  apolices-service:
-    build: ./backend/apolices-service
-    depends_on: [postgres]
-    ports: ["8086:8086"]
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/apolices_db
-      SERVICES_SEGURADOS_URL: http://segurados-service:8085
+#  apolices-service:
+#    build: ./backend/apolices-service
+#    depends_on: [postgres]
+#    ports: ["8086:8086"]
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/apolices_db
 
-  sinistros-service:
-    build: ./backend/sinistros-service
-    depends_on: [postgres, kafka, segurados-service, apolices-service]
-    ports: ["8087:8087"]
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sinistros_db
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      SERVICES_APOLICES_URL: http://apolices-service:8086
-      SERVICES_SEGURADOS_URL: http://segurados-service:8085
-      SERVICES_AUTH_URL: http://auth-service:8084
-
-  liquidacao-service:
-    build: ./backend/liquidacao-service
-    depends_on: [postgres, kafka]
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/liquidacao_db
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-
-  notificacao-service:
-    build: ./backend/notificacao-service
-    depends_on: [kafka]
-    environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-
-  gateway-service:
-    build: ./backend/gateway-service
-    depends_on: [auth-service, segurados-service, apolices-service, sinistros-service]
-    ports: ["8080:8080"]
-    environment:
-      SERVICES_AUTH_URL: http://auth-service:8084
-      SERVICES_SEGURADOS_URL: http://segurados-service:8085
-      SERVICES_APOLICES_URL: http://apolices-service:8086
-      SERVICES_SINISTROS_URL: http://sinistros-service:8087
+#  sinistros-service:
+#    build: ./backend/sinistros-service
+#    depends_on: [postgres, kafka, segurados-service, apolices-service]
+#    ports: ["8087:8087"]
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sinistros_db
+#      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+#      SERVICES_APOLICES_URL: http://apolices-service:8086
+#      SERVICES_SEGURADOS_URL: http://segurados-service:8085
+#      SERVICES_AUTH_URL: http://auth-service:8084
+#
+#  liquidacao-service:
+#    build: ./backend/liquidacao-service
+#    depends_on: [postgres, kafka]
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/liquidacao_db
+#      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+#
+#  notificacao-service:
+#    build: ./backend/notificacao-service
+#    depends_on: [kafka]
+#    environment:
+#      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+#
+#  gateway-service:
+#    build: ./backend/gateway -service
+#    depends_on: [auth-service, segurados-service, apolices-service, sinistros-service]
+#    ports: ["8080:8080"]
 #
 #  frontend:
 #    build: ./frontend

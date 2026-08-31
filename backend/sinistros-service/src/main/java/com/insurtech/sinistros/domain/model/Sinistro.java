@@ -112,10 +112,6 @@ public class Sinistro {
     }
 
     public void adicionarDocumento(DocumentoSinistro documento) {
-        adicionarDocumento(documento, null);
-    }
-
-    public void adicionarDocumento(DocumentoSinistro documento, UUID usuarioId) {
         if (this.analistaId == null) {
             throw new AnalistaObrigatorioException("Não é possível adicionar documentos antes de atribuir um analista");
         }
@@ -123,13 +119,6 @@ public class Sinistro {
         documento.setDataUpload(Instant.now());
         documento.validar();
         this.documentos.add(documento);
-
-        if (Status.AGUARDANDO_DOCUMENTOS.equals(this.status)) {
-            UUID idParaHistorico = (usuarioId != null) ? usuarioId : this.analistaId;
-            registrarHistorico(this.status, Status.EM_ANALISE, idParaHistorico, "Documento recebido. Retornando para análise.");
-            this.status = Status.EM_ANALISE;
-            this.updatedAt = Instant.now();
-        }
     }
 
     public void marcarComoPago() {
