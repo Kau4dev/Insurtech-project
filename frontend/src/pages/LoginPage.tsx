@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 const loginSchema = z.object({
   email: z
@@ -43,7 +43,7 @@ export const LoginPage: React.FC = () => {
     try {
       await login({ email: data.email, senha: data.senha });
       navigate("/dashboard");
-    } catch (error) {
+    } catch {
       setErroAPI("E-mail ou senha incorretos. Tente novamente.");
     } finally {
       setIsLoading(false);
