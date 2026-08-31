@@ -64,46 +64,4 @@ public class SinistroTeste {
         assertThrows(ValorInvalidoException.class, 
             () -> sinistro.aprovar(new BigDecimal("6000.00"), new BigDecimal("5000.00")));
     }
-
-    @Test
-    void deveMudarStatusParaEmAnalise_quandoAdicionarDocumentoEStatusForAguardandoDocumentos() {
-        Sinistro sinistro = new Sinistro();
-        sinistro.setId(UUID.randomUUID());
-        sinistro.setAnalistaId(UUID.randomUUID());
-        sinistro.setStatus(Status.AGUARDANDO_DOCUMENTOS);
-
-        DocumentoSinistro doc = new DocumentoSinistro();
-        doc.setId(UUID.randomUUID());
-        doc.setTipoDocumento(TipoDocumento.BOLETIM_OCORRENCIA);
-        doc.setNomeArquivo("bo.pdf");
-        doc.setUrlArquivo("http://s3/bo.pdf");
-
-        UUID usuarioId = UUID.randomUUID();
-        sinistro.adicionarDocumento(doc, usuarioId);
-
-        assertEquals(Status.EM_ANALISE, sinistro.getStatus());
-        assertEquals(1, sinistro.getHistorico().size());
-        assertEquals(Status.AGUARDANDO_DOCUMENTOS, sinistro.getHistorico().get(0).getStatusAnterior());
-        assertEquals(Status.EM_ANALISE, sinistro.getHistorico().get(0).getStatusNovo());
-        assertEquals(usuarioId, sinistro.getHistorico().get(0).getUsuarioId());
-    }
-
-    @Test
-    void naoDeveMudarStatus_quandoAdicionarDocumentoEStatusNaoForAguardandoDocumentos() {
-        Sinistro sinistro = new Sinistro();
-        sinistro.setId(UUID.randomUUID());
-        sinistro.setAnalistaId(UUID.randomUUID());
-        sinistro.setStatus(Status.EM_ANALISE);
-
-        DocumentoSinistro doc = new DocumentoSinistro();
-        doc.setId(UUID.randomUUID());
-        doc.setTipoDocumento(TipoDocumento.BOLETIM_OCORRENCIA);
-        doc.setNomeArquivo("bo.pdf");
-        doc.setUrlArquivo("http://s3/bo.pdf");
-
-        sinistro.adicionarDocumento(doc);
-
-        assertEquals(Status.EM_ANALISE, sinistro.getStatus());
-        assertTrue(sinistro.getHistorico().isEmpty());
-    }
 }

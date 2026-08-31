@@ -6,7 +6,6 @@ import com.insurtech.sinistros.domain.model.DocumentoSinistro;
 import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
-import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,11 +30,7 @@ public class AdicionarDocumentoUseCase {
         documento.setNomeArquivo(dto.nomeArquivo());
         documento.setTipoDocumento(dto.tipoDocumento());
         documento.setUrlArquivo(dto.urlArquivo());
-        
-        String actingUser = UserContextHolder.getContext().getUsuarioId();
-        UUID usuarioId = (actingUser != null && !actingUser.isBlank()) ? UUID.fromString(actingUser) : null;
-
-        sinistro.adicionarDocumento(documento, usuarioId);
+        sinistro.adicionarDocumento(documento);
         repository.salvar(sinistro);
         
         return mapper.toResponse(documento);
