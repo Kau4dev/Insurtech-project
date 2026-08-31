@@ -33,3 +33,13 @@ build/
 .vscode/
 
 postgres-data
+
+opencode.json
+README-DESENVOLVIMENTO.md
+insurtech-projeto(1).md
+
+.playwright-mcp
+
+# frontend
+node_modules/
+frontend/dist/
