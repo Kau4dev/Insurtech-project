@@ -9,7 +9,7 @@ InsurTech: insurance claims/underwriting (P&C) platform, event-driven microservi
 - Ports: gateway `8080`, auth `8084`, segurados `8085`, apolices `8086`, sinistros `8087`, liquidacao `8088`, notificacao `8089`.
 - One Postgres database **per service** (`auth_db`, `segurados_db`, ...) created by `init-databases.sql`. DB user/pass `insurtech`/`insurtech`, overridable via `SPRING_DATASOURCE_URL/USERNAME/PASSWORD`. Kafka at `localhost:9092`.
 - `liquidacao-service` and `notificacao-service` are **headless Kafka consumers** (no business REST API); `gateway-service` is reactive WebFlux and the only entry the frontend should call.
-- Frontend is a React 19 + Vite + Tailwind v4 app (`frontend/`, own `AGENTS.md`). Scaffolded — routing/API/pages still being built; the backend gateway (`:8080`) is its only entry.
+- Frontend is an empty placeholder dir — nothing to build/test yet.
 
 ## Commands (run from `backend/<service>`)
 
