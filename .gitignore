@@ -33,7 +33,3 @@ build/
 .vscode/
 
 postgres-data
-
-opencode.json
-
-.playwright-mcp
