@@ -16,10 +16,9 @@ export const seguradoSchema = z
       .min(1, "Documento é obrigatório")
       .transform((val) => val.replace(/\D/g, "")),
     email: z
-      .string()
+      .email("E-mail inválido")
       .trim()
       .min(1, "E-mail é obrigatório")
-      .email("E-mail inválido")
       .max(255, "E-mail deve ter no máximo 255 caracteres"),
     telefone: z
       .string()
