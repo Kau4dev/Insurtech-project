@@ -9,7 +9,7 @@ export function useApolices(filtros?: FiltrosApolices) {
   });
 }
 
-export function useCriarApolice() {
+export function useCadastrarApolice() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: apolicesApi.cadastrar,

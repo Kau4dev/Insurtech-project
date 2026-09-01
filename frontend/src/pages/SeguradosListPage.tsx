@@ -4,7 +4,7 @@ import {
   SeguradoFilters,
   SeguradoForm,
   SeguradoTable,
-  useCriarSegurado,
+  useCadastrarSegurado,
   useAtualizarSegurado,
   useSegurados,
 } from "../features/segurados";
@@ -29,7 +29,7 @@ export const SeguradosListPage: React.FC = () => {
     size,
   });
 
-  const criarMutation = useCriarSegurado();
+  const criarMutation = useCadastrarSegurado();
   const atualizarMutation = useAtualizarSegurado();
 
   const handleSearch = (termo: string) => {

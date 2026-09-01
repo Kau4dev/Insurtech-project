@@ -11,22 +11,21 @@ export function useSegurados(filtros?: FiltrosSegurados) {
     queryFn: () => seguradoApi.listar(filtros),
   });
 }
-
-export function useSeguradoPorId(id?: string) {
-  return useQuery({
-    queryKey: [...SEGURADOS_QUERY_KEY, id],
-    queryFn: () => seguradoApi.buscarPorId(id!),
-    enabled: !!id,
-  });
-}
-
-export function useCriarSegurado() {
+export function useCadastrarSegurado() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: SeguradoRequest) => seguradoApi.cadastrar(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: SEGURADOS_QUERY_KEY });
     },
+  });
+}
+
+export function useSeguradoPorId(id?: string) {
+  return useQuery({
+    queryKey: [...SEGURADOS_QUERY_KEY, id],
+    queryFn: () => seguradoApi.buscarPorId(id!),
+    enabled: !!id,
   });
 }
 
