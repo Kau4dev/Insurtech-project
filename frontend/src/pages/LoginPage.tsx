@@ -66,12 +66,12 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
           <div>
-            <h1 className="font-[650] text-[27px] tracking-[-0.025em] leading-[1.18] mt-10">
+            <h1 className="font-[650] text-[27px] tracking-tight leading-[1.18] mt-10">
               Operações de sinistros
               <br />
               em um único fluxo.
             </h1>
-            <p className="mt-3 max-w-[430px] text-(--muted) text-[14px] leading-relaxed">
+            <p className="mt-3 max-w-107.5 text-(--muted) text-[14px] leading-relaxed">
               Registro, análise, aprovação, liquidação e notificação integrados
               com mensageria event-driven.
             </p>
@@ -140,14 +140,11 @@ export const LoginPage: React.FC = () => {
       </div>
 
       <div className="flex-1 flex items-center justify-center py-11 px-12 bg-(--bg)">
-        <form
-          className="max-w-[352px] w-full"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <div className="text-[11px] text-(--accent-ink) font-[600] tracking-[0.1em] uppercase font-mono">
+        <form className="max-w-88 w-full" onSubmit={handleSubmit(onSubmit)}>
+          <div className="text-[11px] text-(--accent-ink) font-semibold tracking-widest uppercase font-mono">
             Ambiente Interno
           </div>
-          <div className="text-[22px] font-[650] tracking-[-0.02em] mt-2">
+          <div className="text-[22px] font-semibold tracking-[-0.02em] mt-2">
             Acessar painel
           </div>
           <p className="text-[13px] text-(--muted) mt-1.5 mb-6">
@@ -155,7 +152,10 @@ export const LoginPage: React.FC = () => {
           </p>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-[12px] font-[620] text-(--muted)">
+            <label
+              htmlFor="email"
+              className="text-[12px] font-[620] text-(--muted)"
+            >
               E-mail corporativo
             </label>
             <input
@@ -175,7 +175,10 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <div className="flex flex-col gap-1.5 mt-4">
-            <label htmlFor="senha" className="text-[12px] font-[620] text-(--muted)">
+            <label
+              htmlFor="senha"
+              className="text-[12px] font-[620] text-(--muted)"
+            >
               Senha
             </label>
             <input
@@ -206,7 +209,9 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               className="text-(--accent-ink) hover:underline font-[620] cursor-pointer bg-transparent border-none p-0"
-              onClick={() => alert("Fluxo de recuperação não incluso no protótipo.")}
+              onClick={() =>
+                alert("Fluxo de recuperação não incluso no protótipo.")
+              }
             >
               Esqueci a senha
             </button>
@@ -215,13 +220,12 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={isloading}
-            className={`mt-6 w-full h-10 bg-(--accent) text-white font-[600] rounded-lg hover:brightness-105 active:brightness-95 focus:outline-none focus:ring-2 focus:ring-(--accent-soft) transition-all cursor-pointer flex items-center justify-center ${
+            className={`mt-6 w-full h-10 bg-(--accent) text-white font-semibold rounded-lg hover:brightness-105 active:brightness-95 focus:outline-none focus:ring-2 focus:ring-(--accent-soft) transition-all cursor-pointer flex items-center justify-center ${
               isloading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
             {isloading ? "Carregando..." : "Entrar na plataforma →"}
           </button>
-
         </form>
       </div>
     </div>

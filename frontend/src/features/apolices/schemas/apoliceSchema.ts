@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { coberturaSchema } from "./coberturaSchema";
+import { CoberturaSchema } from "./coberturaSchema";
 
 const dataFuturaOuPresente = (
   msgObrigatoria: string,
@@ -59,11 +59,11 @@ export const apoliceSchema = z.object({
     "Data de fim da vigência deve ser futura ou presente",
   ),
 
-  coberturas: z.array(coberturaSchema).optional(),
+  coberturas: z.array(CoberturaSchema).optional(),
 });
 
 
 
 
 export type ApoliceFormData = z.input<typeof apoliceSchema>;
-export type CoberturaFormData = z.input<typeof coberturaSchema>;
+export type CoberturaFormData = z.input<typeof CoberturaSchema>;

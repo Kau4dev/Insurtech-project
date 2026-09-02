@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const coberturaSchema = z.object({                                                                    
+export const CoberturaSchema = z.object({                                                                    
       tipoCobertura: z.enum(                                                                                     
         [                                                                                                        
           "COLISAO",                                                                                             
