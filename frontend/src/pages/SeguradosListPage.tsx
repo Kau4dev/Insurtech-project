@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Button, Modal, Pagination } from "../components/ui";
 import {
+  SeguradoDetailDrawer,
   SeguradoFilters,
   SeguradoForm,
   SeguradoTable,
-  useCadastrarSegurado,
   useAtualizarSegurado,
+  useCadastrarSegurado,
   useSegurados,
 } from "../features/segurados";
 import type { Segurado } from "../interfaces/segurados/segurado";
@@ -21,6 +22,7 @@ export const SeguradosListPage: React.FC = () => {
 
   const [modalAberto, setModalAberto] = useState<boolean>(false);
   const [seguradoEmEdicao, setSeguradoEmEdicao] = useState<Segurado | null>(null);
+  const [seguradoParaDetalhes, setSeguradoParaDetalhes] = useState<Segurado | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useSegurados({
@@ -55,8 +57,12 @@ export const SeguradosListPage: React.FC = () => {
     setFormError(null);
   };
 
+  const handleVisualizar = (segurado: Segurado) => {
+    setSeguradoParaDetalhes(segurado);
+  };
+
   const handleSalvarSegurado = async (
-    dto: SeguradoRequest | SeguradoUpdateRequest
+    dto: SeguradoRequest | SeguradoUpdateRequest,
   ) => {
     setFormError(null);
     try {
@@ -85,7 +91,7 @@ export const SeguradosListPage: React.FC = () => {
         setFormError(String(err.response.data.message));
       } else {
         setFormError(
-          "Não foi possível salvar o segurado. Verifique os dados ou a conexão com o servidor."
+          "Não foi possível salvar o segurado. Verifique os dados ou a conexão com o servidor.",
         );
       }
     }
@@ -167,9 +173,9 @@ export const SeguradosListPage: React.FC = () => {
         segurados={segurados}
         isLoading={isLoading}
         onEditar={handleEditar}
+        onVisualizar={handleVisualizar}
       />
 
-      {/* Paginação Componentizada */}
       {!isLoading && (
         <Pagination
           currentPage={page}
@@ -179,6 +185,12 @@ export const SeguradosListPage: React.FC = () => {
           onPageChange={setPage}
         />
       )}
+
+      <SeguradoDetailDrawer
+        segurado={seguradoParaDetalhes}
+        isOpen={Boolean(seguradoParaDetalhes)}
+        onClose={() => setSeguradoParaDetalhes(null)}
+      />
     </div>
   );
 };
