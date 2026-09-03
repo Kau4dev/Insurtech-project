@@ -51,3 +51,22 @@ export function formatarCep(cep?: string | null): string {
   }
   return cep;
 }
+
+export function formatarMoeda(val?: number | string | null): string {
+  if (val === undefined || val === null || val === "") return "-";
+  const num = typeof val === "number" ? val : Number(val);
+  if (isNaN(num)) return "-";
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(num);
+}
+
+export function formatarData(dataStr?: string | null): string {
+  if (!dataStr) return "-";
+  if (dataStr.includes("-")) {
+    const parts = dataStr.split("T")[0].split("-");
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return dataStr;
+}

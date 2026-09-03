@@ -58,7 +58,9 @@ export const apoliceSchema = z.object({
     "Data de fim da vigência inválida",
     "Data de fim da vigência deve ser futura ou presente",
   ),
-
+  status: z.enum(["ATIVA", "SUSPENSA", "CANCELADA", "EXPIRADA"], {
+    message: "Status da apólice é obrigatório",
+  }),
   coberturas: z.array(CoberturaSchema).optional(),
 });
 

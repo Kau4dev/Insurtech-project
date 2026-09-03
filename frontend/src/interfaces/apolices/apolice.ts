@@ -6,8 +6,8 @@ export interface Apolice {
     seguradoId: string;
     numeroApolice: string;
     tipoSeguro: TipoSeguro;
-    valorSeguro: number;
-    valorPremio: number;
+    valorSeguro: string;
+    valorPremio: string;
     dataInicioVigencia: string;
     dataFimVigencia: string;
     status: StatusApolice;
