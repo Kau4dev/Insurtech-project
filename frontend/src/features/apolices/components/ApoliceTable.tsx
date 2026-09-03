@@ -1,8 +1,9 @@
 import React from "react";
-import { Badge, Button, EmptyState, LoadingState } from "../../../components/ui";
+import { Badge, TableContainer, TableHeader, TableRow, TableCell, TableActions } from "../../../components/ui";
 import type { BadgeVariant } from "../../../components/ui/Badge";
 import type { Apolice } from "../../../interfaces/apolices/apolice";
 import type { StatusApolice } from "../../../interfaces/enums";
+import { formatarMoeda, formatarData } from "../../../utils/formatters";
 
 interface ApoliceTableProps {
   apolices: Apolice[];
@@ -10,6 +11,17 @@ interface ApoliceTableProps {
   onEditar?: (apolice: Apolice) => void;
   onVisualizar?: (apolice: Apolice) => void;
 }
+
+const COLUNAS = [
+  "Apólice",
+  "Ramo",
+  "Segurado",
+  { label: "Valor segurado", align: "right" as const },
+  { label: "Prêmio/ano", align: "right" as const },
+  "Vigência até",
+  "Status",
+  { label: "Ações", align: "right" as const },
+];
 
 const getBadgeVariant = (status: StatusApolice): BadgeVariant => {
   switch (status) {
@@ -26,128 +38,64 @@ const getBadgeVariant = (status: StatusApolice): BadgeVariant => {
   }
 };
 
-const formatarMoeda = (valor?: number): string => {
-  if (valor === undefined || valor === null) return "-";
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(valor);
-};
-
-const formatarData = (dataStr?: string): string => {
-  if (!dataStr) return "-";
-  if (dataStr.includes("-")) {
-    const parts = dataStr.split("T")[0].split("-");
-    if (parts.length === 3) {
-      const [ano, mes, dia] = parts;
-      return `${dia}/${mes}/${ano}`;
-    }
-  }
-  return dataStr;
-};
-
 export const ApoliceTable: React.FC<ApoliceTableProps> = ({
   apolices,
   isLoading = false,
   onEditar,
   onVisualizar,
 }) => {
-  if (isLoading) {
-    return <LoadingState message="Carregando apólices..." />;
-  }
-
-  if (apolices.length === 0) {
-    return (
-      <EmptyState
-        title="Nenhuma apólice encontrada"
-        description="Não há registros para os filtros selecionados ou ainda não há apólices cadastradas."
-      />
-    );
-  }
-
   return (
-    <div className="w-full overflow-hidden bg-(--surface) border border-(--border) rounded-(--radius) shadow-xs">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm border-collapse">
-          <thead>
-            <tr className="border-b border-(--border) bg-(--surface-2)/60 text-(--muted) font-medium text-xs tracking-wider uppercase">
-              <th className="py-3.5 px-4">Apólice</th>
-              <th className="py-3.5 px-4">Ramo</th>
-              <th className="py-3.5 px-4">Segurado</th>
-              <th className="py-3.5 px-4 text-right">Valor segurado</th>
-              <th className="py-3.5 px-4 text-right">Prêmio/ano</th>
-              <th className="py-3.5 px-4">Vigência até</th>
-              <th className="py-3.5 px-4">Status</th>
-              <th className="py-3.5 px-4 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-(--border)">
-            {apolices.map((apolice) => {
-              return (
-                <tr
-                  key={apolice.id || apolice.numeroApolice}
-                  className="hover:bg-(--surface-2)/40 transition-colors"
-                >
-                  <td className="py-3.5 px-4 font-semibold text-(--fg)">
-                    {apolice.numeroApolice}
-                  </td>
+    <TableContainer
+      isLoading={isLoading}
+      isEmpty={apolices.length === 0}
+      loadingMessage="Carregando apólices..."
+      emptyTitle="Nenhuma apólice encontrada"
+      emptyDescription="Não há registros para os filtros selecionados ou ainda não há apólices cadastradas."
+    >
+      <TableHeader columns={COLUNAS} />
+      <tbody className="divide-y divide-(--border)">
+        {apolices.map((apolice) => (
+          <TableRow key={apolice.id || apolice.numeroApolice}>
+            <TableCell className="font-semibold text-(--fg)">
+              {apolice.numeroApolice}
+            </TableCell>
 
-                  <td className="py-3.5 px-4 text-(--fg) mono text-xs">
-                    {apolice.tipoSeguro}
-                  </td>
+            <TableCell className="text-(--fg) mono text-xs">
+              {apolice.tipoSeguro}
+            </TableCell>
 
-                  <td className="py-3.5 px-4 text-xs text-(--fg)">
-                    {apolice.seguradoId || "-"}
-                  </td>
+            <TableCell className="text-xs text-(--fg)">
+              {apolice.seguradoId || "-"}
+            </TableCell>
 
-                  <td className="py-3.5 px-4 font-medium text-(--fg) text-xs text-right">
-                    {formatarMoeda(apolice.valorSeguro)}
-                  </td>
+            <TableCell align="right" className="font-medium text-(--fg) text-xs">
+              {formatarMoeda(apolice.valorSeguro)}
+            </TableCell>
 
-                  <td className="py-3.5 px-4 font-medium text-(--fg) text-xs text-right">
-                    {formatarMoeda(apolice.valorPremio)}
-                  </td>
+            <TableCell align="right" className="font-medium text-(--fg) text-xs">
+              {formatarMoeda(apolice.valorPremio)}
+            </TableCell>
 
-                  <td className="py-3.5 px-4 text-xs text-(--muted)">
-                    {formatarData(apolice.dataFimVigencia)}
-                  </td>
+            <TableCell className="text-xs text-(--muted)">
+              {formatarData(apolice.dataFimVigencia)}
+            </TableCell>
 
-                  <td className="py-3.5 px-4">
-                    <Badge variant={getBadgeVariant(apolice.status)}>
-                      {apolice.status}
-                    </Badge>
-                  </td>
+            <TableCell>
+              <Badge variant={getBadgeVariant(apolice.status)}>
+                {apolice.status}
+              </Badge>
+            </TableCell>
 
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="inline-flex items-center gap-1.5 justify-end">
-                      {onVisualizar && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onVisualizar(apolice)}
-                          title="Visualizar detalhes"
-                        >
-                          Ver
-                        </Button>
-                      )}
-                      {onEditar && (
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => onEditar(apolice)}
-                          title="Editar apólice"
-                        >
-                          Editar
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            <TableCell align="right">
+              <TableActions
+                onVisualizar={onVisualizar ? () => onVisualizar(apolice) : undefined}
+                onEditar={onEditar ? () => onEditar(apolice) : undefined}
+                editarTitle="Editar apólice"
+              />
+            </TableCell>
+          </TableRow>
+        ))}
+      </tbody>
+    </TableContainer>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "../../../components/ui/Button";
-import { Select } from "../../../components/ui/Select";
+import { Button, Select, SearchInput } from "../../../components/ui";
 import type { StatusApolice, TipoSeguro } from "../../../interfaces/enums";
 
 export interface ApoliceFiltrosState {
@@ -14,6 +13,21 @@ interface ApoliceFiltersProps {
   isLoading?: boolean;
 }
 
+const statusOptions = [
+  { value: "ATIVA", label: "Ativa" },
+  { value: "SUSPENSA", label: "Suspensa" },
+  { value: "CANCELADA", label: "Cancelada" },
+  { value: "EXPIRADA", label: "Expirada" },
+];
+
+const ramoOptions = [
+  { value: "AUTO", label: "Automóvel" },
+  { value: "RESIDENCIAL", label: "Residencial" },
+  { value: "PATRIMONIAL", label: "Patrimonial" },
+  { value: "EMPRESARIAL", label: "Empresarial" },
+  { value: "VIDA", label: "Vida" },
+];
+
 export const ApoliceFilters: React.FC<ApoliceFiltersProps> = ({
   onSearch,
   isLoading = false,
@@ -22,7 +36,7 @@ export const ApoliceFilters: React.FC<ApoliceFiltersProps> = ({
   const [status, setStatus] = useState<StatusApolice | "">("");
   const [tipoSeguro, setTipoSeguro] = useState<TipoSeguro | "">("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSearch({ termo: termo.trim(), status, tipoSeguro });
   };
@@ -33,21 +47,6 @@ export const ApoliceFilters: React.FC<ApoliceFiltersProps> = ({
     setTipoSeguro("");
     onSearch({ termo: "", status: "", tipoSeguro: "" });
   };
-
-  const statusOptions = [
-    { value: "ATIVA", label: "Ativa" },
-    { value: "SUSPENSA", label: "Suspensa" },
-    { value: "CANCELADA", label: "Cancelada" },
-    { value: "EXPIRADA", label: "Expirada" },
-  ];
-
-  const ramoOptions = [
-    { value: "AUTO", label: "Automóvel" },
-    { value: "RESIDENCIAL", label: "Residencial" },
-    { value: "PATRIMONIAL", label: "Patrimonial" },
-    { value: "EMPRESARIAL", label: "Empresarial" },
-    { value: "VIDA", label: "Vida" },
-  ];
 
   const hasFilters = Boolean(termo || status || tipoSeguro);
 
@@ -74,28 +73,11 @@ export const ApoliceFilters: React.FC<ApoliceFiltersProps> = ({
         />
       </div>
 
-      <div className="relative flex-1 w-full">
-        <input
-          type="text"
-          value={termo}
-          onChange={(e) => setTermo(e.target.value)}
-          placeholder="Buscar número da apólice ou segurado..."
-          className="w-full pl-9 pr-3 py-2 text-sm bg-(--surface) border border-(--border) rounded-lg outline-none focus:border-(--accent) text-(--fg) placeholder:text-(--faint) transition-colors"
-        />
-        <svg
-          className="absolute left-3 top-2.5 h-4 w-4 text-(--muted)"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-          />
-        </svg>
-      </div>
+      <SearchInput
+        value={termo}
+        onValueChange={setTermo}
+        placeholder="Buscar número da apólice ou segurado..."
+      />
 
       <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
         {hasFilters && (
