@@ -1,16 +1,36 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Select } from "../../../components/ui";
+import {
+  FormActions,
+  FormErrorBanner,
+  FormSection,
+  Input,
+  RadioGroup,
+  Select,
+} from "../../../components/ui";
 import { UFS } from "../../../interfaces/enums";
 import type { Segurado } from "../../../interfaces/segurados/segurado";
-import type { SeguradoRequest, SeguradoUpdateRequest } from "../../../interfaces/segurados/seguradoRequest";
-import { seguradoSchema, type SeguradoFormData } from "../schemas/seguradoSchema";
-import { formatarCpfCnpj, formatarTelefone, formatarCep, apenasNumeros } from "../../../utils/formatters";
+import type {
+  SeguradoRequest,
+  SeguradoUpdateRequest,
+} from "../../../interfaces/segurados/seguradoRequest";
+import {
+  apenasNumeros,
+  formatarCep,
+  formatarCpfCnpj,
+  formatarTelefone,
+} from "../../../utils/formatters";
+import {
+  seguradoSchema,
+  type SeguradoFormData,
+} from "../schemas/seguradoSchema";
 
 interface SeguradoFormProps {
   seguradoInicial?: Segurado | null;
-  onSubmit: (data: SeguradoRequest | SeguradoUpdateRequest) => Promise<void> | void;
+  onSubmit: (
+    data: SeguradoRequest | SeguradoUpdateRequest,
+  ) => Promise<void> | void;
   onCancel: () => void;
   isLoading?: boolean;
   errorMessage?: string | null;
@@ -55,14 +75,23 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
       reset({
         tipoPessoa: seguradoInicial.tipoPessoa || "PF",
         nomeRazaoSocial: seguradoInicial.nomeRazaoSocial || "",
-        cpfCnpj: formatarCpfCnpj(seguradoInicial.cpfCnpj, seguradoInicial.tipoPessoa),
+        cpfCnpj: formatarCpfCnpj(
+          seguradoInicial.cpfCnpj,
+          seguradoInicial.tipoPessoa,
+        ),
         email: seguradoInicial.email || "",
-        telefone: formatarTelefone(seguradoInicial.telefone) === "-" ? "" : formatarTelefone(seguradoInicial.telefone),
+        telefone:
+          formatarTelefone(seguradoInicial.telefone) === "-"
+            ? ""
+            : formatarTelefone(seguradoInicial.telefone),
         dataNascimento: seguradoInicial.dataNascimento || "",
         enderecoLogradouro: seguradoInicial.enderecoLogradouro || "",
         enderecoCidade: seguradoInicial.enderecoCidade || "",
         enderecoUf: seguradoInicial.enderecoUf || "",
-        enderecoCep: formatarCep(seguradoInicial.enderecoCep) === "-" ? "" : formatarCep(seguradoInicial.enderecoCep),
+        enderecoCep:
+          formatarCep(seguradoInicial.enderecoCep) === "-"
+            ? ""
+            : formatarCep(seguradoInicial.enderecoCep),
       });
     } else {
       reset({
@@ -99,7 +128,9 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
         enderecoLogradouro: data.enderecoLogradouro || undefined,
         enderecoCidade: data.enderecoCidade || undefined,
         enderecoUf: data.enderecoUf || undefined,
-        enderecoCep: data.enderecoCep ? apenasNumeros(data.enderecoCep) : undefined,
+        enderecoCep: data.enderecoCep
+          ? apenasNumeros(data.enderecoCep)
+          : undefined,
       };
       await onSubmit(updatePayload);
     } else {
@@ -116,72 +147,39 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
         enderecoLogradouro: data.enderecoLogradouro || undefined,
         enderecoCidade: data.enderecoCidade || undefined,
         enderecoUf: data.enderecoUf || undefined,
-        enderecoCep: data.enderecoCep ? apenasNumeros(data.enderecoCep) : undefined,
+        enderecoCep: data.enderecoCep
+          ? apenasNumeros(data.enderecoCep)
+          : undefined,
       };
       await onSubmit(createPayload);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(handleFormSubmit)}
-      className="space-y-6"
-    >
-      {errorMessage && (
-        <div className="p-3.5 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm flex items-center gap-2">
-          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{errorMessage}</span>
-        </div>
-      )}
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+      <FormErrorBanner message={errorMessage} />
 
       <div className="space-y-4">
         {/* Tipo de Pessoa */}
-        <div>
-          <label className="block text-xs font-semibold text-(--fg) uppercase tracking-wider mb-2">
-            Tipo de Pessoa *
-          </label>
-          <div className="flex gap-4">
-            <label className="inline-flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                value="PF"
-                disabled={isEdicao}
-                {...register("tipoPessoa")}
-                className="accent-(--accent)"
-              />
-              <span className="text-sm font-medium text-(--fg)">
-                Pessoa Física (PF)
-              </span>
-            </label>
-
-            <label className="inline-flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                value="PJ"
-                disabled={isEdicao}
-                {...register("tipoPessoa")}
-                className="accent-(--accent)"
-              />
-              <span className="text-sm font-medium text-(--fg)">
-                Pessoa Jurídica (PJ)
-              </span>
-            </label>
-          </div>
-          {errors.tipoPessoa && (
-            <span className="text-xs text-(--danger) mt-1 block">
-              {errors.tipoPessoa.message}
-            </span>
-          )}
-        </div>
+        <RadioGroup
+          label="Tipo de Pessoa *"
+          disabled={isEdicao}
+          error={errors.tipoPessoa?.message}
+          options={[
+            { value: "PF", label: "Pessoa Física (PF)" },
+            { value: "PJ", label: "Pessoa Jurídica (PJ)" },
+          ]}
+          {...register("tipoPessoa")}
+        />
 
         {/* Nome / Razão Social & CPF / CNPJ */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label={tipoPessoa === "PF" ? "Nome Completo *" : "Razão Social *"}
             placeholder={
-              tipoPessoa === "PF" ? "Ex: João da Silva" : "Ex: Minha Empresa LTDA"
+              tipoPessoa === "PF"
+                ? "Ex: João da Silva"
+                : "Ex: Minha Empresa LTDA"
             }
             error={errors.nomeRazaoSocial?.message}
             {...register("nomeRazaoSocial")}
@@ -226,11 +224,7 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
         </div>
 
         {/* Endereço */}
-        <div className="pt-2 border-t border-(--border)">
-          <h3 className="text-xs font-semibold text-(--muted) uppercase tracking-wider mb-3">
-            Endereço (Opcional)
-          </h3>
-
+        <FormSection title="Endereço (Opcional)">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
               <Input
@@ -264,26 +258,16 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
               />
             </div>
           </div>
-        </div>
+        </FormSection>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-4 border-t border-(--border)">
-        <Button
-          variant="ghost"
-          type="button"
-          onClick={onCancel}
-          disabled={isLoading || isSubmitting}
-        >
-          Cancelar
-        </Button>
-        <Button
-          variant="primary"
-          type="submit"
-          isLoading={isLoading || isSubmitting}
-        >
-          {isEdicao ? "Salvar Alterações" : "Cadastrar Segurado"}
-        </Button>
-      </div>
+      <FormActions
+        onCancel={onCancel}
+        isLoading={isLoading}
+        isSubmitting={isSubmitting}
+        isEdicao={isEdicao}
+        submitText={isEdicao ? "Salvar Alterações" : "Cadastrar Segurado"}
+      />
     </form>
   );
 };
