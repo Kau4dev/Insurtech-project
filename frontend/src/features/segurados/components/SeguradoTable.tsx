@@ -1,6 +1,13 @@
 import React from "react";
+import {
+  Badge,
+  TableActions,
+  TableCell,
+  TableContainer,
+  TableHeader,
+  TableRow,
+} from "../../../components/ui";
 import type { Segurado } from "../../../interfaces/segurados/segurado";
-import { Badge, TableContainer, TableHeader, TableRow, TableCell, TableActions } from "../../../components/ui";
 import { formatarCpfCnpj, formatarTelefone } from "../../../utils/formatters";
 
 interface SeguradoTableProps {
@@ -73,7 +80,9 @@ export const SeguradoTable: React.FC<SeguradoTableProps> = ({
 
               <TableCell align="right">
                 <TableActions
-                  onVisualizar={onVisualizar ? () => onVisualizar(segurado) : undefined}
+                  onVisualizar={
+                    onVisualizar ? () => onVisualizar(segurado) : undefined
+                  }
                   onEditar={onEditar ? () => onEditar(segurado) : undefined}
                   editarTitle="Editar segurado"
                 />

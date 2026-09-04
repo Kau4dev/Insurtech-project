@@ -1,9 +1,16 @@
 import React from "react";
-import { Badge, TableContainer, TableHeader, TableRow, TableCell, TableActions } from "../../../components/ui";
+import {
+  Badge,
+  TableActions,
+  TableCell,
+  TableContainer,
+  TableHeader,
+  TableRow,
+} from "../../../components/ui";
 import type { BadgeVariant } from "../../../components/ui/Badge";
 import type { Apolice } from "../../../interfaces/apolices/apolice";
 import type { StatusApolice } from "../../../interfaces/enums";
-import { formatarMoeda, formatarData } from "../../../utils/formatters";
+import { formatarData, formatarMoeda } from "../../../utils/formatters";
 
 interface ApoliceTableProps {
   apolices: Apolice[];
@@ -68,11 +75,17 @@ export const ApoliceTable: React.FC<ApoliceTableProps> = ({
               {apolice.seguradoId || "-"}
             </TableCell>
 
-            <TableCell align="right" className="font-medium text-(--fg) text-xs">
+            <TableCell
+              align="right"
+              className="font-medium text-(--fg) text-xs"
+            >
               {formatarMoeda(apolice.valorSeguro)}
             </TableCell>
 
-            <TableCell align="right" className="font-medium text-(--fg) text-xs">
+            <TableCell
+              align="right"
+              className="font-medium text-(--fg) text-xs"
+            >
               {formatarMoeda(apolice.valorPremio)}
             </TableCell>
 
@@ -88,7 +101,9 @@ export const ApoliceTable: React.FC<ApoliceTableProps> = ({
 
             <TableCell align="right">
               <TableActions
-                onVisualizar={onVisualizar ? () => onVisualizar(apolice) : undefined}
+                onVisualizar={
+                  onVisualizar ? () => onVisualizar(apolice) : undefined
+                }
                 onEditar={onEditar ? () => onEditar(apolice) : undefined}
                 editarTitle="Editar apólice"
               />
