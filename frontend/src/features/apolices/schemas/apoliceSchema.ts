@@ -31,21 +31,13 @@ export const apoliceSchema = z.object({
     { message: "Tipo de seguro é obrigatório" },
   ),
 
-  valorSeguro: z
-    .string()
-    .min(1, "Valor do seguro é obrigatório")
-    .regex(/^\d{1,14}(\.\d{1,2})?$/, "Valor inválido")
-    .refine((val) => parseFloat(val) > 0, {
-      message: "Valor do seguro deve ser positivo",
-    }),
+  valorSeguro: z.coerce
+    .number({ message: "Valor do seguro é obrigatório" })
+    .positive("Valor do seguro deve ser positivo"),
 
-  valorPremio: z
-    .string()
-    .min(1, "Valor do prêmio é obrigatório")
-    .regex(/^\d{1,14}(\.\d{1,2})?$/, "Valor inválido")
-    .refine((val) => parseFloat(val) > 0, {
-      message: "Valor do prêmio deve ser positivo",
-    }),
+  valorPremio: z.coerce
+    .number({ message: "Valor do prêmio é obrigatório" })
+    .positive("Valor do prêmio deve ser positivo"),
 
   dataInicioVigencia: dataFuturaOuPresente(
     "Data de início da vigência é obrigatória",

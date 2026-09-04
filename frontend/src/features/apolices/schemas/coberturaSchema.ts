@@ -22,19 +22,14 @@ export const CoberturaSchema = z.object({
         ],                                                                                                       
         { message: "Tipo de cobertura é obrigatório" }                                                           
       ),                                                                                                         
-      valorCobertura: z                                                                                          
-        .string()                                                                                                
-        .min(1, "Valor da cobertura é obrigatório")                                                              
-        .regex(/^\d{1,14}(\.\d{1,2})?$/, "Valor inválido")                                                       
-        .refine((val) => parseFloat(val) > 0, {                                                                  
-          message: "Valor da cobertura deve ser positivo",                                                       
-        }),                                                                                                      
-      valorFranquia: z                                                                                           
-        .string()                                                                                                
-        .optional()                                                                                              
-        .refine(                                                                                                 
-          (val) => !val || (/^\d{1,14}(\.\d{1,2})?$/.test(val) && parseFloat(val) >= 0),                         
-          { message: "Valor da franquia deve ser positivo ou zero" }                                             
-        ),                                                                                                       
+      valorCobertura: z.coerce
+        .number({ message: "Valor da cobertura é obrigatório" })
+        .positive("Valor da cobertura deve ser positivo"),
+      valorFranquia: z.coerce
+        .number()
+        .optional()
+        .refine((val) => val === undefined || val >= 0, {
+          message: "Valor da franquia deve ser positivo ou zero",
+        }),
     });                                                                                                          
                           
