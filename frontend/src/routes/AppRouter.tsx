@@ -3,6 +3,7 @@ import { LoginPage } from "../pages/LoginPage";
 import { SeguradosListPage } from "../pages/SeguradosListPage";
 import { RotaProtegida } from "./RotaProtegida";
 import { AppLayout } from "../components/layout/AppLayout";
+import { ApolicesListPage } from "../pages/ApolicesListPage";
 
 export const router = createBrowserRouter([
   {
@@ -20,7 +21,7 @@ export const router = createBrowserRouter([
         path: "/",
         element: (
           <div className="p-8">
-            <h1 className="text-2xl font-[600] text-(--fg)">Dashboard</h1>
+            <h1 className="text-2xl font-semibold text-(--fg)">Dashboard</h1>
             <p className="mt-2 text-(--muted)">Bem-vindo ao InsurTech.</p>
           </div>
         ),
@@ -29,7 +30,7 @@ export const router = createBrowserRouter([
         path: "/dashboard",
         element: (
           <div className="p-8">
-            <h1 className="text-2xl font-[600] text-(--fg)">Dashboard</h1>
+            <h1 className="text-2xl font-semibold text-(--fg)">Dashboard</h1>
             <p className="mt-2 text-(--muted)">Bem-vindo ao InsurTech.</p>
           </div>
         ),
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
         path: "/segurados",
         element: <SeguradosListPage />,
       },
+      {
+        path: "/apolices",
+        element: <ApolicesListPage />,
+      }
     ],
   },
   {

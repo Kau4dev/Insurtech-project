@@ -11,3 +11,5 @@ export interface ApoliceRequest {
     dataFimVigencia: string;
     coberturas: Omit<Cobertura, 'id'>[];
 }
+
+export type ApoliceUpdateRequest = Partial<Omit<ApoliceRequest, 'seguradoId' | 'numeroApolice'>>;
