@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, FormErrorBanner, Modal, Select } from "../../../components/ui";
 import type { StatusApolice } from "../../../interfaces/enums";
 
@@ -26,13 +26,13 @@ export const ApoliceStatusModal: React.FC<ApoliceStatusModalProps> = ({
   isLoading = false,
   errorMessage = null,
 }) => {
+  const [prevStatus, setPrevStatus] = useState<StatusApolice>(statusAtual);
   const [novoStatus, setNovoStatus] = useState<StatusApolice>(statusAtual);
 
-  useEffect(() => {
-    if (statusAtual) {
-      setNovoStatus(statusAtual);
-    }
-  }, [statusAtual]);
+  if (statusAtual !== prevStatus) {
+    setPrevStatus(statusAtual);
+    setNovoStatus(statusAtual);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
