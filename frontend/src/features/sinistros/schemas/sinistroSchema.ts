@@ -14,7 +14,7 @@ const dataPassadaOuPresente = (
         const dataInput = new Date(val);
         const hoje = new Date();
         hoje.setHours(23, 59, 59, 999);
-        return dataInput <= hoje; // ✅ Permite passado ou hoje
+        return dataInput <= hoje; 
       },
       { message: msgFutura },
     );
