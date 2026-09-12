@@ -14,7 +14,7 @@ const dataPassadaOuPresente = (
         const dataInput = new Date(val);
         const hoje = new Date();
         hoje.setHours(23, 59, 59, 999);
-        return dataInput <= hoje; 
+        return dataInput <= hoje;
       },
       { message: msgFutura },
     );
@@ -55,4 +55,4 @@ export const sinistroSchema = z.object({
     .positive("Valor estimado deve ser positivo"),
 });
 
-export type SinistroFormData = z.infer<typeof sinistroSchema>;
+export type SinistroFormData = z.input<typeof sinistroSchema>;
