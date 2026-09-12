@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   FormErrorBanner,
@@ -55,23 +55,23 @@ export const AprovarRejeitarModal: React.FC<AprovarRejeitarModalProps> = ({
 }) => {
   const isAprovar = acao === "aprovar";
 
+  const [prevSinistroId, setPrevSinistroId] = useState<string | null>(null);
   const [valorAprovado, setValorAprovado] = useState<string>("");
   const [motivoSelect, setMotivoSelect] = useState<string>(
     MOTIVOS_REJEICAO_PADRAO[0].value,
   );
   const [motivoOutro, setMotivoOutro] = useState<string>("");
 
-  useEffect(() => {
-    if (sinistro && isOpen) {
-      setValorAprovado(String(sinistro.valorEstimado || ""));
-      setMotivoSelect(MOTIVOS_REJEICAO_PADRAO[0].value);
-      setMotivoOutro("");
-    }
-  }, [sinistro, isOpen]);
+  if (sinistro && isOpen && sinistro.id !== prevSinistroId) {
+    setPrevSinistroId(sinistro.id || null);
+    setValorAprovado(String(sinistro.valorEstimado || ""));
+    setMotivoSelect(MOTIVOS_REJEICAO_PADRAO[0].value);
+    setMotivoOutro("");
+  }
 
   if (!sinistro || !acao) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isAprovar) {
       const valor = Number(valorAprovado);
