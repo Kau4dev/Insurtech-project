@@ -7,6 +7,7 @@ import type {
   RejeitarSinistro,
   SinistroRequest,
 } from "../../../interfaces/sinistros/sinistroRequest";
+
 export function useSinistros(filtros?: FiltrosSinistros) {
   return useQuery({
     queryKey: ["sinistros", filtros],
