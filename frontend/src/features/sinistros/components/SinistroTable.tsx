@@ -11,6 +11,8 @@ import type { BadgeVariant } from "../../../components/ui/Badge";
 import type { StatusSinistro } from "../../../interfaces/enums";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
 import { formatarData, formatarMoeda } from "../../../utils/formatters";
+import { SeguradoNome } from "../../segurados/components/SeguradoNome";
+import { ApoliceNumero } from "../../apolices/components/ApoliceNumero";
 
 interface SinistroTableProps {
   sinistros: Sinistro[];
@@ -27,7 +29,26 @@ const COLUNAS = [
   { label: "Estimado", align: "right" as const },
   "Status",
   "Analista",
-  { label: "Ações", align: "right" as const },
+  { label: "Ações", align: "center" as const },
+];
+
+const tipoSinistroOptions = [
+  { value: "COLISAO", label: "COLISÃO" },
+  { value: "ROUBO_FURTO", label: "ROUBO/FURTO" },
+  { value: "INCENDIO", label: "INCÊNDIO" },
+  { value: "DANO_A_TERCEIRO", label: "DANO A TERCEIROS" },
+  { value: "ALAGAMENTO", label: "ALAGAMENTO" },
+  { value: "QUEBRA_DE_VIDRO", label: "QUEBRA DE VIDRO" },
+  { value: "OUTROS", label: "OUTROS" },
+];
+
+const statusOptions = [
+  { value: "REGISTRADO", label: "REGISTRADO" },
+  { value: "EM_ANALISE", label: "EM ANÁLISE" },
+  { value: "AGUARDANDO_DOCUMENTOS", label: "AGUARDANDO DOCUMENTOS" },
+  { value: "APROVADO", label: "APROVADO" },
+  { value: "REJEITADO", label: "REJEITADO" },
+  { value: "PAGO", label: "PAGO" },
 ];
 
 const getBadgeVariant = (status: StatusSinistro): BadgeVariant => {
@@ -69,18 +90,18 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
             <TableCell className="font-medium text-(--fg)">
               <div className="font-semibold">{sinistro.numeroSinistro}</div>
               {sinistro.apoliceId && (
-                <div className="text-xs text-(--muted) font-normal mono">
-                  apólice {sinistro.apoliceId.slice(0, 8)}…
+                <div className="text-xs text-(--muted) font-normal">
+                  <ApoliceNumero apoliceId={sinistro.apoliceId} /> 
                 </div>
               )}
             </TableCell>
 
-            <TableCell className="text-(--fg) mono text-xs">
-              {sinistro.seguradoId || "-"}
+            <TableCell className="text-xs text-(--muted) font-normal">
+               {sinistro.seguradoId && <SeguradoNome seguradoId={sinistro.seguradoId} />}
             </TableCell>
 
-            <TableCell className="font-medium text-(--fg) text-xs">
-              {sinistro.tipoSinistro}
+            <TableCell className="text-(--fg) mono text-xs">
+              {tipoSinistroOptions.find((o) => o.value === sinistro.tipoSinistro)?.label || sinistro.tipoSinistro}
             </TableCell>
 
             <TableCell className="text-xs text-(--muted) mono">
@@ -96,7 +117,7 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
 
             <TableCell>
               <Badge variant={getBadgeVariant(sinistro.status)}>
-                {sinistro.status}
+                {statusOptions.find((o) => o.value === sinistro.status)?.label || sinistro.status}
               </Badge>
             </TableCell>
 
@@ -106,7 +127,7 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
                 : "—"}
             </TableCell>
 
-            <TableCell align="right">
+            <TableCell align="center">
               <TableActions
                 onVisualizar={
                   onVisualizar ? () => onVisualizar(sinistro) : undefined
