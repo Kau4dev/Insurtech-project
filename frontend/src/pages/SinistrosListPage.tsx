@@ -154,9 +154,12 @@ export const SinistrosListPage: React.FC = () => {
       {/* Cabeçalho da Página */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
+          <div className="font-mono text-xs uppercase tracking-widest text-(--accent-ink) font-semibold">
+            Operações
+          </div>
           <h1 className="text-2xl font-bold text-(--fg)">Sinistros</h1>
           <p className="text-sm text-(--muted) mt-0.5">
-            Gerencie os sinistros registrados, análises e liquidações.
+            Todas as ocorrências registradas, com filtros por status e tipo.
           </p>
         </div>
 

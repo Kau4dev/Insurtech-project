@@ -149,9 +149,12 @@ export const ApolicesListPage: React.FC = () => {
       {/* Cabeçalho da Página */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
+          <div className="font-mono text-xs uppercase tracking-widest text-(--accent-ink) font-semibold">
+            portfólio
+          </div>
           <h1 className="text-2xl font-bold text-(--fg)">Apólices</h1>
           <p className="text-sm text-(--muted) mt-0.5">
-            Gerencie as apólices emitidas e vigências cadastradas no sistema.
+            Contratos, coberturas e status de vigência.
           </p>
         </div>
 
