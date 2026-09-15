@@ -22,7 +22,8 @@ export const NavItem: React.FC<NavItemProps> = ({
 }) => {
   const baseClasses =
     "flex items-center gap-2.5 w-full py-[9px] px-2.5 rounded-lg text-[13.5px] font-[480] text-left transition-colors duration-120";
-  const activeClasses = "bg-(--accent-soft) text-(--accent-ink) font-semibold";
+  const activeClasses =
+    "bg-(--accent-soft) text-(--accent-ink) font-semibold [&>svg]:text-(--accent-ink) ";
   const inactiveClasses =
     "text-(--muted) hover:bg-(--surface-2) hover:text-(--fg)";
   const disabledClasses =
@@ -50,18 +51,29 @@ export const NavItem: React.FC<NavItemProps> = ({
     <NavLink
       to={to}
       title={title}
+      onClick={onClick}
       className={({ isActive }) =>
         `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`
       }
     >
-      <span className="w-4 h-4 shrink-0 flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4 text-(--accent-ink) ">
-        {icon}
-      </span>
-      <span className="flex-1 truncate">{label}</span>
-      {count !== undefined && (
-        <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-(--surface-2) border border-(--border) font-mono font-medium text-(--accent-ink) ">
-          {count}
-        </span>
+      {({ isActive }) => (
+        <>
+          <span className="w-4 h-4 shrink-0 flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4 ">
+            {icon}
+          </span>
+          <span className="flex-1 truncate">{label}</span>
+          {count !== undefined && (
+            <span
+              className={`text-[11px] px-1.5 py-0.5 rounded-full font-mono font-medium transition-colors ${
+                isActive
+                  ? "bg-(--accent-ink) text-amber-50 border border-transparent"
+                  : "bg-(--surface-2) border border-(--border) text-(--accent-ink)"
+              }`}
+            >
+              {count}
+            </span>
+          )}
+        </>
       )}
     </NavLink>
   );
