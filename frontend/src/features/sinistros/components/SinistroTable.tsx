@@ -7,12 +7,15 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui";
-import type { BadgeVariant } from "../../../components/ui/Badge";
-import type { StatusSinistro } from "../../../interfaces/enums";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
+import {
+  formatarStatusSinistro,
+  formatarTipoSinistro,
+  getSinistroStatusBadgeVariant,
+} from "../../../utils/enumUtils";
 import { formatarData, formatarMoeda } from "../../../utils/formatters";
-import { SeguradoNome } from "../../segurados/components/SeguradoNome";
 import { ApoliceNumero } from "../../apolices/components/ApoliceNumero";
+import { SeguradoNome } from "../../segurados/components/SeguradoNome";
 
 interface SinistroTableProps {
   sinistros: Sinistro[];
@@ -31,43 +34,6 @@ const COLUNAS = [
   "Analista",
   { label: "Ações", align: "center" as const },
 ];
-
-const tipoSinistroOptions = [
-  { value: "COLISAO", label: "COLISÃO" },
-  { value: "ROUBO_FURTO", label: "ROUBO/FURTO" },
-  { value: "INCENDIO", label: "INCÊNDIO" },
-  { value: "DANO_A_TERCEIRO", label: "DANO A TERCEIROS" },
-  { value: "ALAGAMENTO", label: "ALAGAMENTO" },
-  { value: "QUEBRA_DE_VIDRO", label: "QUEBRA DE VIDRO" },
-  { value: "OUTROS", label: "OUTROS" },
-];
-
-const statusOptions = [
-  { value: "REGISTRADO", label: "REGISTRADO" },
-  { value: "EM_ANALISE", label: "EM ANÁLISE" },
-  { value: "AGUARDANDO_DOCUMENTOS", label: "AGUARDANDO DOCUMENTOS" },
-  { value: "APROVADO", label: "APROVADO" },
-  { value: "REJEITADO", label: "REJEITADO" },
-  { value: "PAGO", label: "PAGO" },
-];
-
-const getBadgeVariant = (status: StatusSinistro): BadgeVariant => {
-  switch (status) {
-    case "REGISTRADO":
-      return "neutral";
-    case "EM_ANALISE":
-    case "AGUARDANDO_DOCUMENTOS":
-      return "warning";
-    case "APROVADO":
-      return "success";
-    case "PAGO":
-      return "info";
-    case "REJEITADO":
-      return "danger";
-    default:
-      return "neutral";
-  }
-};
 
 export const SinistroTable: React.FC<SinistroTableProps> = ({
   sinistros,
@@ -91,17 +57,19 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
               <div className="font-semibold">{sinistro.numeroSinistro}</div>
               {sinistro.apoliceId && (
                 <div className="text-xs text-(--muted) font-normal">
-                  <ApoliceNumero apoliceId={sinistro.apoliceId} /> 
+                  <ApoliceNumero apoliceId={sinistro.apoliceId} />
                 </div>
               )}
             </TableCell>
 
             <TableCell className="text-xs text-(--muted) font-normal">
-               {sinistro.seguradoId && <SeguradoNome seguradoId={sinistro.seguradoId} />}
+              {sinistro.seguradoId && (
+                <SeguradoNome seguradoId={sinistro.seguradoId} />
+              )}
             </TableCell>
 
-            <TableCell className="text-(--fg) mono text-xs">
-              {tipoSinistroOptions.find((o) => o.value === sinistro.tipoSinistro)?.label || sinistro.tipoSinistro}
+            <TableCell className="text-(--fg) mono text-xs uppercase">
+              {formatarTipoSinistro(sinistro.tipoSinistro)}
             </TableCell>
 
             <TableCell className="text-xs text-(--muted) mono">
@@ -115,9 +83,9 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
               {formatarMoeda(sinistro.valorEstimado)}
             </TableCell>
 
-            <TableCell>
-              <Badge variant={getBadgeVariant(sinistro.status)}>
-                {statusOptions.find((o) => o.value === sinistro.status)?.label || sinistro.status}
+            <TableCell className="uppercase">
+              <Badge variant={getSinistroStatusBadgeVariant(sinistro.status)}>
+                {formatarStatusSinistro(sinistro.status)}
               </Badge>
             </TableCell>
 

@@ -12,27 +12,9 @@ import {
 } from "../../../components/ui";
 import type { Cobertura } from "../../../interfaces/apolices/cobertura";
 import type { TipoCobertura } from "../../../interfaces/enums";
+import { TIPO_COBERTURA_OPTIONS } from "../../../utils/enumUtils";
 import { formatarMoeda } from "../../../utils/formatters";
 import type { ApoliceFormData } from "../schemas/apoliceSchema";
-
-const TIPOS_COBERTURA: { value: TipoCobertura; label: string }[] = [
-  { value: "COLISAO", label: "Colisão" },
-  { value: "ROUBO_FURTO", label: "Roubo e Furto" },
-  { value: "INCENDIO_VEICULO", label: "Incêndio Veículo" },
-  { value: "DANO_A_TERCEIRO", label: "Danos a Terceiros" },
-  { value: "QUEBRA_DE_VIDRO", label: "Quebra de Vidros" },
-  { value: "INCENDIO_RESIDENCIAL", label: "Incêndio Residencial" },
-  { value: "DANOS_ELETRICOS", label: "Danos Elétricos" },
-  { value: "ROUBO_BENS", label: "Roubo de Bens" },
-  { value: "ALAGAMENTO", label: "Alagamento" },
-  { value: "MORTE", label: "Morte" },
-  { value: "INVALIDEZ_PERMANENTE", label: "Invalidez Permanente" },
-  { value: "DOENCA_GRAVE", label: "Doença Grave" },
-  { value: "DANO_EQUIPAMENTO", label: "Dano a Equipamento" },
-  { value: "LUCROS_CESSANTES", label: "Lucros Cessantes" },
-  { value: "RESPONSABILIDADE_CIVIL", label: "Responsabilidade Civil" },
-  { value: "OUTROS", label: "Outros" },
-];
 
 interface CoberturaListProps {
   coberturas?:
@@ -106,7 +88,7 @@ const CoberturaEditableList: React.FC<CoberturaEditableListProps> = ({
               <div className="md:col-span-4">
                 <Select
                   label="Tipo de Cobertura *"
-                  options={TIPOS_COBERTURA}
+                  options={TIPO_COBERTURA_OPTIONS}
                   error={errors?.coberturas?.[index]?.tipoCobertura?.message}
                   {...register(`coberturas.${index}.tipoCobertura` as const)}
                 />
@@ -181,8 +163,9 @@ export const CoberturaList: React.FC<CoberturaListProps> = ({
       <tbody className="divide-y divide-(--border)">
         {coberturas.map((cob, idx) => (
           <TableRow key={idx}>
-            <TableCell className="font-semibold text-(--fg)">
-              {cob.tipoCobertura}
+            <TableCell className="font-semibold text-(--fg) uppercase">
+              {TIPO_COBERTURA_OPTIONS.find((t) => t.value === cob.tipoCobertura)
+                ?.label || cob.tipoCobertura}
             </TableCell>
             <TableCell align="right" className="font-medium text-xs">
               {formatarMoeda(cob.valorCobertura)}

@@ -4,15 +4,18 @@ import {
   Button,
   DetailField,
   Modal,
+  TableCell,
   TableContainer,
   TableHeader,
   TableRow,
-  TableCell,
   TabsNav,
 } from "../../../components/ui";
-import type { BadgeVariant } from "../../../components/ui/Badge";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
-import type { StatusSinistro } from "../../../interfaces/enums";
+import {
+  formatarStatusSinistro,
+  formatarTipoSinistro,
+  getSinistroStatusBadgeVariant,
+} from "../../../utils/enumUtils";
 import { formatarData, formatarMoeda } from "../../../utils/formatters";
 import { useHistoricoSinistro } from "../hooks/useSinistros";
 
@@ -32,35 +35,15 @@ const COLUNAS_HISTORICO = [
   "Observação",
 ];
 
-const getStatusBadgeVariant = (status: StatusSinistro): BadgeVariant => {
-  switch (status) {
-    case "REGISTRADO":
-      return "neutral";
-    case "EM_ANALISE":
-      return "purple";
-    case "AGUARDANDO_DOCUMENTOS":
-      return "warning";
-    case "APROVADO":
-    case "PAGO":
-      return "success";
-    case "REJEITADO":
-      return "danger";
-    default:
-      return "neutral";
-  }
-};
-
 export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
   sinistro,
   isOpen,
-  onClose,
-  onAlterarStatus,
+  onClose
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<Aba>("detalhes");
 
-  const { data: historico = [], isLoading: loadingHistorico } = useHistoricoSinistro(
-    sinistro?.id
-  );
+  const { data: historico = [], isLoading: loadingHistorico } =
+    useHistoricoSinistro(sinistro?.id);
 
   if (!sinistro) return null;
 
@@ -69,32 +52,10 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Sinistro Nº ${sinistro.numeroSinistro}`}
-      description={`Tipo: ${sinistro.tipoSinistro} | Registrado em ${formatarData(sinistro.dataOcorrencia)}`}
+      description={`Tipo: ${formatarTipoSinistro(sinistro.tipoSinistro)} | Registrado em ${formatarData(sinistro.dataOcorrencia)}`}
       maxWidthClass="max-w-4xl"
     >
       <div className="space-y-6">
-        {/* Cabeçalho com Ações Rápidas */}
-        <div className="flex items-center justify-between bg-(--surface-2)/40 p-4 rounded-lg border border-(--border)">
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-(--muted) uppercase tracking-wider font-medium">
-              Status Atual:
-            </span>
-            <Badge variant={getStatusBadgeVariant(sinistro.status)}>
-              {sinistro.status}
-            </Badge>
-          </div>
-
-          {onAlterarStatus && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => onAlterarStatus(sinistro)}
-            >
-              Alterar Status / Ações
-            </Button>
-          )}
-        </div>
-
         <TabsNav
           activeTab={abaAtiva}
           onChange={setAbaAtiva}
@@ -113,7 +74,9 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-(--surface-2)/40 p-5 rounded-lg border border-(--border)">
             <DetailField
               label="Número do Sinistro"
-              value={<span className="font-semibold">{sinistro.numeroSinistro}</span>}
+              value={
+                <span className="font-semibold">{sinistro.numeroSinistro}</span>
+              }
             />
             <DetailField
               label="ID da Apólice"
@@ -121,7 +84,9 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
             />
             <DetailField
               label="ID do Segurado"
-              value={<span className="mono text-xs">{sinistro.seguradoId}</span>}
+              value={
+                <span className="mono text-xs">{sinistro.seguradoId}</span>
+              }
             />
             <DetailField
               label="ID do Analista"
@@ -134,7 +99,10 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
               }
             />
 
-            <DetailField label="Tipo de Sinistro" value={sinistro.tipoSinistro} />
+            <DetailField
+              label="Tipo de Sinistro"
+              value={formatarTipoSinistro(sinistro.tipoSinistro)}
+            />
             <DetailField
               label="Data de Ocorrência"
               value={formatarData(sinistro.dataOcorrencia)}
@@ -164,8 +132,8 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
             <DetailField
               label="Status"
               value={
-                <Badge variant={getStatusBadgeVariant(sinistro.status)}>
-                  {sinistro.status}
+                <Badge variant={getSinistroStatusBadgeVariant(sinistro.status)}>
+                  {formatarStatusSinistro(sinistro.status)}
                 </Badge>
               }
             />
@@ -199,18 +167,24 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                   <TableCell className="text-xs text-(--muted)">
                     {formatarData(h.createdAt || "")}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="uppercase">
                     {h.statusAnterior ? (
-                      <Badge variant={getStatusBadgeVariant(h.statusAnterior)}>
-                        {h.statusAnterior}
+                      <Badge
+                        variant={getSinistroStatusBadgeVariant(
+                          h.statusAnterior,
+                        )}
+                      >
+                        {formatarStatusSinistro(h.statusAnterior)}
                       </Badge>
                     ) : (
                       "-"
                     )}
                   </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadgeVariant(h.statusNovo)}>
-                      {h.statusNovo}
+                  <TableCell className="uppercase">
+                    <Badge
+                      variant={getSinistroStatusBadgeVariant(h.statusNovo)}
+                    >
+                      {formatarStatusSinistro(h.statusNovo)}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-xs text-(--fg)">

@@ -8,6 +8,10 @@ import {
   TableRow,
 } from "../../../components/ui";
 import type { Segurado } from "../../../interfaces/segurados/segurado";
+import {
+  formatarTipoPessoa,
+  getPessoaTipoBadgeVariant,
+} from "../../../utils/enumUtils";
 import { formatarCpfCnpj, formatarTelefone } from "../../../utils/formatters";
 
 interface SeguradoTableProps {
@@ -43,7 +47,6 @@ export const SeguradoTable: React.FC<SeguradoTableProps> = ({
       <TableHeader columns={COLUNAS} />
       <tbody className="divide-y divide-(--border)">
         {segurados.map((segurado) => {
-          const isPF = segurado.tipoPessoa === "PF";
           const localidade = [segurado.enderecoCidade, segurado.enderecoUf]
             .filter(Boolean)
             .join(" - ");
@@ -53,12 +56,12 @@ export const SeguradoTable: React.FC<SeguradoTableProps> = ({
               <TableCell className="font-medium text-(--fg)">
                 <div>{segurado.nomeRazaoSocial}</div>
                 <div className="text-xs text-(--muted) font-normal">
-                  {isPF ? "Pessoa Física" : "Pessoa Jurídica"}
+                  {formatarTipoPessoa(segurado.tipoPessoa)}
                 </div>
               </TableCell>
               <TableCell>
-                <Badge variant={isPF ? "info" : "purple"}>
-                  {isPF ? "PF" : "PJ"}
+                <Badge variant={getPessoaTipoBadgeVariant(segurado.tipoPessoa)}>
+                  {segurado.tipoPessoa}
                 </Badge>
               </TableCell>
 

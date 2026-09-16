@@ -7,9 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui";
-import type { BadgeVariant } from "../../../components/ui/Badge";
 import type { Apolice } from "../../../interfaces/apolices/apolice";
-import type { StatusApolice } from "../../../interfaces/enums";
+import { getApoliceStatusBadgeVariant } from "../../../utils/enumUtils";
 import { formatarData, formatarMoeda } from "../../../utils/formatters";
 import { SeguradoNome } from "../../segurados/components/SeguradoNome";
 
@@ -31,24 +30,9 @@ const COLUNAS = [
   { label: "Ações", align: "center" as const },
 ];
 
-const getBadgeVariant = (status: StatusApolice): BadgeVariant => {
-  switch (status) {
-    case "ATIVA":
-      return "success";
-    case "SUSPENSA":
-      return "warning";
-    case "CANCELADA":
-      return "danger";
-    case "EXPIRADA":
-      return "neutral";
-    default:
-      return "neutral";
-  }
-};
-
 export const ApoliceTable: React.FC<ApoliceTableProps> = ({
   apolices,
-  
+
   isLoading = false,
   onEditar,
   onVisualizar,
@@ -77,10 +61,7 @@ export const ApoliceTable: React.FC<ApoliceTableProps> = ({
               <SeguradoNome seguradoId={apolice.seguradoId} />
             </TableCell>
 
-            <TableCell
-              align="right"
-              className="font-medium text-(--fg) "
-            >
+            <TableCell align="right" className="font-medium text-(--fg) ">
               {formatarMoeda(apolice.valorSeguro)}
             </TableCell>
 
@@ -96,7 +77,7 @@ export const ApoliceTable: React.FC<ApoliceTableProps> = ({
             </TableCell>
 
             <TableCell>
-              <Badge variant={getBadgeVariant(apolice.status)}>
+              <Badge variant={getApoliceStatusBadgeVariant(apolice.status)}>
                 {apolice.status}
               </Badge>
             </TableCell>
