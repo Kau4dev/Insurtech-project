@@ -8,6 +8,10 @@ import {
   TableRow,
 } from "../../../components/ui";
 import type { Segurado } from "../../../interfaces/segurados/segurado";
+import {
+  formatarTipoPessoa,
+  getPessoaTipoBadgeVariant,
+} from "../../../utils/enumUtils";
 import { formatarCpfCnpj, formatarTelefone } from "../../../utils/formatters";
 
 interface SeguradoTableProps {
@@ -18,12 +22,12 @@ interface SeguradoTableProps {
 }
 
 const COLUNAS = [
-  "Tipo",
   "Nome / Razão Social",
+  "Tipo",
   "CPF / CNPJ",
   "Contato",
   "Localidade",
-  { label: "Ações", align: "right" as const },
+  { label: "Ações", align: "center" as const },
 ];
 
 export const SeguradoTable: React.FC<SeguradoTableProps> = ({
@@ -43,24 +47,22 @@ export const SeguradoTable: React.FC<SeguradoTableProps> = ({
       <TableHeader columns={COLUNAS} />
       <tbody className="divide-y divide-(--border)">
         {segurados.map((segurado) => {
-          const isPF = segurado.tipoPessoa === "PF";
           const localidade = [segurado.enderecoCidade, segurado.enderecoUf]
             .filter(Boolean)
             .join(" - ");
 
           return (
             <TableRow key={segurado.id || segurado.cpfCnpj}>
-              <TableCell>
-                <Badge variant={isPF ? "info" : "purple"}>
-                  {isPF ? "PF" : "PJ"}
-                </Badge>
-              </TableCell>
-
               <TableCell className="font-medium text-(--fg)">
                 <div>{segurado.nomeRazaoSocial}</div>
                 <div className="text-xs text-(--muted) font-normal">
-                  {isPF ? "Pessoa Física" : "Pessoa Jurídica"}
+                  {formatarTipoPessoa(segurado.tipoPessoa)}
                 </div>
+              </TableCell>
+              <TableCell>
+                <Badge variant={getPessoaTipoBadgeVariant(segurado.tipoPessoa)}>
+                  {segurado.tipoPessoa}
+                </Badge>
               </TableCell>
 
               <TableCell className="text-(--fg) mono text-xs font-medium">
@@ -78,7 +80,7 @@ export const SeguradoTable: React.FC<SeguradoTableProps> = ({
                 {localidade || "-"}
               </TableCell>
 
-              <TableCell align="right">
+              <TableCell align="center">
                 <TableActions
                   onVisualizar={
                     onVisualizar ? () => onVisualizar(segurado) : undefined

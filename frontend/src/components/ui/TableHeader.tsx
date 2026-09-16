@@ -13,7 +13,7 @@ interface TableHeaderProps {
 export const TableHeader: React.FC<TableHeaderProps> = ({ columns }) => {
   return (
     <thead>
-      <tr className="border-b border-(--border) bg-(--surface-2)/60 text-(--muted) font-medium text-xs tracking-wider uppercase">
+      <tr className="border-b border-(--border) bg-(--surface-2) text-(--muted) font-medium text-xs tracking-wider uppercase">
         {columns.map((col, idx) => {
           if (typeof col === "string") {
             return (

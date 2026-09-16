@@ -9,6 +9,14 @@ import {
   TabsNav,
 } from "../../../components/ui";
 import type { Apolice } from "../../../interfaces/apolices/apolice";
+import {
+  formatarStatusApolice,
+  formatarStatusSinistro,
+  formatarTipoSeguro,
+  formatarTipoSinistro,
+  getApoliceStatusBadgeVariant,
+  getSinistroStatusBadgeVariant,
+} from "../../../utils/enumUtils";
 import { formatarData, formatarMoeda } from "../../../utils/formatters";
 import { useSinistros } from "../../sinistros/hooks/useSinistros";
 import { CoberturaList } from "./CoberturaList";
@@ -34,7 +42,6 @@ export const ApoliceDetailDrawer: React.FC<ApoliceDetailDrawerProps> = ({
   apolice,
   isOpen,
   onClose,
-  onAlterarStatus,
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<Aba>("detalhes");
 
@@ -49,20 +56,6 @@ export const ApoliceDetailDrawer: React.FC<ApoliceDetailDrawerProps> = ({
   const sinistros = sinistrosData?.content || [];
   const coberturas = apolice.coberturas || [];
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case "ATIVA":
-        return "success";
-      case "SUSPENSA":
-        return "warning";
-      case "CANCELADA":
-      case "EXPIRADA":
-        return "danger";
-      default:
-        return "info";
-    }
-  };
-
   return (
     <Modal
       isOpen={isOpen}
@@ -72,28 +65,6 @@ export const ApoliceDetailDrawer: React.FC<ApoliceDetailDrawerProps> = ({
       maxWidthClass="max-w-4xl"
     >
       <div className="space-y-6">
-        {/* Cabeçalho com Ações Rápidas */}
-        <div className="flex items-center justify-between bg-(--surface-2)/40 p-4 rounded-lg border border-(--border)">
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-(--muted) uppercase tracking-wider font-medium">
-              Status Atual:
-            </span>
-            <Badge variant={getStatusBadgeVariant(apolice.status)}>
-              {apolice.status}
-            </Badge>
-          </div>
-
-          {onAlterarStatus && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => onAlterarStatus(apolice)}
-            >
-              Alterar Status
-            </Button>
-          )}
-        </div>
-
         <TabsNav
           activeTab={abaAtiva}
           onChange={setAbaAtiva}
@@ -121,12 +92,15 @@ export const ApoliceDetailDrawer: React.FC<ApoliceDetailDrawerProps> = ({
               label="ID do Segurado"
               value={<span className="mono">{apolice.seguradoId}</span>}
             />
-            <DetailField label="Tipo de Seguro" value={apolice.tipoSeguro} />
+            <DetailField
+              label="Tipo de Seguro"
+              value={formatarTipoSeguro(apolice.tipoSeguro)}
+            />
             <DetailField
               label="Status"
               value={
-                <Badge variant={getStatusBadgeVariant(apolice.status)}>
-                  {apolice.status}
+                <Badge variant={getApoliceStatusBadgeVariant(apolice.status)}>
+                  {formatarStatusApolice(apolice.status)}
                 </Badge>
               }
             />
@@ -180,7 +154,9 @@ export const ApoliceDetailDrawer: React.FC<ApoliceDetailDrawerProps> = ({
                   <td className="py-2.5 px-4 font-semibold text-(--fg)">
                     {st.numeroSinistro}
                   </td>
-                  <td className="py-2.5 px-4 text-xs">{st.tipoSinistro}</td>
+                  <td className="py-2.5 px-4 text-(--fg) text-xs font-medium uppercase">
+                    {formatarTipoSinistro(st.tipoSinistro)}
+                  </td>
                   <td className="py-2.5 px-4 text-right text-xs font-medium">
                     {formatarMoeda(st.valorEstimado)}
                   </td>
@@ -188,7 +164,9 @@ export const ApoliceDetailDrawer: React.FC<ApoliceDetailDrawerProps> = ({
                     {formatarData(st.dataOcorrencia)}
                   </td>
                   <td className="py-2.5 px-4 text-xs font-semibold">
-                    {st.status}
+                    <Badge variant={getSinistroStatusBadgeVariant(st.status)}>
+                      {formatarStatusSinistro(st.status)}
+                    </Badge>
                   </td>
                 </tr>
               ))}

@@ -1,9 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
-import { LoginPage } from "../pages/LoginPage";
-import { SeguradosListPage } from "../pages/SeguradosListPage";
-import { RotaProtegida } from "./RotaProtegida";
 import { AppLayout } from "../components/layout/AppLayout";
 import { ApolicesListPage } from "../pages/ApolicesListPage";
+import { LoginPage } from "../pages/LoginPage";
+import { SeguradosListPage } from "../pages/SeguradosListPage";
+import { SinistrosListPage } from "../pages/SinistrosListPage";
+import { RotaProtegida } from "./RotaProtegida";
 
 export const router = createBrowserRouter([
   {
@@ -42,7 +43,11 @@ export const router = createBrowserRouter([
       {
         path: "/apolices",
         element: <ApolicesListPage />,
-      }
+      },
+      {
+        path: "/sinistros",
+        element: <SinistrosListPage />,
+      },
     ],
   },
   {

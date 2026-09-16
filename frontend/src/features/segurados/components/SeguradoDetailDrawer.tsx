@@ -1,7 +1,28 @@
 import React, { useState } from "react";
-import { Badge, Button, Modal, DetailField, TabsNav, TableContainer, TableHeader } from "../../../components/ui";
+import {
+  Badge,
+  Button,
+  DetailField,
+  Modal,
+  TableContainer,
+  TableHeader,
+  TabsNav,
+} from "../../../components/ui";
 import type { Segurado } from "../../../interfaces/segurados/segurado";
-import { formatarCpfCnpj, formatarTelefone, formatarCep, formatarMoeda, formatarData } from "../../../utils/formatters";
+import {
+  formatarTipoPessoa,
+  formatarTipoSinistro,
+  getApoliceStatusBadgeVariant,
+  getPessoaTipoBadgeVariant,
+  getSinistroStatusBadgeVariant,
+} from "../../../utils/enumUtils";
+import {
+  formatarCep,
+  formatarCpfCnpj,
+  formatarData,
+  formatarMoeda,
+  formatarTelefone,
+} from "../../../utils/formatters";
 import { useApolices } from "../../apolices/hooks/useApolices";
 import { useSinistros } from "../../sinistros/hooks/useSinistros";
 
@@ -39,11 +60,11 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
   const seguradoId = segurado?.id;
 
   const { data: apolicesData, isLoading: loadingApolices } = useApolices(
-    seguradoId ? { seguradoId } : undefined
+    seguradoId ? { seguradoId } : undefined,
   );
 
   const { data: sinistrosData, isLoading: loadingSinistros } = useSinistros(
-    seguradoId ? { seguradoId } : undefined
+    seguradoId ? { seguradoId } : undefined,
   );
 
   if (!segurado) return null;
@@ -56,15 +77,19 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
     segurado.enderecoLogradouro,
     segurado.enderecoCidade,
     segurado.enderecoUf,
-    segurado.enderecoCep ? `CEP: ${formatarCep(segurado.enderecoCep)}` : undefined,
-  ].filter(Boolean).join(", ");
+    segurado.enderecoCep
+      ? `CEP: ${formatarCep(segurado.enderecoCep)}`
+      : undefined,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={segurado.nomeRazaoSocial}
-      description={`Cadastrado como ${isPF ? "Pessoa Física" : "Pessoa Jurídica"}`}
+      description={`Cadastrado como ${formatarTipoPessoa(segurado.tipoPessoa)}`}
       maxWidthClass="max-w-4xl"
     >
       <div className="space-y-6">
@@ -85,8 +110,12 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
               label="Tipo de Pessoa"
               value={
                 <div className="flex items-center gap-2">
-                  <Badge variant={isPF ? "info" : "purple"}>{isPF ? "PF" : "PJ"}</Badge>
-                  <span>{isPF ? "Pessoa Física" : "Pessoa Jurídica"}</span>
+                  <Badge
+                    variant={getPessoaTipoBadgeVariant(segurado.tipoPessoa)}
+                  >
+                    {segurado.tipoPessoa}
+                  </Badge>
+                  <span>{formatarTipoPessoa(segurado.tipoPessoa)}</span>
                 </div>
               }
             />
@@ -101,10 +130,16 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
             />
 
             <DetailField label="E-mail" value={segurado.email} />
-            <DetailField label="Telefone" value={formatarTelefone(segurado.telefone)} />
+            <DetailField
+              label="Telefone"
+              value={formatarTelefone(segurado.telefone)}
+            />
 
             {isPF && segurado.dataNascimento && (
-              <DetailField label="Data de Nascimento" value={formatarData(segurado.dataNascimento)} />
+              <DetailField
+                label="Data de Nascimento"
+                value={formatarData(segurado.dataNascimento)}
+              />
             )}
 
             <DetailField
@@ -128,12 +163,25 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
             <TableHeader columns={COLUNAS_APOLICES} />
             <tbody className="divide-y divide-(--border)">
               {apolices.map((ap) => (
-                <tr key={ap.id || ap.numeroApolice} className="hover:bg-(--surface-2)/40">
-                  <td className="py-2.5 px-4 font-semibold text-(--fg)">{ap.numeroApolice}</td>
+                <tr
+                  key={ap.id || ap.numeroApolice}
+                  className="hover:bg-(--surface-2)/40"
+                >
+                  <td className="py-2.5 px-4 font-semibold text-(--fg)">
+                    {ap.numeroApolice}
+                  </td>
                   <td className="py-2.5 px-4 text-xs">{ap.tipoSeguro}</td>
-                  <td className="py-2.5 px-4 text-right text-xs font-medium">{formatarMoeda(ap.valorSeguro)}</td>
-                  <td className="py-2.5 px-4 text-xs text-(--muted)">{formatarData(ap.dataFimVigencia)}</td>
-                  <td className="py-2.5 px-4 text-xs font-semibold">{ap.status}</td>
+                  <td className="py-2.5 px-4 text-right text-xs font-medium">
+                    {formatarMoeda(ap.valorSeguro)}
+                  </td>
+                  <td className="py-2.5 px-4 text-xs text-(--muted)">
+                    {formatarData(ap.dataFimVigencia)}
+                  </td>
+                  <td className="py-2.5 px-4 text-xs font-semibold">
+                    <Badge variant={getApoliceStatusBadgeVariant(ap.status)}>
+                      {ap.status}
+                    </Badge>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -153,12 +201,27 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
             <TableHeader columns={COLUNAS_SINISTROS} />
             <tbody className="divide-y divide-(--border)">
               {sinistros.map((st) => (
-                <tr key={st.id || st.numeroSinistro} className="hover:bg-(--surface-2)/40">
-                  <td className="py-2.5 px-4 font-semibold text-(--fg)">{st.numeroSinistro}</td>
-                  <td className="py-2.5 px-4 text-xs">{st.tipoSinistro}</td>
-                  <td className="py-2.5 px-4 text-right text-xs font-medium">{formatarMoeda(st.valorEstimado)}</td>
-                  <td className="py-2.5 px-4 text-xs text-(--muted)">{formatarData(st.dataOcorrencia)}</td>
-                  <td className="py-2.5 px-4 text-xs font-semibold">{st.status}</td>
+                <tr
+                  key={st.id || st.numeroSinistro}
+                  className="hover:bg-(--surface-2)/40"
+                >
+                  <td className="py-2.5 px-4 font-semibold text-(--fg)">
+                    {st.numeroSinistro}
+                  </td>
+                  <td className="py-2.5 px-4 text-xs uppercase">
+                    {formatarTipoSinistro(st.tipoSinistro)}
+                  </td>
+                  <td className="py-2.5 px-4 text-right text-xs font-medium">
+                    {formatarMoeda(st.valorEstimado)}
+                  </td>
+                  <td className="py-2.5 px-4 text-xs text-(--muted)">
+                    {formatarData(st.dataOcorrencia)}
+                  </td>
+                  <td className="py-2.5 px-4 text-xs font-semibold">
+                    <Badge variant={getSinistroStatusBadgeVariant(st.status)}>
+                      {st.status}
+                    </Badge>
+                  </td>
                 </tr>
               ))}
             </tbody>

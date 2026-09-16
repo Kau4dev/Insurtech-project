@@ -25,7 +25,7 @@ export const SeguradoFilters: React.FC<SeguradoFiltersProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col sm:flex-row items-center gap-3 bg-(--surface) p-4 rounded-(--radius) border border-(--border) shadow-xs"
+      className="flex flex-col sm:flex-row items-center gap-2 rounded-(--radius)"
     >
       <SearchInput
         value={termo}

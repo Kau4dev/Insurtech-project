@@ -21,8 +21,11 @@ export const SeguradosListPage: React.FC = () => {
   const size = 10;
 
   const [modalAberto, setModalAberto] = useState<boolean>(false);
-  const [seguradoEmEdicao, setSeguradoEmEdicao] = useState<Segurado | null>(null);
-  const [seguradoParaDetalhes, setSeguradoParaDetalhes] = useState<Segurado | null>(null);
+  const [seguradoEmEdicao, setSeguradoEmEdicao] = useState<Segurado | null>(
+    null,
+  );
+  const [seguradoParaDetalhes, setSeguradoParaDetalhes] =
+    useState<Segurado | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useSegurados({
@@ -107,10 +110,12 @@ export const SeguradosListPage: React.FC = () => {
       {/* Cabeçalho da Página */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
+          <div className="font-mono text-xs uppercase tracking-widest text-(--accent-ink) font-semibold">
+            cadastro
+          </div>
           <h1 className="text-2xl font-bold text-(--fg)">Segurados</h1>
           <p className="text-sm text-(--muted) mt-0.5">
-            Gerencie os segurados (pessoas físicas e jurídicas) cadastrados no
-            sistema.
+            Pessoas físicas e jurídicas com contrato ativo ou histórico.
           </p>
         </div>
 

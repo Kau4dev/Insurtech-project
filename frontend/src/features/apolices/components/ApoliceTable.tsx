@@ -7,10 +7,10 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui";
-import type { BadgeVariant } from "../../../components/ui/Badge";
 import type { Apolice } from "../../../interfaces/apolices/apolice";
-import type { StatusApolice } from "../../../interfaces/enums";
+import { getApoliceStatusBadgeVariant } from "../../../utils/enumUtils";
 import { formatarData, formatarMoeda } from "../../../utils/formatters";
+import { SeguradoNome } from "../../segurados/components/SeguradoNome";
 
 interface ApoliceTableProps {
   apolices: Apolice[];
@@ -20,33 +20,19 @@ interface ApoliceTableProps {
 }
 
 const COLUNAS = [
-  "Apólice",
+  "Número",
   "Ramo",
   "Segurado",
   { label: "Valor segurado", align: "right" as const },
   { label: "Prêmio/ano", align: "right" as const },
   "Vigência até",
   "Status",
-  { label: "Ações", align: "right" as const },
+  { label: "Ações", align: "center" as const },
 ];
-
-const getBadgeVariant = (status: StatusApolice): BadgeVariant => {
-  switch (status) {
-    case "ATIVA":
-      return "success";
-    case "SUSPENSA":
-      return "warning";
-    case "CANCELADA":
-      return "danger";
-    case "EXPIRADA":
-      return "neutral";
-    default:
-      return "neutral";
-  }
-};
 
 export const ApoliceTable: React.FC<ApoliceTableProps> = ({
   apolices,
+
   isLoading = false,
   onEditar,
   onVisualizar,
@@ -71,14 +57,11 @@ export const ApoliceTable: React.FC<ApoliceTableProps> = ({
               {apolice.tipoSeguro}
             </TableCell>
 
-            <TableCell className="text-xs text-(--fg)">
-              {apolice.seguradoId || "-"}
+            <TableCell className="text-xs text-(--muted) font-medium">
+              <SeguradoNome seguradoId={apolice.seguradoId} />
             </TableCell>
 
-            <TableCell
-              align="right"
-              className="font-medium text-(--fg) text-xs"
-            >
+            <TableCell align="right" className="font-medium text-(--fg) ">
               {formatarMoeda(apolice.valorSeguro)}
             </TableCell>
 
@@ -94,12 +77,12 @@ export const ApoliceTable: React.FC<ApoliceTableProps> = ({
             </TableCell>
 
             <TableCell>
-              <Badge variant={getBadgeVariant(apolice.status)}>
+              <Badge variant={getApoliceStatusBadgeVariant(apolice.status)}>
                 {apolice.status}
               </Badge>
             </TableCell>
 
-            <TableCell align="right">
+            <TableCell align="center">
               <TableActions
                 onVisualizar={
                   onVisualizar ? () => onVisualizar(apolice) : undefined
