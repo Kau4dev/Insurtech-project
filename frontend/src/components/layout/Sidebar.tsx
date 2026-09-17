@@ -2,7 +2,7 @@ import React from "react";
 import { useAuth } from "../../context/useAuth";
 import { useApolices } from "../../features/apolices";
 import { useSinistros } from "../../features/sinistros";
-import { Button } from "../ui/Button";
+import { Button, Logo } from "../ui";
 import { NavItem } from "./NavItem";
 
 interface SidebarProps {
@@ -120,9 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Marca / Brand + Botão de fechar no mobile */}
         <div className="flex items-center justify-between px-2 pb-5">
           <div className="flex gap-2.5 items-center">
-            <div className="w-8 h-8 rounded-[10px] bg-(--accent) text-white grid place-items-center font-[750] text-base tracking-[0.02em] shadow-xs">
-              I
-            </div>
+            <Logo size="md" />
             <div>
               <div className="text-[14.5px] font-[650] tracking-[0.01em] leading-[1.2] text-(--fg)">
                 InsurTech

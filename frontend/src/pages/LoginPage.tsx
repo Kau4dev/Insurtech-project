@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { Logo } from "../components/ui";
 import { useAuth } from "../context/useAuth";
 
 const loginSchema = z.object({
@@ -55,12 +56,10 @@ export const LoginPage: React.FC = () => {
       <div className="flex-1 flex flex-col justify-between py-11 px-12 bg-(--surface) border-r border-(--border)">
         <div>
           <div className="flex gap-2.5 items-center">
-            <div className="w-9 h-9 rounded-[10px] bg-(--accent) text-[oklch(99%_0_0)] grid place-items-center font-[750] text-lg tracking-[0.02em]">
-              I
-            </div>
-            <div className="">
-              <div className="text-base font-[650]">Insurtech</div>
-              <div className="text-xs text-(--muted) letter-spacing-[0.02em]">
+            <Logo size="lg" />
+            <div>
+              <div className="text-base font-[650] text-(--fg)">InsurTech</div>
+              <div className="text-xs text-(--muted) tracking-[0.02em]">
                 Gestão de sinistros e apólices
               </div>
             </div>
