@@ -5,6 +5,7 @@ export * from "./FormActions";
 export * from "./FormErrorBanner";
 export * from "./FormSection";
 export * from "./Input";
+export * from "./Logo";
 export * from "./Modal";
 export * from "./Pagination";
 export * from "./RadioGroup";
