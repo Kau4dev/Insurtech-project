@@ -177,7 +177,7 @@ export const SinistrosListPage: React.FC = () => {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Novo Sinistro
+          Registrar sinistro
         </Button>
       </div>
 
