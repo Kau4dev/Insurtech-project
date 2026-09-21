@@ -7,6 +7,8 @@ import type {
   Sinistro,
   SinistroDetalhado,
 } from "../interfaces/sinistros/sinistro";
+import type { StatusSinistro } from "../interfaces/enums";
+import type { DashboardResponse } from "../interfaces/sinistros/dashboardResponse";
 import type {
   AprovarSinistro,
   RejeitarSinistro,
@@ -326,6 +328,40 @@ export const sinistrosApi = {
       );
       const sinistro = mockStore.find((s) => s.id === id);
       return sinistro?.historicos ?? [];
+    }
+  },
+
+  obterDashboard: async (): Promise<DashboardResponse> => {
+    try {
+      const response = await axiosClient.get<DashboardResponse>(
+        "/sinistros/dashboard/resumo",
+      );
+      return response.data;
+    } catch (err) {
+      console.warn(
+        "Backend offline ou sem permissão para dashboard/resumo. Calculando a partir do mockStore.",
+        err,
+      );
+      const contagemPorStatus: Partial<Record<StatusSinistro, number>> = {};
+      let valorTotalEmAnalise = 0;
+      let valorTotalAprovado = 0;
+
+      mockStore.forEach((s) => {
+        contagemPorStatus[s.status] = (contagemPorStatus[s.status] || 0) + 1;
+        if (s.status === "EM_ANALISE") {
+          valorTotalEmAnalise += s.valorEstimado || 0;
+        }
+        if (s.status === "APROVADO" || s.status === "PAGO") {
+          valorTotalAprovado += s.valorAprovado || s.valorEstimado || 0;
+        }
+      });
+
+      return {
+        contagemPorStatus,
+        valorTotalEmAnalise,
+        valorTotalAprovado,
+        totalSinistros: mockStore.length,
+      };
     }
   },
 };
