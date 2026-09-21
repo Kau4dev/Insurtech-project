@@ -227,7 +227,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             variant="secondary"
             size="sm"
             className="w-full mt-1"
-            onClick={logout}
+            onClick={() => {
+              sessionStorage.setItem("insurtech_logout", "true");
+              logout();
+            }}
             icon={
               <svg
                 viewBox="0 0 24 24"

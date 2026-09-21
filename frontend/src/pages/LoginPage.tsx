@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Logo } from "../components/ui";
+import { Logo, ToastNotification } from "../components/ui";
 import { useAuth } from "../context/useAuth";
 
 const loginSchema = z.object({
@@ -24,6 +24,16 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [erroAPI, setErroAPI] = useState<string | null>(null);
   const [isloading, setIsLoading] = useState(false);
+  const [logoutToastAberto, setLogoutToastAberto] = useState<boolean>(() => {
+    if (
+      typeof window !== "undefined" &&
+      sessionStorage.getItem("insurtech_logout") === "true"
+    ) {
+      sessionStorage.removeItem("insurtech_logout");
+      return true;
+    }
+    return false;
+  });
 
   const {
     register,
@@ -227,6 +237,16 @@ export const LoginPage: React.FC = () => {
           </button>
         </form>
       </div>
+
+      {/* Popup de Sessão Encerrada (conforme imagem 1) */}
+      <ToastNotification
+        isOpen={logoutToastAberto}
+        title="Sessão encerrada"
+        message="Volte quando precisar."
+        variant="info"
+        durationMs={6000}
+        onClose={() => setLogoutToastAberto(false)}
+      />
     </div>
   );
 };
