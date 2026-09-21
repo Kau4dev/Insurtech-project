@@ -21,12 +21,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: (
-          <div className="p-8">
-            <h1 className="text-2xl font-semibold text-(--fg)">Dashboard</h1>
-            <p className="mt-2 text-(--muted)">Bem-vindo ao InsurTech.</p>
-          </div>
-        ),
+        element: <DashboardPage />,
       },
       {
         path: "/dashboard",
