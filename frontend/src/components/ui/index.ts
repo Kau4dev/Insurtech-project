@@ -17,3 +17,4 @@ export * from "./TableContainer";
 export * from "./TableHeader";
 export * from "./TableRow";
 export * from "./TabsNav";
+export * from "./ToastNotification";
