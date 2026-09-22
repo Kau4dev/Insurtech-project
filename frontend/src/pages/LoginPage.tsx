@@ -62,8 +62,8 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="flex-1 flex flex-col justify-between py-11 px-12 bg-(--surface) border-r border-(--border)">
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      <div className="flex-1 flex flex-col justify-between py-8 px-6 sm:py-11 sm:px-12 bg-(--surface) border-b lg:border-b-0 lg:border-r border-(--border)">
         <div>
           <div className="flex gap-2.5 items-center">
             <Logo size="lg" />
@@ -75,7 +75,7 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
           <div>
-            <h1 className="font-[650] text-[27px] tracking-tight leading-[1.18] mt-10">
+            <h1 className="font-[650] text-2xl sm:text-[27px] tracking-tight leading-[1.18] mt-6 sm:mt-10">
               Operações de sinistros
               <br />
               em um único fluxo.
@@ -86,10 +86,10 @@ export const LoginPage: React.FC = () => {
             </p>
           </div>
         </div>
-        <div className="mt-10">
+        <div className="mt-8 sm:mt-10">
           <div className="flex gap-3.5 items-start py-3.5 px-0">
             <svg
-              className=" w-5 h-5 shrink-0 text-(--accent-ink) mt-px (referência: 20px, accent-ink, margin-top 1px)"
+              className="w-5 h-5 shrink-0 text-(--accent-ink) mt-px"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -108,7 +108,7 @@ export const LoginPage: React.FC = () => {
           </div>
           <div className="flex gap-3.5 items-start py-3.5 px-0 border-t border-(--border)">
             <svg
-              className="w-5 h-5 shrink-0 text-(--accent-ink) mt-px (referência: 20px, accent-ink, margin-top 1px)"
+              className="w-5 h-5 shrink-0 text-(--accent-ink) mt-px"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -128,7 +128,7 @@ export const LoginPage: React.FC = () => {
           </div>
           <div className="flex gap-3.5 items-start py-3.5 px-0 border-t border-(--border)">
             <svg
-              className="w-5 h-5 shrink-0 text-(--accent-ink) mt-px (referência: 20px, accent-ink, margin-top 1px)"
+              className="w-5 h-5 shrink-0 text-(--accent-ink) mt-px"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -148,8 +148,11 @@ export const LoginPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center py-11 px-12 bg-(--bg)">
-        <form className="max-w-88 w-full" onSubmit={handleSubmit(onSubmit)}>
+      <div className="flex-1 flex items-center justify-center py-8 px-6 sm:py-11 sm:px-12 bg-(--bg)">
+        <form
+          className="max-w-88 w-full my-auto"
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <div className="text-[11px] text-(--accent-ink) font-semibold tracking-widest uppercase font-mono">
             Ambiente Interno
           </div>

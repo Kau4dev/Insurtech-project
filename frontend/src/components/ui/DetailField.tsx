@@ -18,7 +18,9 @@ export const DetailField: React.FC<DetailFieldProps> = ({
       <span className="text-xs text-(--muted) uppercase tracking-wider block font-medium mb-1">
         {label}
       </span>
-      <div className="text-sm font-medium text-(--fg)">{value ?? "-"}</div>
+      <div className="text-sm font-medium text-(--fg) break-words [overflow-wrap:anywhere]">
+        {value ?? "-"}
+      </div>
     </div>
   );
 };

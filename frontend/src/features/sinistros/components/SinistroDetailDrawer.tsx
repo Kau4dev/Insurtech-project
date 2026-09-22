@@ -38,7 +38,7 @@ const COLUNAS_HISTORICO = [
 export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
   sinistro,
   isOpen,
-  onClose
+  onClose,
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<Aba>("detalhes");
 
@@ -71,7 +71,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
 
         {/* Dados do Sinistro */}
         {abaAtiva === "detalhes" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-(--surface-2)/40 p-5 rounded-lg border border-(--border)">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 bg-(--surface-2)/40 p-4 sm:p-5 rounded-lg border border-(--border)">
             <DetailField
               label="Número do Sinistro"
               value={
@@ -80,19 +80,27 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
             />
             <DetailField
               label="ID da Apólice"
-              value={<span className="mono text-xs">{sinistro.apoliceId}</span>}
+              value={
+                <span className="mono text-xs break-all">
+                  {sinistro.apoliceId}
+                </span>
+              }
             />
             <DetailField
               label="ID do Segurado"
               value={
-                <span className="mono text-xs">{sinistro.seguradoId}</span>
+                <span className="mono text-xs break-all">
+                  {sinistro.seguradoId}
+                </span>
               }
             />
             <DetailField
               label="ID do Analista"
               value={
                 sinistro.analistaId ? (
-                  <span className="mono text-xs">{sinistro.analistaId}</span>
+                  <span className="mono text-xs break-all">
+                    {sinistro.analistaId}
+                  </span>
                 ) : (
                   "Não atribuído"
                 )
