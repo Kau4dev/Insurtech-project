@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
+import { HeaderSearch } from "./HeaderSearch";
 
 interface HeaderProps {
   onToggleMobileMenu?: () => void;
@@ -79,23 +80,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
       </div>
 
       {/* Search (Empurrado para a direita com ml-auto) */}
-      <div className="ml-auto w-60 sm:w-72 lg:w-80 min-h-0">
-        <div className="relative flex items-center">
-          <svg
-            className="absolute left-2.5 w-4 h-4 text-(--muted) pointer-events-none"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.9"
-          >
-            <circle cx="11" cy="11" r="6.5" />
-            <path d="M20 20l-3.6-3.6" />
-          </svg>
-          <input
-            className="w-full pl-9 pr-3 py-1.5 text-[13px] placeholder:text-(--muted) border border-(--border) rounded-lg bg-(--surface-2) focus:outline-none focus:border-(--accent) focus:ring-1 focus:ring-(--accent) transition-colors"
-            placeholder="Buscar nº do sinistro, apólice ou CNPJ…"
-          />
-        </div>
+      <div className="ml-auto min-h-0">
+        <HeaderSearch />
       </div>
 
       {/* Right side */}
