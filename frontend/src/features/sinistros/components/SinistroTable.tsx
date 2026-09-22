@@ -96,13 +96,24 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
             </TableCell>
 
             <TableCell align="center">
-              <TableActions
-                onVisualizar={
-                  onVisualizar ? () => onVisualizar(sinistro) : undefined
-                }
-                onEditar={onEditar ? () => onEditar(sinistro) : undefined}
-                editarTitle="Editar sinistro"
-              />
+              {(() => {
+                const podeEditar = !["APROVADO", "PAGO", "REJEITADO"].includes(
+                  sinistro.status,
+                );
+                return (
+                  <TableActions
+                    onVisualizar={
+                      onVisualizar ? () => onVisualizar(sinistro) : undefined
+                    }
+                    onEditar={
+                      onEditar && podeEditar
+                        ? () => onEditar(sinistro)
+                        : undefined
+                    }
+                    editarTitle="Editar sinistro"
+                  />
+                );
+              })()}
             </TableCell>
           </TableRow>
         ))}
