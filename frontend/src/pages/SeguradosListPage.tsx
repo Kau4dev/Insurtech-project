@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button, Modal, Pagination } from "../components/ui";
+import { useAuth } from "../context/useAuth";
 import {
   SeguradoDetailDrawer,
   SeguradoFilters,
@@ -17,6 +18,10 @@ import type {
 } from "../interfaces/segurados/seguradoRequest";
 
 export const SeguradosListPage: React.FC = () => {
+  const { usuario } = useAuth();
+  const podeCadastrar =
+    usuario?.papel === "GESTOR" || usuario?.papel === "ADMIN";
+
   const [searchParams, setSearchParams] = useSearchParams();
   const nome = searchParams.get("busca") || "";
   const detalheId = searchParams.get("detalheId") || "";
@@ -43,7 +48,7 @@ export const SeguradosListPage: React.FC = () => {
           (s) =>
             s.id === detalheId ||
             s.nomeRazaoSocial === detalheId ||
-            s.cpfCnpj === detalheId
+            s.cpfCnpj === detalheId,
         ) || null
       : null;
 
@@ -152,6 +157,12 @@ export const SeguradosListPage: React.FC = () => {
         <Button
           variant="primary"
           onClick={handleAbrirNovo}
+          disabled={!podeCadastrar}
+          title={
+            !podeCadastrar
+              ? "Apenas Gestores ou Administradores podem cadastrar novos segurados."
+              : undefined
+          }
           icon={
             <svg
               className="w-4 h-4"
@@ -172,6 +183,19 @@ export const SeguradosListPage: React.FC = () => {
         </Button>
       </div>
 
+      {!podeCadastrar && (
+        <div className="p-3.5 rounded-lg bg-(--surface-2) border border-(--border) text-xs text-(--muted) flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-(--accent)" />
+            <span>
+              Perfil conectado: <strong>{usuario?.papel || "ANALISTA"}</strong>.
+              O cadastro e a edição de segurados exigem permissão de{" "}
+              <strong>Gestor</strong> ou <strong>Administrador</strong>.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Modal Reutilizável com Formulário */}
       <Modal
         isOpen={modalAberto}
@@ -184,6 +208,7 @@ export const SeguradosListPage: React.FC = () => {
         }
       >
         <SeguradoForm
+          key={seguradoEmEdicao ? `edit-${seguradoEmEdicao.id}` : "novo"}
           seguradoInicial={seguradoEmEdicao}
           onSubmit={handleSalvarSegurado}
           onCancel={handleFecharModal}
@@ -212,7 +237,7 @@ export const SeguradosListPage: React.FC = () => {
       <SeguradoTable
         segurados={segurados}
         isLoading={isLoading}
-        onEditar={handleEditar}
+        onEditar={podeCadastrar ? handleEditar : undefined}
         onVisualizar={handleVisualizar}
       />
 
