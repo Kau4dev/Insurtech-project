@@ -11,6 +11,7 @@ export interface ApoliceFiltrosState {
 interface ApoliceFiltersProps {
   onSearch: (filtros: ApoliceFiltrosState) => void;
   isLoading?: boolean;
+  initialTermo?: string;
 }
 
 const statusOptions = [
@@ -31,8 +32,9 @@ const ramoOptions = [
 export const ApoliceFilters: React.FC<ApoliceFiltersProps> = ({
   onSearch,
   isLoading = false,
+  initialTermo = "",
 }) => {
-  const [termo, setTermo] = useState("");
+  const [termo, setTermo] = useState(initialTermo);
   const [status, setStatus] = useState<StatusApolice | "">("");
   const [tipoSeguro, setTipoSeguro] = useState<TipoSeguro | "">("");
 

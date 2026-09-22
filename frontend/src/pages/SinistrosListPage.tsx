@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button, Modal, Pagination } from "../components/ui";
 import {
   AprovarRejeitarModal,
@@ -17,9 +18,12 @@ import type { Sinistro } from "../interfaces/sinistros/sinistro";
 import type { SinistroRequest } from "../interfaces/sinistros/sinistroRequest";
 
 export const SinistrosListPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const seguradoId = searchParams.get("busca") || "";
+  const detalheId = searchParams.get("detalheId") || "";
+
   const [status, setStatus] = useState<StatusSinistro | "">("");
   const [tipoSinistro, setTipoSinistro] = useState<TipoSinistro | "">("");
-  const [seguradoId, setSeguradoId] = useState<string | "">("");
   const [page, setPage] = useState<number>(0);
   const size = 10;
 
@@ -35,8 +39,7 @@ export const SinistrosListPage: React.FC = () => {
   const [acaoError, setAcaoError] = useState<string | null>(null);
 
   // Drawer de Detalhes
-  const [sinistroParaDetalhes, setSinistroParaDetalhes] =
-    useState<Sinistro | null>(null);
+  const [sinistroManual, setSinistroManual] = useState<Sinistro | null>(null);
 
   const { data, isLoading, isError } = useSinistros({
     status: status || undefined,
@@ -45,6 +48,24 @@ export const SinistrosListPage: React.FC = () => {
     page,
     size,
   });
+
+  const sinistroPelaUrl =
+    detalheId && data?.content
+      ? data.content.find(
+          (s) => s.id === detalheId || s.numeroSinistro === detalheId
+        ) || null
+      : null;
+
+  const sinistroParaDetalhes = sinistroManual || sinistroPelaUrl;
+
+  const handleFecharDetalhes = () => {
+    setSinistroManual(null);
+    if (searchParams.has("detalheId")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("detalheId");
+      setSearchParams(next);
+    }
+  };
 
   const criarMutation = useCadastrarSinistro();
   const aprovarMutation = useAprovarSinistro();
@@ -55,10 +76,16 @@ export const SinistrosListPage: React.FC = () => {
     status: StatusSinistro | "";
     tipoSinistro: TipoSinistro | "";
   }) => {
-    setSeguradoId(filtros.termo);
     setStatus(filtros.status);
     setTipoSinistro(filtros.tipoSinistro);
     setPage(0);
+    const next = new URLSearchParams(searchParams);
+    if (filtros.termo) {
+      next.set("busca", filtros.termo);
+    } else {
+      next.delete("busca");
+    }
+    setSearchParams(next);
   };
 
   const handleAbrirNovo = () => {
@@ -198,7 +225,12 @@ export const SinistrosListPage: React.FC = () => {
       </Modal>
 
       {/* Filtros */}
-      <SinistroFilters onSearch={handleSearch} isLoading={isLoading} />
+      <SinistroFilters
+        key={seguradoId}
+        onSearch={handleSearch}
+        isLoading={isLoading}
+        initialTermo={seguradoId}
+      />
 
       {/* Erro de Carregamento */}
       {isError && (
@@ -213,7 +245,7 @@ export const SinistrosListPage: React.FC = () => {
         sinistros={sinistros}
         isLoading={isLoading}
         onEditar={(s: Sinistro) => handleAcaoSinistro(s, "aprovar")}
-        onVisualizar={setSinistroParaDetalhes}
+        onVisualizar={setSinistroManual}
       />
 
       {/* Paginação */}
@@ -231,7 +263,7 @@ export const SinistrosListPage: React.FC = () => {
       <SinistroDetailDrawer
         sinistro={sinistroParaDetalhes}
         isOpen={Boolean(sinistroParaDetalhes)}
-        onClose={() => setSinistroParaDetalhes(null)}
+        onClose={handleFecharDetalhes}
         onAlterarStatus={(s: Sinistro) => handleAcaoSinistro(s, "aprovar")}
       />
 

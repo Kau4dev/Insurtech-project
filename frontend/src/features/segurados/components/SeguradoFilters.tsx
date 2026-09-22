@@ -4,13 +4,15 @@ import { Button, SearchInput } from "../../../components/ui";
 interface SeguradoFiltersProps {
   onSearch: (nome: string) => void;
   isLoading?: boolean;
+  initialTermo?: string;
 }
 
 export const SeguradoFilters: React.FC<SeguradoFiltersProps> = ({
   onSearch,
   isLoading = false,
+  initialTermo = "",
 }) => {
-  const [termo, setTermo] = useState("");
+  const [termo, setTermo] = useState(initialTermo);
 
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();

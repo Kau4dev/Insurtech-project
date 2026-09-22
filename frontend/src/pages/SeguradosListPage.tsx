@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button, Modal, Pagination } from "../components/ui";
 import {
   SeguradoDetailDrawer,
@@ -16,7 +17,10 @@ import type {
 } from "../interfaces/segurados/seguradoRequest";
 
 export const SeguradosListPage: React.FC = () => {
-  const [nome, setNome] = useState<string>("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const nome = searchParams.get("busca") || "";
+  const detalheId = searchParams.get("detalheId") || "";
+
   const [page, setPage] = useState<number>(0);
   const size = 10;
 
@@ -24,8 +28,7 @@ export const SeguradosListPage: React.FC = () => {
   const [seguradoEmEdicao, setSeguradoEmEdicao] = useState<Segurado | null>(
     null,
   );
-  const [seguradoParaDetalhes, setSeguradoParaDetalhes] =
-    useState<Segurado | null>(null);
+  const [seguradoManual, setSeguradoManual] = useState<Segurado | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useSegurados({
@@ -34,12 +37,39 @@ export const SeguradosListPage: React.FC = () => {
     size,
   });
 
+  const seguradoPelaUrl =
+    detalheId && data?.content
+      ? data.content.find(
+          (s) =>
+            s.id === detalheId ||
+            s.nomeRazaoSocial === detalheId ||
+            s.cpfCnpj === detalheId
+        ) || null
+      : null;
+
+  const seguradoParaDetalhes = seguradoManual || seguradoPelaUrl;
+
+  const handleFecharDetalhes = () => {
+    setSeguradoManual(null);
+    if (searchParams.has("detalheId")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("detalheId");
+      setSearchParams(next);
+    }
+  };
+
   const criarMutation = useCadastrarSegurado();
   const atualizarMutation = useAtualizarSegurado();
 
   const handleSearch = (termo: string) => {
-    setNome(termo);
     setPage(0);
+    const next = new URLSearchParams(searchParams);
+    if (termo) {
+      next.set("busca", termo);
+    } else {
+      next.delete("busca");
+    }
+    setSearchParams(next);
   };
 
   const handleAbrirNovo = () => {
@@ -61,7 +91,7 @@ export const SeguradosListPage: React.FC = () => {
   };
 
   const handleVisualizar = (segurado: Segurado) => {
-    setSeguradoParaDetalhes(segurado);
+    setSeguradoManual(segurado);
   };
 
   const handleSalvarSegurado = async (
@@ -163,7 +193,12 @@ export const SeguradosListPage: React.FC = () => {
       </Modal>
 
       {/* Filtros */}
-      <SeguradoFilters onSearch={handleSearch} isLoading={isLoading} />
+      <SeguradoFilters
+        key={nome}
+        onSearch={handleSearch}
+        isLoading={isLoading}
+        initialTermo={nome}
+      />
 
       {/* Mensagem de Erro de Carga */}
       {isError && (
@@ -194,7 +229,7 @@ export const SeguradosListPage: React.FC = () => {
       <SeguradoDetailDrawer
         segurado={seguradoParaDetalhes}
         isOpen={Boolean(seguradoParaDetalhes)}
-        onClose={() => setSeguradoParaDetalhes(null)}
+        onClose={handleFecharDetalhes}
       />
     </div>
   );

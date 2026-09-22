@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button, Modal, Pagination } from "../components/ui";
 import {
   ApoliceDetailDrawer,
@@ -18,9 +19,12 @@ import type {
 import type { StatusApolice, TipoSeguro } from "../interfaces/enums";
 
 export const ApolicesListPage: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const seguradoId = searchParams.get("busca") || "";
+  const detalheId = searchParams.get("detalheId") || "";
+
   const [status, setStatus] = useState<StatusApolice | "">("");
   const [tipoSeguro, setTipoSeguro] = useState<TipoSeguro | "">("");
-  const [seguradoId, setSeguradoId] = useState<string | "">("");
   const [page, setPage] = useState<number>(0);
   const size = 10;
 
@@ -36,8 +40,7 @@ export const ApolicesListPage: React.FC = () => {
   const [statusError, setStatusError] = useState<string | null>(null);
 
   // Drawer de Detalhes
-  const [apoliceParaDetalhes, setApoliceParaDetalhes] =
-    useState<Apolice | null>(null);
+  const [apoliceManual, setApoliceManual] = useState<Apolice | null>(null);
 
   const { data, isLoading, isError } = useApolices({
     status: status || undefined,
@@ -47,6 +50,24 @@ export const ApolicesListPage: React.FC = () => {
     size,
   });
 
+  const apolicePelaUrl =
+    detalheId && data?.content
+      ? data.content.find(
+          (a) => a.id === detalheId || a.numeroApolice === detalheId
+        ) || null
+      : null;
+
+  const apoliceParaDetalhes = apoliceManual || apolicePelaUrl;
+
+  const handleFecharDetalhes = () => {
+    setApoliceManual(null);
+    if (searchParams.has("detalheId")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("detalheId");
+      setSearchParams(next);
+    }
+  };
+
   const criarMutation = useCadastrarApolice();
   const atualizarMutation = useAtualizarStatus();
 
@@ -55,10 +76,16 @@ export const ApolicesListPage: React.FC = () => {
     status: StatusApolice | "";
     tipoSeguro: TipoSeguro | "";
   }) => {
-    setSeguradoId(filtros.termo);
     setStatus(filtros.status);
     setTipoSeguro(filtros.tipoSeguro);
     setPage(0);
+    const next = new URLSearchParams(searchParams);
+    if (filtros.termo) {
+      next.set("busca", filtros.termo);
+    } else {
+      next.delete("busca");
+    }
+    setSearchParams(next);
   };
 
   const handleAbrirNovo = () => {
@@ -84,7 +111,7 @@ export const ApolicesListPage: React.FC = () => {
   };
 
   const handleVisualizar = (apolice: Apolice) => {
-    setApoliceParaDetalhes(apolice);
+    setApoliceManual(apolice);
   };
 
   const handleSalvarApolice = async (
@@ -127,7 +154,7 @@ export const ApolicesListPage: React.FC = () => {
 
       // Se a apólice também estiver aberta no drawer de detalhes, sincroniza o status
       if (apoliceParaDetalhes?.id === apoliceParaStatus.id) {
-        setApoliceParaDetalhes((prev) =>
+        setApoliceManual((prev) =>
           prev ? { ...prev, status: novoStatus } : null,
         );
       }
@@ -208,7 +235,12 @@ export const ApolicesListPage: React.FC = () => {
       />
 
       {/* Filtros */}
-      <ApoliceFilters onSearch={handleSearch} isLoading={isLoading} />
+      <ApoliceFilters
+        key={seguradoId}
+        onSearch={handleSearch}
+        isLoading={isLoading}
+        initialTermo={seguradoId}
+      />
 
       {/* Mensagem de Erro de Carga */}
       {isError && (
@@ -241,7 +273,7 @@ export const ApolicesListPage: React.FC = () => {
       <ApoliceDetailDrawer
         apolice={apoliceParaDetalhes}
         isOpen={Boolean(apoliceParaDetalhes)}
-        onClose={() => setApoliceParaDetalhes(null)}
+        onClose={handleFecharDetalhes}
         onAlterarStatus={handleEditar}
       />
     </div>

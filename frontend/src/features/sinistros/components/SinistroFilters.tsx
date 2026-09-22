@@ -11,6 +11,7 @@ export interface SinistroFiltrosState {
 interface SinistroFiltersProps {
   onSearch: (filtros: SinistroFiltrosState) => void;
   isLoading?: boolean;
+  initialTermo?: string;
 }
 
 const statusOptions = [
@@ -35,8 +36,9 @@ const ramoOptions = [
 export const SinistroFilters: React.FC<SinistroFiltersProps> = ({
   onSearch,
   isLoading = false,
+  initialTermo = "",
 }) => {
-  const [termo, setTermo] = useState("");
+  const [termo, setTermo] = useState(initialTermo);
   const [status, setStatus] = useState<StatusSinistro | "">("");
   const [tipoSinistro, setTipoSinistro] = useState<TipoSinistro | "">("");
 
