@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { HeaderSearch } from "./HeaderSearch";
+import { NotificationsPopover } from "./NotificationsPopover";
 
 interface HeaderProps {
   onToggleMobileMenu?: () => void;
@@ -87,21 +88,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
       {/* Right side */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Notifications */}
-        <button
-          className="relative p-2 rounded-lg text-(--muted) hover:bg-(--surface-2) hover:text-(--fg) transition-colors"
-          aria-label="Notificações"
-        >
-          <svg
-            className="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-          >
-            <path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6" />
-            <path d="M10 19a2 2 0 0 0 4 0" />
-          </svg>
-        </button>
+        <NotificationsPopover />
 
         {/* User menu */}
         {usuario && (
@@ -148,9 +135,10 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
                 <button
                   onClick={() => {
                     setMenuAberto(false);
+                    sessionStorage.setItem("insurtech_logout", "true");
                     logout();
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] text-(--danger) hover:bg-(--danger-soft) transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] text-(--danger) hover:bg-(--danger-soft) transition-colors cursor-pointer"
                 >
                   <svg
                     className="w-4 h-4"

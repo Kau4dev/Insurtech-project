@@ -3,13 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { apolicesApi } from "../../api/apolicesApi";
 import { seguradoApi } from "../../api/seguradosApi";
 import { sinistrosApi } from "../../api/sinistrosApi";
-import { Badge } from "../ui/Badge";
 import type { Apolice } from "../../interfaces/apolices/apolice";
 import type { Segurado } from "../../interfaces/segurados/segurado";
 import type { Sinistro } from "../../interfaces/sinistros/sinistro";
-import { MOCK_APOLICES } from "../../mocks/mockApolices";
-import { MOCK_SEGURADOS } from "../../mocks/mockSegurados";
-import { MOCK_SINISTROS } from "../../mocks/mockSinistros";
 import {
   formatarStatusApolice,
   formatarStatusSinistro,
@@ -20,7 +16,12 @@ import {
   getPessoaTipoBadgeVariant,
   getSinistroStatusBadgeVariant,
 } from "../../utils/enumUtils";
-import { formatarCpfCnpj, formatarData, formatarMoeda } from "../../utils/formatters";
+import {
+  formatarCpfCnpj,
+  formatarData,
+  formatarMoeda,
+} from "../../utils/formatters";
+import { Badge } from "../ui/Badge";
 
 type SearchResultItem =
   | { tipo: "sinistro"; item: Sinistro }
@@ -42,7 +43,9 @@ export const HeaderSearch: React.FC = () => {
   const [segurados, setSegurados] = useState<Segurado[]>([]);
   const atalhoTexto =
     typeof navigator !== "undefined" &&
-    /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform || navigator.userAgent || "")
+    /(Mac|iPhone|iPod|iPad)/i.test(
+      navigator.platform || navigator.userAgent || "",
+    )
       ? "⌘K"
       : "Ctrl+K";
 
@@ -68,7 +71,8 @@ export const HeaderSearch: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
-        (e.key === "/" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")) &&
+        (e.key === "/" ||
+          ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")) &&
         document.activeElement?.tagName !== "INPUT" &&
         document.activeElement?.tagName !== "TEXTAREA"
       ) {
@@ -81,10 +85,9 @@ export const HeaderSearch: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Executa a busca nos endpoints e na base mocal
+  // Executa a busca nos endpoints da API
   const executarBusca = async (texto: string) => {
     const q = texto.trim().toLowerCase();
-    const digits = texto.replace(/\D/g, "");
 
     if (!q) {
       setSinistros([]);
@@ -96,80 +99,35 @@ export const HeaderSearch: React.FC = () => {
 
     setIsLoading(true);
 
-    // 1. Busca imediata em memória (Mocks)
-    const sinistrosLocais: Sinistro[] = MOCK_SINISTROS.filter(
-      (s) =>
-        s.numeroSinistro.toLowerCase().includes(q) ||
-        s.descricao?.toLowerCase().includes(q) ||
-        s.tipoSinistro.toLowerCase().includes(q) ||
-        s.status.toLowerCase().includes(q) ||
-        s.id?.toLowerCase().includes(q) ||
-        s.apoliceId?.toLowerCase().includes(q) ||
-        s.seguradoId?.toLowerCase().includes(q)
-    );
-
-    const apolicesLocais: Apolice[] = MOCK_APOLICES.filter(
-      (a) =>
-        a.numeroApolice.toLowerCase().includes(q) ||
-        a.tipoSeguro.toLowerCase().includes(q) ||
-        a.status.toLowerCase().includes(q) ||
-        a.id?.toLowerCase().includes(q) ||
-        a.seguradoId?.toLowerCase().includes(q)
-    );
-
-    const seguradosLocais: Segurado[] = MOCK_SEGURADOS.filter(
-      (seg) =>
-        seg.nomeRazaoSocial.toLowerCase().includes(q) ||
-        seg.email.toLowerCase().includes(q) ||
-        seg.cpfCnpj.toLowerCase().includes(q) ||
-        (digits && seg.cpfCnpj.replace(/\D/g, "").includes(digits)) ||
-        seg.id?.toLowerCase().includes(q)
-    );
-
-    // Atualiza resultados preliminares
-    setSinistros(sinistrosLocais.slice(0, 4));
-    setApolices(apolicesLocais.slice(0, 4));
-    setSegurados(seguradosLocais.slice(0, 4));
-
-    // 2. Tenta buscar nos endpoints da API paralelamente
     try {
       const [resSin, resApo, resSeg] = await Promise.allSettled([
-        sinistrosApi.listar({ seguradoId: q, size: 4 }),
-        apolicesApi.listar({ seguradoId: q, size: 4 }),
-        seguradoApi.listar({ nome: q, size: 4 }),
+        sinistrosApi.listar({ seguradoId: q, size: 5 }),
+        apolicesApi.listar({ seguradoId: q, size: 5 }),
+        seguradoApi.listar({ nome: q, size: 5 }),
       ]);
 
       if (resSin.status === "fulfilled" && resSin.value?.content) {
-        const mergedSin: Sinistro[] = [...sinistrosLocais];
-        for (const item of resSin.value.content) {
-          if (!mergedSin.some((s) => s.id === item.id || s.numeroSinistro === item.numeroSinistro)) {
-            mergedSin.push(item);
-          }
-        }
-        setSinistros(mergedSin.slice(0, 4));
+        setSinistros(resSin.value.content.slice(0, 5));
+      } else {
+        setSinistros([]);
       }
 
       if (resApo.status === "fulfilled" && resApo.value?.content) {
-        const mergedApo: Apolice[] = [...apolicesLocais];
-        for (const item of resApo.value.content) {
-          if (!mergedApo.some((a) => a.id === item.id || a.numeroApolice === item.numeroApolice)) {
-            mergedApo.push(item);
-          }
-        }
-        setApolices(mergedApo.slice(0, 4));
+        setApolices(resApo.value.content.slice(0, 5));
+      } else {
+        setApolices([]);
       }
 
       if (resSeg.status === "fulfilled" && resSeg.value?.content) {
-        const mergedSeg: Segurado[] = [...seguradosLocais];
-        for (const item of resSeg.value.content) {
-          if (!mergedSeg.some((s) => s.id === item.id || s.cpfCnpj === item.cpfCnpj)) {
-            mergedSeg.push(item);
-          }
-        }
-        setSegurados(mergedSeg.slice(0, 4));
+        setSegurados(resSeg.value.content.slice(0, 5));
+      } else {
+        setSegurados([]);
       }
     } catch (err) {
-      console.warn("Erro ao buscar dados online para busca do header:", err);
+      console.error("Erro ao buscar dados na API:", err);
+      setSinistros([]);
+      setApolices([]);
+      setSegurados([]);
     } finally {
       setIsLoading(false);
     }
@@ -204,22 +162,24 @@ export const HeaderSearch: React.FC = () => {
   const totalResults: SearchResultItem[] = [
     ...sinistros.map((s): SearchResultItem => ({ tipo: "sinistro", item: s })),
     ...apolices.map((a): SearchResultItem => ({ tipo: "apolice", item: a })),
-    ...segurados.map((seg): SearchResultItem => ({ tipo: "segurado", item: seg })),
+    ...segurados.map(
+      (seg): SearchResultItem => ({ tipo: "segurado", item: seg }),
+    ),
   ];
 
   const handleSelectItem = (itemObj: SearchResultItem) => {
     setIsOpen(false);
     if (itemObj.tipo === "sinistro") {
       navigate(
-        `/sinistros?busca=${encodeURIComponent(itemObj.item.numeroSinistro)}&detalheId=${itemObj.item.id || itemObj.item.numeroSinistro}`
+        `/sinistros?busca=${encodeURIComponent(itemObj.item.numeroSinistro)}&detalheId=${itemObj.item.id || itemObj.item.numeroSinistro}`,
       );
     } else if (itemObj.tipo === "apolice") {
       navigate(
-        `/apolices?busca=${encodeURIComponent(itemObj.item.numeroApolice)}&detalheId=${itemObj.item.id || itemObj.item.numeroApolice}`
+        `/apolices?busca=${encodeURIComponent(itemObj.item.numeroApolice)}&detalheId=${itemObj.item.id || itemObj.item.numeroApolice}`,
       );
     } else if (itemObj.tipo === "segurado") {
       navigate(
-        `/segurados?busca=${encodeURIComponent(itemObj.item.nomeRazaoSocial)}&detalheId=${itemObj.item.id || itemObj.item.nomeRazaoSocial}`
+        `/segurados?busca=${encodeURIComponent(itemObj.item.nomeRazaoSocial)}&detalheId=${itemObj.item.id || itemObj.item.nomeRazaoSocial}`,
       );
     }
   };
@@ -345,7 +305,13 @@ export const HeaderSearch: React.FC = () => {
               className="text-(--muted) hover:text-(--fg) p-0.5 rounded cursor-pointer transition-colors"
               title="Limpar pesquisa"
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M18 6L6 18M6 6l12 12" />
               </svg>
             </button>
@@ -373,7 +339,9 @@ export const HeaderSearch: React.FC = () => {
                 "Pesquisando na plataforma…"
               ) : totalCount > 0 ? (
                 <>
-                  <strong className="text-(--fg)">{totalCount}</strong> resultado{totalCount > 1 ? "s" : ""} encontrado{totalCount > 1 ? "s" : ""}
+                  <strong className="text-(--fg)">{totalCount}</strong>{" "}
+                  resultado{totalCount > 1 ? "s" : ""} encontrado
+                  {totalCount > 1 ? "s" : ""}
                 </>
               ) : (
                 "Nenhum resultado"
@@ -402,7 +370,10 @@ export const HeaderSearch: React.FC = () => {
                   Nenhum registro encontrado
                 </p>
                 <p className="text-xs text-(--muted) mt-1 max-w-xs mx-auto">
-                  Tente buscar pelo código (ex: <span className="font-mono text-(--fg)">SIN-2026-0001</span>, <span className="font-mono text-(--fg)">AP-2026-0001</span>), nome do segurado ou CNPJ.
+                  Tente buscar pelo código (ex:{" "}
+                  <span className="font-mono text-(--fg)">SIN-2026-0001</span>,{" "}
+                  <span className="font-mono text-(--fg)">AP-2026-0001</span>),
+                  nome do segurado ou CNPJ.
                 </p>
               </div>
             )}
@@ -412,7 +383,9 @@ export const HeaderSearch: React.FC = () => {
               <div className="py-1">
                 <div className="px-2.5 py-1 text-[11px] font-semibold tracking-wider text-(--accent-ink) uppercase flex items-center justify-between">
                   <span>Sinistros</span>
-                  <span className="text-[10px] text-(--muted) font-normal font-mono">{sinistros.length}</span>
+                  <span className="text-[10px] text-(--muted) font-normal font-mono">
+                    {sinistros.length}
+                  </span>
                 </div>
                 <div className="space-y-0.5 mt-0.5">
                   {sinistros.map((s) => {
@@ -421,7 +394,9 @@ export const HeaderSearch: React.FC = () => {
                     return (
                       <div
                         key={s.id || s.numeroSinistro}
-                        onClick={() => handleSelectItem({ tipo: "sinistro", item: s })}
+                        onClick={() =>
+                          handleSelectItem({ tipo: "sinistro", item: s })
+                        }
                         className={`group px-2.5 py-2 rounded-lg cursor-pointer transition-colors flex items-center justify-between gap-3 ${
                           isSelected
                             ? "bg-(--accent-soft) text-(--fg)"
@@ -433,14 +408,18 @@ export const HeaderSearch: React.FC = () => {
                             <span className="font-mono text-xs font-semibold group-hover:text-(--accent-ink)">
                               {s.numeroSinistro}
                             </span>
-                            <Badge variant={getSinistroStatusBadgeVariant(s.status)}>
+                            <Badge
+                              variant={getSinistroStatusBadgeVariant(s.status)}
+                            >
                               {formatarStatusSinistro(s.status)}
                             </Badge>
                           </div>
                           <div className="text-[11.5px] text-(--muted) truncate mt-0.5 flex items-center gap-1.5">
                             <span>{formatarTipoSinistro(s.tipoSinistro)}</span>
                             <span>•</span>
-                            <span className="font-mono">{formatarMoeda(s.valorEstimado)}</span>
+                            <span className="font-mono">
+                              {formatarMoeda(s.valorEstimado)}
+                            </span>
                             {s.dataOcorrencia && (
                               <>
                                 <span>•</span>
@@ -455,7 +434,12 @@ export const HeaderSearch: React.FC = () => {
                           viewBox="0 0 24 24"
                           stroke="currentColor"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
                         </svg>
                       </div>
                     );
@@ -469,7 +453,9 @@ export const HeaderSearch: React.FC = () => {
               <div className="py-1">
                 <div className="px-2.5 py-1 text-[11px] font-semibold tracking-wider text-(--accent-ink) uppercase flex items-center justify-between">
                   <span>Apólices</span>
-                  <span className="text-[10px] text-(--muted) font-normal font-mono">{apolices.length}</span>
+                  <span className="text-[10px] text-(--muted) font-normal font-mono">
+                    {apolices.length}
+                  </span>
                 </div>
                 <div className="space-y-0.5 mt-0.5">
                   {apolices.map((a) => {
@@ -478,7 +464,9 @@ export const HeaderSearch: React.FC = () => {
                     return (
                       <div
                         key={a.id || a.numeroApolice}
-                        onClick={() => handleSelectItem({ tipo: "apolice", item: a })}
+                        onClick={() =>
+                          handleSelectItem({ tipo: "apolice", item: a })
+                        }
                         className={`group px-2.5 py-2 rounded-lg cursor-pointer transition-colors flex items-center justify-between gap-3 ${
                           isSelected
                             ? "bg-(--accent-soft) text-(--fg)"
@@ -490,14 +478,18 @@ export const HeaderSearch: React.FC = () => {
                             <span className="font-mono text-xs font-semibold group-hover:text-(--accent-ink)">
                               {a.numeroApolice}
                             </span>
-                            <Badge variant={getApoliceStatusBadgeVariant(a.status)}>
+                            <Badge
+                              variant={getApoliceStatusBadgeVariant(a.status)}
+                            >
                               {formatarStatusApolice(a.status)}
                             </Badge>
                           </div>
                           <div className="text-[11.5px] text-(--muted) truncate mt-0.5 flex items-center gap-1.5">
                             <span>{formatarTipoSeguro(a.tipoSeguro)}</span>
                             <span>•</span>
-                            <span className="font-mono">{formatarMoeda(a.valorSeguro)}</span>
+                            <span className="font-mono">
+                              {formatarMoeda(a.valorSeguro)}
+                            </span>
                           </div>
                         </div>
                         <svg
@@ -506,7 +498,12 @@ export const HeaderSearch: React.FC = () => {
                           viewBox="0 0 24 24"
                           stroke="currentColor"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
                         </svg>
                       </div>
                     );
@@ -520,7 +517,9 @@ export const HeaderSearch: React.FC = () => {
               <div className="py-1">
                 <div className="px-2.5 py-1 text-[11px] font-semibold tracking-wider text-(--accent-ink) uppercase flex items-center justify-between">
                   <span>Segurados</span>
-                  <span className="text-[10px] text-(--muted) font-normal font-mono">{segurados.length}</span>
+                  <span className="text-[10px] text-(--muted) font-normal font-mono">
+                    {segurados.length}
+                  </span>
                 </div>
                 <div className="space-y-0.5 mt-0.5">
                   {segurados.map((seg) => {
@@ -529,7 +528,9 @@ export const HeaderSearch: React.FC = () => {
                     return (
                       <div
                         key={seg.id || seg.cpfCnpj}
-                        onClick={() => handleSelectItem({ tipo: "segurado", item: seg })}
+                        onClick={() =>
+                          handleSelectItem({ tipo: "segurado", item: seg })
+                        }
                         className={`group px-2.5 py-2 rounded-lg cursor-pointer transition-colors flex items-center justify-between gap-3 ${
                           isSelected
                             ? "bg-(--accent-soft) text-(--fg)"
@@ -541,12 +542,18 @@ export const HeaderSearch: React.FC = () => {
                             <span className="text-xs font-semibold group-hover:text-(--accent-ink) truncate">
                               {seg.nomeRazaoSocial}
                             </span>
-                            <Badge variant={getPessoaTipoBadgeVariant(seg.tipoPessoa)}>
+                            <Badge
+                              variant={getPessoaTipoBadgeVariant(
+                                seg.tipoPessoa,
+                              )}
+                            >
                               {formatarTipoPessoa(seg.tipoPessoa)}
                             </Badge>
                           </div>
                           <div className="text-[11.5px] text-(--muted) truncate mt-0.5 flex items-center gap-1.5 font-mono">
-                            <span>{formatarCpfCnpj(seg.cpfCnpj, seg.tipoPessoa)}</span>
+                            <span>
+                              {formatarCpfCnpj(seg.cpfCnpj, seg.tipoPessoa)}
+                            </span>
                             <span>•</span>
                             <span className="truncate">{seg.email}</span>
                           </div>
@@ -557,7 +564,12 @@ export const HeaderSearch: React.FC = () => {
                           viewBox="0 0 24 24"
                           stroke="currentColor"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
                         </svg>
                       </div>
                     );
@@ -570,12 +582,18 @@ export const HeaderSearch: React.FC = () => {
           {/* Rodapé com Atalhos de Teclado */}
           <div className="shrink-0 px-3.5 py-2 bg-(--surface-2)/80 border-t border-(--border) flex items-center justify-between text-[11px] text-(--muted)">
             <span>
-              Pressione <kbd className="font-mono font-semibold text-(--fg)">↵ Enter</kbd> para abrir
+              Pressione{" "}
+              <kbd className="font-mono font-semibold text-(--fg)">↵ Enter</kbd>{" "}
+              para abrir
             </span>
             <div className="flex items-center gap-2">
-              <span><kbd className="font-mono">↑↓</kbd> navegar</span>
+              <span>
+                <kbd className="font-mono">↑↓</kbd> navegar
+              </span>
               <span>•</span>
-              <span><kbd className="font-mono">ESC</kbd> fechar</span>
+              <span>
+                <kbd className="font-mono">ESC</kbd> fechar
+              </span>
             </div>
           </div>
         </div>
