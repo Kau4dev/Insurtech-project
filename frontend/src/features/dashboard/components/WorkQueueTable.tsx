@@ -24,72 +24,23 @@ export interface WorkQueueTableProps {
   isLoading?: boolean;
 }
 
-// Itens de demonstração para espelhar perfeitamente o mockup caso a fila esteja vazia
-const DEMO_WORK_QUEUE: WorkQueueItem[] = [
-  {
-    id: "demo-1",
-    numeroSinistro: "SIN-2026-0001",
-    numeroApolice: "AP-2026-0001",
-    tipoSinistro: "COLISAO",
-    valorEstimado: 8500,
-    status: "APROVADO",
-    seguradoNome: "Carlos Eduardo Silva",
-  },
-  {
-    id: "demo-2",
-    numeroSinistro: "SIN-2026-0002",
-    numeroApolice: "AP-2026-0002",
-    tipoSinistro: "INCENDIO",
-    valorEstimado: 45000,
-    status: "EM_ANALISE",
-    seguradoNome: "Tech Solutions Ltda",
-  },
-  {
-    id: "demo-3",
-    numeroSinistro: "SIN-2026-0003",
-    numeroApolice: "AP-2026-0003",
-    tipoSinistro: "ALAGAMENTO",
-    valorEstimado: 12500,
-    status: "AGUARDANDO_DOCUMENTOS",
-    seguradoNome: "Mariana Oliveira Santos",
-  },
-  {
-    id: "demo-4",
-    numeroSinistro: "SIN-2026-0004",
-    numeroApolice: "AP-2026-0001",
-    tipoSinistro: "QUEBRA_DE_VIDRO",
-    valorEstimado: 1400,
-    status: "PAGO",
-    seguradoNome: "Carlos Eduardo Silva",
-  },
-  {
-    id: "demo-5",
-    numeroSinistro: "SIN-2026-0005",
-    numeroApolice: "AP-2025-0045",
-    tipoSinistro: "DANO_A_TERCEIRO",
-    valorEstimado: 18000,
-    status: "REJEITADO",
-    seguradoNome: "Auto Peças & Serviços Silva ME",
-  },
-];
-
 export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
   sinistros,
   isLoading = false,
 }) => {
-  // Mapeia os dados dinâmicos ou usa a lista padrão de demonstração
+  // Limita estritamente às últimas 6 na fila
   const items: WorkQueueItem[] =
     sinistros && sinistros.length > 0
-      ? sinistros.slice(0, 5).map((s, index) => ({
+      ? sinistros.slice(0, 6).map((s, index) => ({
           id: s.id || `sin-${index}`,
-          numeroSinistro: s.numeroSinistro,
+          numeroSinistro: s.numeroSinistro || "—",
           numeroApolice: s.numeroApolice,
           tipoSinistro: s.tipoSinistro,
-          valorEstimado: s.valorEstimado,
+          valorEstimado: s.valorEstimado || 0,
           status: s.status,
-          seguradoNome: s.seguradoNome || "Segurado",
+          seguradoNome: s.seguradoNome || "—",
         }))
-      : DEMO_WORK_QUEUE;
+      : [];
 
   const formatCurrency = (val: number) => {
     return val.toLocaleString("pt-BR", {
@@ -100,27 +51,27 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
   };
 
   return (
-    <div className="border border-(--border) bg-(--surface) rounded-2xl p-5 shadow-xs flex flex-col justify-between h-full overflow-hidden">
-      {/* Cabeçalho do Card */}
-      <div className="flex items-center justify-between mb-4">
+    <div className="border border-(--border) bg-(--surface) rounded-2xl p-5 shadow-xs flex flex-col h-full overflow-hidden">
+      {/* Cabeçalho do Card no Topo */}
+      <div className="flex items-center justify-between mb-3 shrink-0">
         <div className="flex items-baseline gap-2">
           <h2 className="text-[15px] font-semibold text-(--fg) tracking-tight">
             Fila de trabalho
           </h2>
           <span className="text-[12px] text-(--muted)">
-            prioridade por antiguidade
+            {items.length > 0 ? "Últimos 6 registros" : "Sem pendências"}
           </span>
         </div>
         <Link
           to="/sinistros"
-          className="text-[12px] font-medium text-emerald-700 hover:text-emerald-800 transition-colors"
+          className="text-[12px] font-medium text-(--accent-ink) hover:underline"
         >
-          ver todos
+          Ver todos →
         </Link>
       </div>
 
-      {/* Tabela estendendo de ponta a ponta (encostando nas bordas da div) */}
-      <div className="overflow-x-auto -mx-5 -mb-5">
+      {/* Tabela alinhada no Topo, logo abaixo do cabeçalho */}
+      <div className="overflow-x-auto -mx-5 flex-1">
         <table className="w-full text-left border-collapse table-fixed min-w-140">
           <colgroup>
             <col className="w-[23%]" />
@@ -159,6 +110,15 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
                   </td>
                 </tr>
               ))
+            ) : items.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="py-8 text-center text-(--muted) text-xs"
+                >
+                  Nenhum sinistro cadastrado na fila no momento.
+                </td>
+              </tr>
             ) : (
               items.map((item) => (
                 <tr
@@ -177,7 +137,7 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
                     )}
                   </td>
 
-                  {/* 2. Tipo de Evento / Sinistro (sem quebra de linha) */}
+                  {/* 2. Tipo de Evento / Sinistro */}
                   <td className="py-3 px-2 text-(--fg) whitespace-nowrap truncate">
                     {formatarTipoSinistro(item.tipoSinistro)}
                   </td>
@@ -199,7 +159,7 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
                     </Badge>
                   </td>
 
-                  {/* 5. Nome do Segurado (sem quebra de linha) */}
+                  {/* 5. Nome do Segurado */}
                   <td className="py-3 pl-2 pr-5 text-(--muted) group-hover:text-(--fg) transition-colors whitespace-nowrap truncate">
                     {item.seguradoNome}
                   </td>

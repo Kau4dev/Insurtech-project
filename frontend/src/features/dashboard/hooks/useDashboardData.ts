@@ -83,12 +83,12 @@ export function useDashboardData() {
   // Total geral de sinistros
   const totalSinistros = useMemo(() => {
     if (
-      resumoQuery.data?.totalSinistros &&
-      resumoQuery.data.totalSinistros > 0
+      resumoQuery.data?.totalSinistros !== undefined &&
+      resumoQuery.data.totalSinistros !== null
     ) {
       return resumoQuery.data.totalSinistros;
     }
-    return todosSinistros.length || 128;
+    return todosSinistros.length;
   }, [resumoQuery.data, todosSinistros]);
 
   // Sinistros em análise
@@ -96,27 +96,25 @@ export function useDashboardData() {
     return (
       contagemPorStatus.EM_ANALISE ??
       todosSinistros.filter((s) => s.status === "EM_ANALISE").length ??
-      24
+      0
     );
   }, [contagemPorStatus, todosSinistros]);
 
   // Valor total liquidado (Aprovados + Pagos)
   const valorTotalLiquidado = useMemo(() => {
     if (
-      resumoQuery.data?.valorTotalAprovado &&
-      resumoQuery.data.valorTotalAprovado > 0
+      resumoQuery.data?.valorTotalAprovado !== undefined &&
+      resumoQuery.data.valorTotalAprovado !== null
     ) {
       return resumoQuery.data.valorTotalAprovado;
     }
 
-    const soma = todosSinistros
+    return todosSinistros
       .filter((s) => s.status === "APROVADO" || s.status === "PAGO")
       .reduce(
         (acc, curr) => acc + (curr.valorAprovado || curr.valorEstimado || 0),
         0,
       );
-
-    return soma > 0 ? soma : 1820000;
   }, [resumoQuery.data, todosSinistros]);
 
   // Tempo médio dinâmico de resolução baseado no histórico de sinistros finalizados
@@ -128,10 +126,10 @@ export function useDashboardData() {
         s.status === "REJEITADO",
     );
 
-    if (finalizados.length === 0) return "4,2 dias";
+    if (finalizados.length === 0) return "—";
 
     const somaDias = finalizados.reduce((acc, s) => {
-      if (!s.createdAt || !s.updatedAt) return acc + 4;
+      if (!s.createdAt || !s.updatedAt) return acc + 1;
       const diffMs =
         new Date(s.updatedAt).getTime() - new Date(s.createdAt).getTime();
       const dias = Math.max(0.5, diffMs / (1000 * 60 * 60 * 24));
@@ -173,12 +171,18 @@ export function useDashboardData() {
       const pct = Math.round(((doMes - doMesAnt) / doMesAnt) * 100);
       return `${pct >= 0 ? "▲" : "▼"} ${Math.abs(pct)}%`;
     }
-    return "▲ 12%";
+    return doMes > 0 ? "Novo" : "—";
   }, [todosSinistros]);
 
-  // Fila de trabalho enriquecida com os dados reais dos segurados e apólices
+  // Fila de trabalho enriquecida com os dados reais dos segurados e apólices (ordenada e limitada a 6)
   const filaTrabalho = useMemo(() => {
-    return todosSinistros.slice(0, 5).map((s) => ({
+    const ordenados = [...todosSinistros].sort((a, b) => {
+      const tA = new Date(a.createdAt || a.dataOcorrencia).getTime() || 0;
+      const tB = new Date(b.createdAt || b.dataOcorrencia).getTime() || 0;
+      return tB - tA;
+    });
+
+    return ordenados.slice(0, 6).map((s) => ({
       ...s,
       numeroApolice:
         apolicesMap.get(s.apoliceId) ||

@@ -55,7 +55,7 @@ export const DashboardPage: React.FC = () => {
 
   // Formatação do valor liquidado para o card KPI
   const formatarValorLiquidado = (val?: number) => {
-    if (!val || val === 0) return "R$ 1,82M";
+    if (!val || val === 0) return "R$ 0,00";
     if (val >= 1_000_000) {
       return `R$ ${(val / 1_000_000).toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
@@ -65,7 +65,7 @@ export const DashboardPage: React.FC = () => {
     return val.toLocaleString("pt-BR", {
       style: "currency",
       currency: "BRL",
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 2,
     });
   };
 
@@ -108,15 +108,21 @@ export const DashboardPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* 2. Grid de Cards KPI Reutilizáveis (Componentes Iguais) */}
+      {/* 2. Grid de Cards KPI Reutilizáveis */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         {/* Card 1: Sinistros registrados */}
         <MetricCard
-          title="Sinistros registrados (mês)"
+          title="Sinistros registrados"
           value={totalSinistros}
           isLoading={isLoading}
-          trendText={variacaoMesAnterior}
-          subtitle="vs. mês anterior"
+          trendText={
+            variacaoMesAnterior !== "—" ? variacaoMesAnterior : undefined
+          }
+          subtitle={
+            totalSinistros > 0
+              ? "Total na base de dados"
+              : "Nenhum sinistro registrado"
+          }
           trendVariant="positive"
           icon={
             <svg
@@ -140,8 +146,14 @@ export const DashboardPage: React.FC = () => {
           title="Sinistros em análise"
           value={totalEmAnalise}
           isLoading={isLoading}
-          trendBadge="48 h"
-          subtitle="média de atendimento"
+          trendBadge={
+            totalEmAnalise > 0 ? `${totalEmAnalise} pendentes` : undefined
+          }
+          subtitle={
+            totalEmAnalise > 0
+              ? "Aguardando parecer técnico"
+              : "Fila sem pendências"
+          }
           trendVariant="info"
           icon={
             <svg
@@ -159,11 +171,14 @@ export const DashboardPage: React.FC = () => {
 
         {/* Card 3: Liquidados no mês */}
         <MetricCard
-          title="Liquidados no mês"
+          title="Total liquidado"
           value={formatarValorLiquidado(valorTotalLiquidado)}
           isLoading={isLoading}
-          trendText="▲ 8,4%"
-          subtitle="tempo médio 2,6 dias"
+          subtitle={
+            valorTotalLiquidado > 0
+              ? "Sinistros aprovados e pagos"
+              : "Nenhum pagamento liquidado"
+          }
           trendVariant="positive"
           icon={
             <svg

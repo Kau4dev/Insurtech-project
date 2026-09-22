@@ -17,10 +17,9 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  // Gera os últimos 6 meses dinamicamente a partir da data atual
+  // Gera os últimos 6 meses dinamicamente e calcula estritamente a quantidade real de sinistros
   const monthsData = useMemo<MonthItem[]>(() => {
     const now = new Date();
-    const baseVolumes = [84, 97, 121, 110, 146, 128];
     const items: MonthItem[] = [];
 
     for (let i = 5; i >= 0; i--) {
@@ -28,14 +27,14 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
       const monthIndex = d.getMonth();
       const year = d.getFullYear();
 
-      // Formata em português com primeira letra maiúscula (ex: "Ago", "Set", "Out")
+      // Formata em português com primeira letra maiúscula (ex: "Out", "Nov", "Dez", "Jan")
       const rawMonth = d
         .toLocaleDateString("pt-BR", { month: "short" })
         .replace(".", "");
       const formattedMonth =
         rawMonth.charAt(0).toUpperCase() + rawMonth.slice(1);
 
-      // Contabiliza sinistros reais registrados para este mês
+      // Contabiliza estritamente os sinistros reais registrados para este mês e ano
       const realCount = (sinistros || []).filter((s) => {
         const dateStr = s.createdAt || s.dataOcorrencia;
         if (!dateStr) return false;
@@ -47,13 +46,9 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
         );
       }).length;
 
-      // Base histórica proporcional + sinistros reais registrados
-      const base = baseVolumes[5 - i] ?? 100;
-      const value = base + realCount;
-
       items.push({
         month: formattedMonth,
-        value,
+        value: realCount,
         year,
         monthIndex,
       });
@@ -62,7 +57,8 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
     return items;
   }, [sinistros]);
 
-  const maxValue = Math.max(...monthsData.map((d) => d.value), 150);
+  const maxSinistros = Math.max(...monthsData.map((d) => d.value), 0);
+  const maxValue = maxSinistros > 0 ? maxSinistros : 1;
 
   return (
     <div className="bg-(--surface) border border-(--border) rounded-2xl p-5 shadow-xs flex flex-col justify-between h-full">
@@ -80,11 +76,11 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
       <div className="h-44 flex items-end justify-between gap-3 px-2 pt-2 pb-1">
         {monthsData.map((item, index) => {
           const isHovered = hoveredIndex === index;
-          // Altura proporcional entre 30% e 100%
-          const heightPercent = Math.max(
-            28,
-            Math.round((item.value / maxValue) * 100),
-          );
+          // Altura proporcional baseada estritamente nos dados reais
+          const heightPercent =
+            item.value > 0
+              ? Math.max(16, Math.round((item.value / maxValue) * 100))
+              : 4; // Altura sutil de 4% para a linha de base quando for 0
 
           return (
             <div
@@ -93,22 +89,26 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              {/* Trilho de fundo (rounded-xl) com barra preenchida interna */}
+              {/* Trilho de fundo com barra preenchida interna */}
               <div className="w-full max-w-11 h-32.5 rounded-xl flex items-end justify-center p-1 transition-colors">
                 <div
                   style={{ height: `${heightPercent}%` }}
                   className={`relative w-full rounded-lg transition-all duration-200 ${
-                    isHovered
-                      ? "bg-emerald-600 shadow-sm"
-                      : "bg-[#6b7c96] dark:bg-slate-500"
+                    item.value === 0
+                      ? "bg-(--border-strong)/40"
+                      : isHovered
+                        ? "bg-emerald-600 shadow-sm"
+                        : "bg-[#6b7c96] dark:bg-slate-500"
                   }`}
                 >
-                  {/* Valor numérico acompanhando a altura de cada barra */}
+                  {/* Valor numérico real acompanhando a altura da barra */}
                   <span
                     className={`absolute -top-5 left-1/2 -translate-x-1/2 text-[12px] font-medium whitespace-nowrap transition-all duration-150 ${
-                      isHovered
-                        ? "text-emerald-600 font-semibold -translate-y-0.5"
-                        : "text-slate-500 dark:text-slate-400"
+                      item.value > 0
+                        ? isHovered
+                          ? "text-emerald-600 font-semibold -translate-y-0.5"
+                          : "text-slate-600 dark:text-slate-300 font-medium"
+                        : "text-(--muted)"
                     }`}
                   >
                     {item.value}
@@ -116,7 +116,7 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
                 </div>
               </div>
 
-              {/* Rótulo do Mês (verde apenas no hover) */}
+              {/* Rótulo do Mês */}
               <span
                 className={`text-[12px] mt-1 transition-colors duration-150 ${
                   isHovered
