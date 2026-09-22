@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -13,14 +14,14 @@ const loginSchema = z.object({
     .max(255, "Email deve ter no máximo 255 caracteres"),
   senha: z
     .string()
-    .min(8, "Senha é obrigatória, deve ter no mínimo 8 caracteres")
+    .min(6, "Senha deve ter no mínimo 6 caracteres")
     .max(72, "Senha deve ter no máximo 72 caracteres"),
 });
 
 type FormInputs = z.infer<typeof loginSchema>;
 
 export const LoginPage: React.FC = () => {
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [erroAPI, setErroAPI] = useState<string | null>(null);
   const [isloading, setIsLoading] = useState(false);
@@ -38,6 +39,7 @@ export const LoginPage: React.FC = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<FormInputs>({
     resolver: zodResolver(loginSchema),
@@ -47,6 +49,19 @@ export const LoginPage: React.FC = () => {
     },
   });
 
+  // Se já estiver logado, redireciona diretamente ao dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  const preencherCredencial = (email: string) => {
+    setValue("email", email, { shouldValidate: true });
+    setValue("senha", "password", { shouldValidate: true });
+    setErroAPI(null);
+  };
+
   const onSubmit = async (data: FormInputs) => {
     setIsLoading(true);
     setErroAPI(null);
@@ -54,8 +69,14 @@ export const LoginPage: React.FC = () => {
     try {
       await login({ email: data.email, senha: data.senha });
       navigate("/dashboard");
-    } catch {
-      setErroAPI("E-mail ou senha incorretos. Tente novamente.");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && !err.response) {
+        setErroAPI(
+          "Não foi possível conectar ao Gateway (:8080). Certifique-se de que os serviços backend estão em execução.",
+        );
+      } else {
+        setErroAPI("E-mail ou senha incorretos. Tente novamente.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -177,7 +198,7 @@ export const LoginPage: React.FC = () => {
               className={`w-full h-10 px-3 border rounded-lg bg-(--surface) focus:outline-none focus:ring-2 focus:ring-(--accent-soft) focus:border-(--accent) transition-all ${
                 errors.email ? "border-red-500" : "border-(--border-strong)"
               }`}
-              placeholder="ana.beatriz@insurtech.example"
+              placeholder="analista@insurtech.com"
             />
             {errors.email && (
               <span className="text-red-500 text-[12px] mt-1 block">
@@ -209,30 +230,49 @@ export const LoginPage: React.FC = () => {
             )}
           </div>
 
+          {/* Atalhos com as contas do backend */}
+          <div className="mt-4 p-2.5 rounded-lg bg-(--surface-2)/60 border border-(--border)">
+            <div className="flex items-center justify-between text-[11.5px] mb-2 text-(--muted)">
+              <span className="font-semibold uppercase tracking-wider text-[10px]">
+                Acesso Rápido
+              </span>
+              <span className="font-mono text-[10.5px]">senha: password</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => preencherCredencial("admin@insurtech.com")}
+                className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-(--surface) border border-(--border) hover:border-(--accent) text-(--fg) hover:text-(--accent-ink) transition-colors cursor-pointer"
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => preencherCredencial("analista@insurtech.com")}
+                className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-(--surface) border border-(--border) hover:border-(--accent) text-(--fg) hover:text-(--accent-ink) transition-colors cursor-pointer"
+              >
+                Analista
+              </button>
+              <button
+                type="button"
+                onClick={() => preencherCredencial("gestor@insurtech.com")}
+                className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-(--surface) border border-(--border) hover:border-(--accent) text-(--fg) hover:text-(--accent-ink) transition-colors cursor-pointer"
+              >
+                Gestor
+              </button>
+            </div>
+          </div>
+
           {erroAPI && (
-            <div className="text-red-500 text-[12px] mt-3 p-2 bg-red-500/10 border border-red-500/20 rounded">
+            <div className="text-red-500 text-[12px] mt-3 p-2.5 bg-red-500/10 border border-red-500/20 rounded-lg">
               {erroAPI}
             </div>
           )}
-          <div className="flex justify-between items-center text-[12px] mt-6">
-            <span className="text-[11.5px] text-(--faint) font-mono">
-              credenciais de demonstração
-            </span>
-            <button
-              type="button"
-              className="text-(--accent-ink) hover:underline font-[620] cursor-pointer bg-transparent border-none p-0"
-              onClick={() =>
-                alert("Fluxo de recuperação não incluso no protótipo.")
-              }
-            >
-              Esqueci a senha
-            </button>
-          </div>
 
           <button
             type="submit"
             disabled={isloading}
-            className={`mt-6 w-full h-10 bg-(--accent) text-white font-semibold rounded-lg hover:brightness-105 active:brightness-95 focus:outline-none focus:ring-2 focus:ring-(--accent-soft) transition-all cursor-pointer flex items-center justify-center ${
+            className={`mt-5 w-full h-10 bg-(--accent) text-white font-semibold rounded-lg hover:brightness-105 active:brightness-95 focus:outline-none focus:ring-2 focus:ring-(--accent-soft) transition-all cursor-pointer flex items-center justify-center ${
               isloading ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
