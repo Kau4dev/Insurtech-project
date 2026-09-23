@@ -3,6 +3,7 @@ import type {
   StatusApolice,
   StatusSinistro,
   TipoCobertura,
+  TipoDocumento,
   TipoPessoa,
   TipoSeguro,
   TipoSinistro,
@@ -155,4 +156,23 @@ export function formatarTipoPessoa(tipo?: string | null): string {
     : tipo === "PJ"
       ? "Pessoa Jurídica"
       : tipo;
+}
+
+export const TIPO_DOCUMENTO_OPTIONS: {
+  value: TipoDocumento;
+  label: string;
+}[] = [
+  { value: "BOLETIM_OCORRENCIA", label: "Boletim de Ocorrência" },
+  { value: "FOTO_DANO", label: "Fotos dos Danos" },
+  { value: "NOTA_FISCAL", label: "Nota Fiscal / Orçamento" },
+  { value: "LAUDO_TECNICO", label: "Laudo Técnico / Pericial" },
+  { value: "CNH", label: "CNH do Condutor" },
+  { value: "DOCUMENTO_VEICULO", label: "CRLV / Documento do Bem" },
+  { value: "OUTROS", label: "Outros Documentos" },
+];
+
+export function formatarTipoDocumento(tipo?: string | null): string {
+  if (!tipo) return "-";
+  const item = TIPO_DOCUMENTO_OPTIONS.find((o) => o.value === tipo);
+  return item ? item.label : tipo;
 }
