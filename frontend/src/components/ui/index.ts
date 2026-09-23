@@ -1,5 +1,6 @@
 export * from "./Badge";
 export * from "./Button";
+export * from "./CopyableId";
 export * from "./DetailField";
 export * from "./FormActions";
 export * from "./FormErrorBanner";
