@@ -47,6 +47,7 @@ public class SinistroRepositoryImpl implements SinistroRepository {
 
     @Override
     public Page<Sinistro> listar(
+            String numeroSinistro,
             UUID apoliceId,
             UUID seguradoId,
             UUID analistaId,
@@ -56,7 +57,9 @@ public class SinistroRepositoryImpl implements SinistroRepository {
             LocalDate dataFim,
             Pageable pageable
     ) {
+        String numFiltro = (numeroSinistro != null && !numeroSinistro.trim().isEmpty()) ? numeroSinistro.trim() : null;
         return jpaRepository.buscarComFiltros(
+                        numFiltro,
                         apoliceId,
                         seguradoId,
                         analistaId,

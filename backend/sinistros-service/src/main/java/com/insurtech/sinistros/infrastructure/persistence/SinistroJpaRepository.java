@@ -20,6 +20,7 @@ public interface SinistroJpaRepository extends JpaRepository<SinistroJpaEntity, 
     Optional<SinistroJpaEntity> findByNumeroSinistro(String numeroSinistro);
 
     @Query("SELECT s FROM SinistroJpaEntity s WHERE " +
+            "(:numeroSinistro IS NULL OR LOWER(s.numeroSinistro) LIKE LOWER(CONCAT('%', :numeroSinistro, '%'))) AND " +
             "(:apoliceId IS NULL OR s.apoliceId = :apoliceId) AND " +
             "(:seguradoId IS NULL OR s.seguradoId = :seguradoId) AND " +
             "(:analistaId IS NULL OR s.analistaId = :analistaId) AND " +
@@ -28,6 +29,7 @@ public interface SinistroJpaRepository extends JpaRepository<SinistroJpaEntity, 
             "(CAST(:dataInicio AS date) IS NULL OR s.dataOcorrencia >= :dataInicio) AND " +
             "(CAST(:dataFim AS date) IS NULL OR s.dataOcorrencia <= :dataFim)")
     Page<SinistroJpaEntity> buscarComFiltros(
+            @Param("numeroSinistro") String numeroSinistro,
             @Param("apoliceId") UUID apoliceId,
             @Param("seguradoId") UUID seguradoId,
             @Param("analistaId") UUID analistaId,

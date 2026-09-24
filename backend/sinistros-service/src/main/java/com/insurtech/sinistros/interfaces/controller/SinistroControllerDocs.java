@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
-import org.springframework.web.bind.annotation.RequestHeader;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -48,6 +47,7 @@ public interface SinistroControllerDocs {
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<PageResponseDTO<SinistroResponseDTO>> listarSinistros(
+            @Parameter(description = "Filtrar por número do sinistro (busca parcial)") String numeroSinistro,
             @Parameter(description = "Filtrar por ID da apólice") UUID apoliceId,
             @Parameter(description = "Filtrar por ID do segurado") UUID seguradoId,
             @Parameter(description = "Filtrar por ID do analista") UUID analistaId,

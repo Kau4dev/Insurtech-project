@@ -32,6 +32,7 @@ public class ListarSinistrosUseCase {
     private final ApoliceClient apoliceClient;
 
     public PageResponseDTO<SinistroResponseDTO> executar(
+            String numeroSinistro,
             UUID apoliceId,
             UUID seguradoId,
             UUID analistaId,
@@ -74,6 +75,7 @@ public class ListarSinistrosUseCase {
         }
 
         Page<SinistroResponseDTO> page = repository.listar(
+                        numeroSinistro,
                         apoliceId,
                         seguradoId,
                         analistaId,

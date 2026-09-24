@@ -69,10 +69,10 @@ class ListarSinistrosUseCaseTest {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
         Page<Sinistro> page = new PageImpl<>(List.of(new Sinistro()));
-        when(repository.listar(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(page);
+        when(repository.listar(any(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(page);
         when(mapper.toResponse(any(Sinistro.class))).thenReturn(mock(SinistroResponseDTO.class));
 
-        PageResponseDTO<SinistroResponseDTO> resultado = useCase.executar(null, null, null, null, null, null, null, PageRequest.of(0, 10));
+        PageResponseDTO<SinistroResponseDTO> resultado = useCase.executar(null, null, null, null, null, null, null, null, PageRequest.of(0, 10));
 
         assertNotNull(resultado);
         assertEquals(1, resultado.totalElements());
@@ -85,14 +85,14 @@ class ListarSinistrosUseCaseTest {
 
         Page<Sinistro> page = new PageImpl<>(List.of(new Sinistro()));
         // O analistaId passado pelo caller (null) deve ser sobrescrito pelo usuarioId
-        when(repository.listar(any(), any(), eq(analistaId), any(), any(), any(), any(), any())).thenReturn(page);
+        when(repository.listar(any(), any(), any(), eq(analistaId), any(), any(), any(), any(), any())).thenReturn(page);
         when(mapper.toResponse(any(Sinistro.class))).thenReturn(mock(SinistroResponseDTO.class));
 
-        PageResponseDTO<SinistroResponseDTO> resultado = useCase.executar(null, null, null, null, null, null, null, PageRequest.of(0, 10));
+        PageResponseDTO<SinistroResponseDTO> resultado = useCase.executar(null, null, null, null, null, null, null, null, PageRequest.of(0, 10));
 
         assertNotNull(resultado);
         // Verifica que o analistaId foi fixado no UUID do usuário logado
-        verify(repository).listar(any(), any(), eq(analistaId), any(), any(), any(), any(), any());
+        verify(repository).listar(any(), any(), any(), eq(analistaId), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -103,12 +103,12 @@ class ListarSinistrosUseCaseTest {
         UUID apoliceId = UUID.randomUUID();
 
         Page<Sinistro> page = new PageImpl<>(List.of(new Sinistro()));
-        when(repository.listar(any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(page);
+        when(repository.listar(any(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(page);
         when(mapper.toResponse(any(Sinistro.class))).thenReturn(mock(SinistroResponseDTO.class));
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
         when(apoliceClient.buscarPorId(apoliceId)).thenReturn(null);
 
-        PageResponseDTO<SinistroResponseDTO> resultado = useCase.executar(apoliceId, seguradoId, null, null, null, null, null, PageRequest.of(0, 10));
+        PageResponseDTO<SinistroResponseDTO> resultado = useCase.executar("SIN-2026-0001", apoliceId, seguradoId, null, null, null, null, null, PageRequest.of(0, 10));
 
         assertNotNull(resultado);
         assertEquals(1, resultado.totalElements());
@@ -118,7 +118,7 @@ class ListarSinistrosUseCaseTest {
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         // Contexto vazio
         assertThrows(UsuarioNaoAutenticadoException.class,
-                () -> useCase.executar(null, null, null, null, null, null, null, PageRequest.of(0, 10)));
+                () -> useCase.executar(null, null, null, null, null, null, null, null, PageRequest.of(0, 10)));
         verifyNoInteractions(repository, seguradoClient, apoliceClient);
     }
 
@@ -127,7 +127,7 @@ class ListarSinistrosUseCaseTest {
         setUserContext(UUID.randomUUID().toString(), "SEGURADO");
 
         assertThrows(AcessoNegadoException.class,
-                () -> useCase.executar(null, null, null, null, null, null, null, PageRequest.of(0, 10)));
+                () -> useCase.executar(null, null, null, null, null, null, null, null, PageRequest.of(0, 10)));
         verifyNoInteractions(repository, seguradoClient, apoliceClient);
     }
 
@@ -142,7 +142,7 @@ class ListarSinistrosUseCaseTest {
         when(seguradoClient.buscarPorId(seguradoId)).thenThrow(exception);
 
         assertThrows(SeguradoNaoEncontradoException.class,
-                () -> useCase.executar(null, seguradoId, null, null, null, null, null, PageRequest.of(0, 10)));
+                () -> useCase.executar(null, null, seguradoId, null, null, null, null, null, PageRequest.of(0, 10)));
         verifyNoInteractions(apoliceClient, repository);
     }
 
@@ -159,7 +159,7 @@ class ListarSinistrosUseCaseTest {
         when(apoliceClient.buscarPorId(apoliceId)).thenThrow(exception);
 
         assertThrows(ApoliceNaoEncontradaException.class,
-                () -> useCase.executar(apoliceId, seguradoId, null, null, null, null, null, PageRequest.of(0, 10)));
+                () -> useCase.executar(null, apoliceId, seguradoId, null, null, null, null, null, PageRequest.of(0, 10)));
         verifyNoInteractions(repository);
     }
 }
