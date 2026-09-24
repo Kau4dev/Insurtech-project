@@ -87,7 +87,7 @@ export const HeaderSearch: React.FC = () => {
 
   // Executa a busca nos endpoints da API
   const executarBusca = async (texto: string) => {
-    const q = texto.trim().toLowerCase();
+    const q = texto.trim();
 
     if (!q) {
       setSinistros([]);
@@ -101,8 +101,8 @@ export const HeaderSearch: React.FC = () => {
 
     try {
       const [resSin, resApo, resSeg] = await Promise.allSettled([
-        sinistrosApi.listar({ seguradoId: q, size: 5 }),
-        apolicesApi.listar({ seguradoId: q, size: 5 }),
+        sinistrosApi.listar({ numeroSinistro: q, size: 5 }),
+        apolicesApi.listar({ numeroApolice: q, size: 5 }),
         seguradoApi.listar({ nome: q, size: 5 }),
       ]);
 
