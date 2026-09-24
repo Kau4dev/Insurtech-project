@@ -16,6 +16,7 @@ import type {
   SeguradoRequest,
   SeguradoUpdateRequest,
 } from "../interfaces/segurados/seguradoRequest";
+import { extrairMensagemErro } from "../utils/errorUtils";
 
 export const SeguradosListPage: React.FC = () => {
   const { usuario } = useAuth();
@@ -115,23 +116,12 @@ export const SeguradosListPage: React.FC = () => {
       handleFecharModal();
     } catch (err: unknown) {
       console.error("Erro ao salvar segurado:", err);
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data
-      ) {
-        setFormError(String(err.response.data.message));
-      } else {
-        setFormError(
+      setFormError(
+        extrairMensagemErro(
+          err,
           "Não foi possível salvar o segurado. Verifique os dados ou a conexão com o servidor.",
-        );
-      }
+        ),
+      );
     }
   };
 
