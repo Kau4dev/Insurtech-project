@@ -7,7 +7,9 @@ import {
   Select,
 } from "../../../components/ui";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
+import { extrairMensagemErro } from "../../../utils/errorUtils";
 import { formatarMoeda } from "../../../utils/formatters";
+import { useApolicePorId } from "../../apolices/hooks/useApolices";
 
 export type TipoAcaoSinistro = "aprovar" | "rejeitar";
 
@@ -61,29 +63,68 @@ export const AprovarRejeitarModal: React.FC<AprovarRejeitarModalProps> = ({
     MOTIVOS_REJEICAO_PADRAO[0].value,
   );
   const [motivoOutro, setMotivoOutro] = useState<string>("");
+  const [erroLocal, setErroLocal] = useState<string | null>(null);
+
+  const { data: apolice, isLoading: isLoadingApolice } = useApolicePorId(
+    isAprovar && isOpen ? sinistro?.apoliceId : undefined,
+  );
 
   if (sinistro && isOpen && sinistro.id !== prevSinistroId) {
     setPrevSinistroId(sinistro.id || null);
     setValorAprovado(String(sinistro.valorEstimado || ""));
     setMotivoSelect(MOTIVOS_REJEICAO_PADRAO[0].value);
     setMotivoOutro("");
+    setErroLocal(null);
   }
 
   if (!sinistro || !acao) return null;
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErroLocal(null);
+
     if (isAprovar) {
       const valor = Number(valorAprovado);
-      if (isNaN(valor) || valor <= 0) return;
-      await onConfirmAprovar(valor);
+      if (isNaN(valor) || valor <= 0) {
+        setErroLocal("Informe um valor aprovado válido maior que zero.");
+        return;
+      }
+      if (apolice?.valorSeguro != null && valor > apolice.valorSeguro) {
+        setErroLocal(
+          `O valor aprovado (${formatarMoeda(valor)}) não pode exceder o limite segurado da apólice (${formatarMoeda(apolice.valorSeguro)}).`,
+        );
+        return;
+      }
+      try {
+        await onConfirmAprovar(valor);
+      } catch (err) {
+        setErroLocal(extrairMensagemErro(err, "Falha ao aprovar o sinistro."));
+      }
     } else {
       const motivoFinal =
         motivoSelect === "OUTRO" ? motivoOutro.trim() : motivoSelect;
-      if (!motivoFinal) return;
-      await onConfirmRejeitar(motivoFinal);
+      if (!motivoFinal) {
+        setErroLocal("Informe o motivo da rejeição.");
+        return;
+      }
+      try {
+        await onConfirmRejeitar(motivoFinal);
+      } catch (err) {
+        setErroLocal(extrairMensagemErro(err, "Falha ao rejeitar o sinistro."));
+      }
     }
   };
+
+  const valorNumerico = Number(valorAprovado);
+  const ultrapassaLimite =
+    isAprovar &&
+    apolice?.valorSeguro != null &&
+    !isNaN(valorNumerico) &&
+    valorNumerico > apolice.valorSeguro;
+
+  const mensagemExibicao = errorMessage
+    ? extrairMensagemErro(errorMessage)
+    : erroLocal;
 
   return (
     <Modal
@@ -92,12 +133,58 @@ export const AprovarRejeitarModal: React.FC<AprovarRejeitarModalProps> = ({
       title={isAprovar ? "Aprovar e Liquidar Sinistro" : "Rejeitar Sinistro"}
       description={
         isAprovar
-          ? `Sinistro ${sinistro.numeroSinistro} · Valor estimado: ${formatarMoeda(sinistro.valorEstimado)}`
+          ? `Sinistro ${sinistro.numeroSinistro}`
           : `Confirme a recusa do Sinistro ${sinistro.numeroSinistro}. Esta ação é definitiva.`
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <FormErrorBanner message={errorMessage} />
+        <FormErrorBanner message={mensagemExibicao} />
+
+        {/* Lembrete de Regras de Domínio */}
+        <div className="p-3 rounded-lg bg-(--surface-2)/60 border border-(--border) text-xs flex items-start gap-2">
+          <svg
+            className="w-4 h-4 shrink-0 mt-0.5 text-(--accent-ink)"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <div className="text-(--muted)">
+            <strong className="text-(--fg)">Regras de Domínio:</strong>{" "}
+            {isAprovar
+              ? "A aprovação exige documentos comprobatórios recebidos no sistema e o valor aprovado não pode exceder o valor segurado da apólice."
+              : "A rejeição encerra o processo do sinistro e deve conter motivo fundamentado registrado."}
+          </div>
+        </div>
+
+        {isAprovar && (
+          <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-(--surface-2)/40 border border-(--border) text-xs">
+            <div>
+              <span className="text-(--muted) block">Valor Estimado:</span>
+              <span className="font-semibold text-(--fg) text-sm">
+                {formatarMoeda(sinistro.valorEstimado)}
+              </span>
+            </div>
+            <div>
+              <span className="text-(--muted) block">
+                Limite Segurado da Apólice:
+              </span>
+              <span className="font-semibold text-(--accent-ink) text-sm">
+                {isLoadingApolice
+                  ? "Carregando apólice..."
+                  : apolice?.valorSeguro != null
+                    ? formatarMoeda(apolice.valorSeguro)
+                    : "Não disponível"}
+              </span>
+            </div>
+          </div>
+        )}
 
         {isAprovar ? (
           <div className="space-y-3">
@@ -111,9 +198,18 @@ export const AprovarRejeitarModal: React.FC<AprovarRejeitarModalProps> = ({
               onChange={(e) => setValorAprovado(e.target.value)}
               placeholder="0.00"
             />
+            {ultrapassaLimite && (
+              <p className="text-xs font-semibold text-(--danger) flex items-center gap-1">
+                <span>
+                  ⚠️ Atenção: O valor excede o limite segurado da apólice (
+                  {formatarMoeda(apolice!.valorSeguro)}).
+                </span>
+              </p>
+            )}
             <p className="text-xs text-(--muted)">
-              Regra de negócio: o valor aprovado não pode exceder o valor
-              segurado da apólice.
+              Regra de negócio: o valor aprovado não pode exceder o limite
+              segurado da apólice. Ao confirmar, o sinistro mudará para{" "}
+              <strong>APROVADO</strong> e será enviado para liquidação.
             </p>
           </div>
         ) : (
