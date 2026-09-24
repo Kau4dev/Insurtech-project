@@ -72,3 +72,50 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
     </div>
   );
 };
+
+export interface ErrorStateProps {
+  title?: string;
+  message?: string;
+  onRetry?: () => void;
+}
+
+export const ErrorState: React.FC<ErrorStateProps> = ({
+  title = "Erro ao carregar dados",
+  message = "Ocorreu um problema ao conectar com o serviço backend.",
+  onRetry,
+}) => {
+  return (
+    <div className="w-full bg-(--surface) border border-rose-200 dark:border-rose-900/50 rounded-(--radius) p-8 text-center text-(--muted) shadow-xs">
+      <div className="w-10 h-10 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 mx-auto flex items-center justify-center mb-3">
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <p className="text-base font-semibold text-(--fg)">{title}</p>
+      <p className="text-sm text-(--muted) mt-1 max-w-md mx-auto">{message}</p>
+      {onRetry && (
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={onRetry}
+            className="inline-flex items-center justify-center font-medium rounded-lg transition-colors cursor-pointer px-3.5 py-1.5 text-xs bg-(--surface-2) hover:bg-(--surface) text-(--fg) border border-(--border)"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+

@@ -1,12 +1,15 @@
 import React from "react";
-import { LoadingState, EmptyState } from "./States";
+import { EmptyState, ErrorState, LoadingState } from "./States";
 
 interface TableContainerProps {
   isLoading?: boolean;
   isEmpty?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   loadingMessage?: string;
   emptyTitle?: string;
   emptyDescription?: string;
+  errorMessage?: string;
   variant?: "default" | "embedded";
   children: React.ReactNode;
 }
@@ -14,14 +17,21 @@ interface TableContainerProps {
 export const TableContainer: React.FC<TableContainerProps> = ({
   isLoading = false,
   isEmpty = false,
+  isError = false,
+  onRetry,
   loadingMessage = "Carregando...",
   emptyTitle = "Nenhum registro encontrado",
   emptyDescription = "Não há registros cadastrados ou que correspondam aos filtros.",
+  errorMessage = "Não foi possível carregar os registros. Verifique a conexão com o servidor.",
   variant = "default",
   children,
 }) => {
   if (isLoading) {
     return <LoadingState message={loadingMessage} />;
+  }
+
+  if (isError) {
+    return <ErrorState message={errorMessage} onRetry={onRetry} />;
   }
 
   if (isEmpty) {
@@ -43,3 +53,4 @@ export const TableContainer: React.FC<TableContainerProps> = ({
     </div>
   );
 };
+
