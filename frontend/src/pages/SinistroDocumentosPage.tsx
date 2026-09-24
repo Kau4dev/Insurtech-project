@@ -114,9 +114,14 @@ export const SinistroDocumentosPage: React.FC = () => {
         >
           ← Voltar para Sinistros
         </Link>
-        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm">
-          Sinistro não encontrado ou erro ao carregar os dados. Verifique o
-          identificador informado.
+        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <span>
+            Sinistro não encontrado ou erro ao carregar os dados. Verifique o
+            identificador informado e se o backend está ativo.
+          </span>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            Tentar novamente
+          </Button>
         </div>
       </div>
     );

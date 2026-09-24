@@ -28,7 +28,7 @@ export const SinistrosListPage: React.FC = () => {
     usuario?.papel === "GESTOR" ||
     usuario?.papel === "ADMIN";
   const [searchParams, setSearchParams] = useSearchParams();
-  const seguradoId = searchParams.get("busca") || "";
+  const buscaNumeroSinistro = searchParams.get("busca") || "";
   const detalheId = searchParams.get("detalheId") || "";
   const apoliceIdQuery = searchParams.get("apoliceId") || "";
   const seguradoIdQuery = searchParams.get("seguradoId") || "";
@@ -59,10 +59,12 @@ export const SinistrosListPage: React.FC = () => {
   // Drawer de Detalhes
   const [sinistroManual, setSinistroManual] = useState<Sinistro | null>(null);
 
-  const { data, isLoading, isError } = useSinistros({
+  const { data, isLoading, isError, refetch } = useSinistros({
+    numeroSinistro: buscaNumeroSinistro || undefined,
     status: status || undefined,
     tipoSinistro: tipoSinistro || undefined,
-    seguradoId: seguradoId || undefined,
+    apoliceId: apoliceIdQuery || undefined,
+    seguradoId: seguradoIdQuery || undefined,
     page,
     size,
   });
@@ -296,17 +298,22 @@ export const SinistrosListPage: React.FC = () => {
 
       {/* Filtros */}
       <SinistroFilters
-        key={seguradoId}
+        key={buscaNumeroSinistro}
         onSearch={handleSearch}
         isLoading={isLoading}
-        initialTermo={seguradoId}
+        initialTermo={buscaNumeroSinistro}
       />
 
       {/* Erro de Carregamento */}
       {isError && (
-        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm">
-          Ocorreu um erro ao carregar os sinistros. Verifique se o backend está
-          ativo.
+        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <span>
+            Ocorreu um erro ao carregar os sinistros. Verifique se o backend está
+            ativo e tente novamente.
+          </span>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            Tentar novamente
+          </Button>
         </div>
       )}
 
@@ -314,6 +321,8 @@ export const SinistrosListPage: React.FC = () => {
       <SinistroTable
         sinistros={sinistros}
         isLoading={isLoading}
+        isError={isError}
+        onRetry={refetch}
         onEditar={(s: Sinistro) => handleAcaoSinistro(s, "aprovar")}
         onVisualizar={setSinistroManual}
         onAtribuir={handleAbrirAtribuir}

@@ -37,7 +37,7 @@ export const SeguradosListPage: React.FC = () => {
   const [seguradoManual, setSeguradoManual] = useState<Segurado | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const { data, isLoading, isError } = useSegurados({
+  const { data, isLoading, isError, refetch } = useSegurados({
     nome: nome || undefined,
     page,
     size,
@@ -217,9 +217,14 @@ export const SeguradosListPage: React.FC = () => {
 
       {/* Mensagem de Erro de Carga */}
       {isError && (
-        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm">
-          Ocorreu um erro ao carregar os segurados. Verifique se o serviço
-          backend está ativo e tente novamente.
+        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <span>
+            Ocorreu um erro ao carregar os segurados. Verifique se o serviço
+            backend está ativo e tente novamente.
+          </span>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            Tentar novamente
+          </Button>
         </div>
       )}
 
@@ -227,6 +232,8 @@ export const SeguradosListPage: React.FC = () => {
       <SeguradoTable
         segurados={segurados}
         isLoading={isLoading}
+        isError={isError}
+        onRetry={refetch}
         onEditar={podeCadastrar ? handleEditar : undefined}
         onVisualizar={handleVisualizar}
       />

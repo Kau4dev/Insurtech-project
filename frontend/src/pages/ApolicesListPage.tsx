@@ -26,7 +26,7 @@ export const ApolicesListPage: React.FC = () => {
     usuario?.papel === "GESTOR" || usuario?.papel === "ADMIN";
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const seguradoId = searchParams.get("busca") || "";
+  const buscaNumeroApolice = searchParams.get("busca") || "";
   const detalheId = searchParams.get("detalheId") || "";
   const seguradoIdQuery = searchParams.get("seguradoId") || "";
   const isNovoQuery = searchParams.get("novo") === "true";
@@ -51,10 +51,11 @@ export const ApolicesListPage: React.FC = () => {
   // Drawer de Detalhes
   const [apoliceManual, setApoliceManual] = useState<Apolice | null>(null);
 
-  const { data, isLoading, isError } = useApolices({
+  const { data, isLoading, isError, refetch } = useApolices({
+    numeroApolice: buscaNumeroApolice || undefined,
     status: status || undefined,
     tipoSeguro: tipoSeguro || undefined,
-    seguradoId: seguradoId || undefined,
+    seguradoId: seguradoIdQuery || undefined,
     page,
     size,
   });
@@ -268,17 +269,22 @@ export const ApolicesListPage: React.FC = () => {
 
       {/* Filtros */}
       <ApoliceFilters
-        key={seguradoId}
+        key={buscaNumeroApolice}
         onSearch={handleSearch}
         isLoading={isLoading}
-        initialTermo={seguradoId}
+        initialTermo={buscaNumeroApolice}
       />
 
       {/* Mensagem de Erro de Carga */}
       {isError && (
-        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm">
-          Ocorreu um erro ao carregar as apólices. Verifique se o serviço
-          backend está ativo e tente novamente.
+        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <span>
+            Ocorreu um erro ao carregar as apólices. Verifique se o serviço
+            backend está ativo e tente novamente.
+          </span>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            Tentar novamente
+          </Button>
         </div>
       )}
 
@@ -286,6 +292,8 @@ export const ApolicesListPage: React.FC = () => {
       <ApoliceTable
         apolices={apolices}
         isLoading={isLoading}
+        isError={isError}
+        onRetry={refetch}
         onEditar={podeGerenciar ? handleEditar : undefined}
         onVisualizar={handleVisualizar}
       />
