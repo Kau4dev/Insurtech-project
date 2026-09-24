@@ -24,6 +24,8 @@ import { AnalistaNome } from "./AnalistaNome";
 interface SinistroTableProps {
   sinistros: Sinistro[];
   isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   onEditar?: (sinistro: Sinistro) => void;
   onVisualizar?: (sinistro: Sinistro) => void;
   onAtribuir?: (sinistro: Sinistro) => void;
@@ -43,6 +45,8 @@ const COLUNAS = [
 export const SinistroTable: React.FC<SinistroTableProps> = ({
   sinistros,
   isLoading = false,
+  isError = false,
+  onRetry,
   onEditar,
   onVisualizar,
   onAtribuir,
@@ -57,8 +61,11 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
   return (
     <TableContainer
       isLoading={isLoading}
+      isError={isError}
+      onRetry={onRetry}
       isEmpty={sinistros.length === 0}
       loadingMessage="Carregando sinistros..."
+      errorMessage="Ocorreu um erro ao carregar os sinistros. Verifique se o backend está ativo."
       emptyTitle="Nenhum sinistro encontrado"
       emptyDescription="Não há registros para os filtros selecionados ou ainda não há sinistros cadastrados."
     >

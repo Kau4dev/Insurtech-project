@@ -15,6 +15,8 @@ import { SeguradoNome } from "../../segurados/components/SeguradoNome";
 interface ApoliceTableProps {
   apolices: Apolice[];
   isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   onEditar?: (apolice: Apolice) => void;
   onVisualizar?: (apolice: Apolice) => void;
 }
@@ -32,16 +34,20 @@ const COLUNAS = [
 
 export const ApoliceTable: React.FC<ApoliceTableProps> = ({
   apolices,
-
   isLoading = false,
+  isError = false,
+  onRetry,
   onEditar,
   onVisualizar,
 }) => {
   return (
     <TableContainer
       isLoading={isLoading}
+      isError={isError}
+      onRetry={onRetry}
       isEmpty={apolices.length === 0}
       loadingMessage="Carregando apólices..."
+      errorMessage="Ocorreu um erro ao carregar as apólices. Verifique se o backend está ativo."
       emptyTitle="Nenhuma apólice encontrada"
       emptyDescription="Não há registros para os filtros selecionados ou ainda não há apólices cadastradas."
     >

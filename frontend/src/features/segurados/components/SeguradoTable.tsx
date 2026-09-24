@@ -17,6 +17,8 @@ import { formatarCpfCnpj, formatarTelefone } from "../../../utils/formatters";
 interface SeguradoTableProps {
   segurados: Segurado[];
   isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   onEditar?: (segurado: Segurado) => void;
   onVisualizar?: (segurado: Segurado) => void;
 }
@@ -33,14 +35,19 @@ const COLUNAS = [
 export const SeguradoTable: React.FC<SeguradoTableProps> = ({
   segurados,
   isLoading = false,
+  isError = false,
+  onRetry,
   onEditar,
   onVisualizar,
 }) => {
   return (
     <TableContainer
       isLoading={isLoading}
+      isError={isError}
+      onRetry={onRetry}
       isEmpty={segurados.length === 0}
       loadingMessage="Carregando segurados..."
+      errorMessage="Ocorreu um erro ao carregar os segurados. Verifique se o backend está ativo."
       emptyTitle="Nenhum segurado encontrado"
       emptyDescription="Não há registros para os filtros selecionados ou ainda não há segurados cadastrados."
     >
