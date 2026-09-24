@@ -40,8 +40,9 @@ public class ApoliceRepositoryImpl implements ApoliceRepository {
     }
 
     @Override
-    public Page<Apolice> listar(UUID seguradoId, Status status, TipoSeguro tipoSeguro, Pageable pageable) {
-        return jpaRepository.findBySeguradoIdAndStatusAndTipoSeguro(seguradoId, status, tipoSeguro, pageable)
+    public Page<Apolice> listar(String numeroApolice, UUID seguradoId, Status status, TipoSeguro tipoSeguro, Pageable pageable) {
+        String numFiltro = (numeroApolice != null && !numeroApolice.trim().isEmpty()) ? numeroApolice.trim() : null;
+        return jpaRepository.findBySeguradoIdAndStatusAndTipoSeguro(numFiltro, seguradoId, status, tipoSeguro, pageable)
                 .map(mapper::toDomain);
     }
 }

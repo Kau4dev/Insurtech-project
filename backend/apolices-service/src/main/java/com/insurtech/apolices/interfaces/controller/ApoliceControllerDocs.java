@@ -48,7 +48,7 @@ public interface ApoliceControllerDocs {
     ResponseEntity<ApoliceResponseDTO> buscarPorId(
             @Parameter(description = "ID único da apólice (UUID)", required = true) UUID id);
 
-    @Operation(summary = "Listar apólices", description = "Retorna uma lista paginada de apólices, com a opção de filtrar por segurado, status ou tipo de seguro.")
+    @Operation(summary = "Listar apólices", description = "Retorna uma lista paginada de apólices, com a opção de filtrar por número da apólice, segurado, status ou tipo de seguro.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Parâmetros de ordenação ou filtros inválidos", 
@@ -57,6 +57,7 @@ public interface ApoliceControllerDocs {
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<PageResponseDTO<ApoliceResponseDTO>> listarApolices(
+            @Parameter(description = "Número da apólice para busca parcial") String numeroApolice,
             @Parameter(description = "ID do segurado para filtrar as apólices") UUID idSegurado,
             @Parameter(description = "Status atual da apólice") Status status,
             @Parameter(description = "Tipo do seguro") TipoSeguro tipoSeguro,

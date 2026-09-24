@@ -13,6 +13,6 @@ public interface ApoliceRepository {
     Apolice salvar(Apolice apolice);
     Optional<Apolice> buscarPorId(UUID id);
     Optional<Apolice> buscarPorNumero(String numeroApolice);
-    Page<Apolice> listar(UUID seguradoId, Status status, TipoSeguro tipoSeguro, Pageable pageable);
+    Page<Apolice> listar(String numeroApolice, UUID seguradoId, Status status, TipoSeguro tipoSeguro, Pageable pageable);
 
 }

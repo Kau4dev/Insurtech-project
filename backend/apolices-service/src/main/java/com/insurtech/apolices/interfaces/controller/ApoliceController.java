@@ -46,11 +46,12 @@ public class ApoliceController implements ApoliceControllerDocs {
     @Override
     @GetMapping
     public ResponseEntity<PageResponseDTO<ApoliceResponseDTO>> listarApolices(
+            @RequestParam(required = false) String numeroApolice,
             @RequestParam(required = false) UUID idSegurado,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) TipoSeguro tipoSeguro,
             @ParameterObject Pageable pageable) {
-        return ResponseEntity.ok(listarApolicesUseCase.executar(idSegurado, status, tipoSeguro, pageable));
+        return ResponseEntity.ok(listarApolicesUseCase.executar(numeroApolice, idSegurado, status, tipoSeguro, pageable));
     }
 
     @Override

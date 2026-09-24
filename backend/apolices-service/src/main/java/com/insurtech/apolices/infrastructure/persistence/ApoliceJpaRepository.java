@@ -15,10 +15,12 @@ public interface ApoliceJpaRepository extends JpaRepository<ApoliceJpaEntity, UU
     Optional<ApoliceJpaEntity> findByNumeroApolice(String numeroApolice);
 
     @Query("SELECT a FROM ApoliceJpaEntity a WHERE " +
+           "(:numeroApolice IS NULL OR LOWER(a.numeroApolice) LIKE LOWER(CONCAT('%', :numeroApolice, '%'))) AND " +
            "(:seguradoId IS NULL OR a.seguradoId = :seguradoId) AND " +
            "(:status IS NULL OR a.status = :status) AND " +
            "(:tipoSeguro IS NULL OR a.tipoSeguro = :tipoSeguro)")
     Page<ApoliceJpaEntity> findBySeguradoIdAndStatusAndTipoSeguro(
+            @Param("numeroApolice") String numeroApolice,
             @Param("seguradoId") UUID seguradoId, 
             @Param("status") Status status, 
             @Param("tipoSeguro") TipoSeguro tipoSeguro, 

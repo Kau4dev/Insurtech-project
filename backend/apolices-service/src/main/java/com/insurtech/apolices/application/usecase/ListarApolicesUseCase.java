@@ -24,7 +24,7 @@ public class ListarApolicesUseCase {
     private final ApoliceMapper mapper;
     private final SeguradoClient client;
 
-    public PageResponseDTO<ApoliceResponseDTO> executar(UUID seguradoId, Status status, TipoSeguro tipoSeguro, Pageable pageable) {
+    public PageResponseDTO<ApoliceResponseDTO> executar(String numeroApolice, UUID seguradoId, Status status, TipoSeguro tipoSeguro, Pageable pageable) {
 
         if (seguradoId != null) {
             try {
@@ -34,8 +34,9 @@ public class ListarApolicesUseCase {
             }
         }
 
-        Page<ApoliceResponseDTO> page = repository.listar(seguradoId, status, tipoSeguro, pageable)
+        Page<ApoliceResponseDTO> page = repository.listar(numeroApolice, seguradoId, status, tipoSeguro, pageable)
                 .map(mapper::toResponse);
         return PageResponseDTO.from(page);
+    }
 }
-}
+
