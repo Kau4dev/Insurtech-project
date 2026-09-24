@@ -146,9 +146,6 @@ export const DashboardPage: React.FC = () => {
           title="Sinistros em análise"
           value={totalEmAnalise}
           isLoading={isLoading}
-          trendBadge={
-            totalEmAnalise > 0 ? `${totalEmAnalise} pendentes` : undefined
-          }
           subtitle={
             totalEmAnalise > 0
               ? "Aguardando parecer técnico"

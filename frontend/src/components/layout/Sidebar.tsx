@@ -209,9 +209,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="text-[13px] font-[550] text-(--fg) truncate">
                 {usuario?.nome || "Usuário"}
               </div>
-              <div className="text-[11px] text-(--muted) truncate">
-                {usuario?.papel ? `Papel: ${usuario.papel}` : "Autenticado"}
-              </div>
             </div>
           </div>
 
