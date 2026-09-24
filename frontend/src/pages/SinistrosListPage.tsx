@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button, Modal, Pagination } from "../components/ui";
+import { useAuth } from "../context/useAuth";
 import {
   AprovarRejeitarModal,
+  AtribuirAnalistaModal,
   SinistroDetailDrawer,
   SinistroFilters,
   SinistroForm,
   SinistroTable,
   useAprovarSinistro,
+  useAtribuirAnalista,
   useCadastrarSinistro,
   useRejeitarSinistro,
   useSinistros,
@@ -16,11 +19,20 @@ import type { TipoAcaoSinistro } from "../features/sinistros/components/AprovarR
 import type { StatusSinistro, TipoSinistro } from "../interfaces/enums";
 import type { Sinistro } from "../interfaces/sinistros/sinistro";
 import type { SinistroRequest } from "../interfaces/sinistros/sinistroRequest";
+import { extrairMensagemErro } from "../utils/errorUtils";
 
 export const SinistrosListPage: React.FC = () => {
+  const { usuario } = useAuth();
+  const podeCadastrarSinistro =
+    usuario?.papel === "ANALISTA" ||
+    usuario?.papel === "GESTOR" ||
+    usuario?.papel === "ADMIN";
   const [searchParams, setSearchParams] = useSearchParams();
   const seguradoId = searchParams.get("busca") || "";
   const detalheId = searchParams.get("detalheId") || "";
+  const apoliceIdQuery = searchParams.get("apoliceId") || "";
+  const seguradoIdQuery = searchParams.get("seguradoId") || "";
+  const isNovoQuery = searchParams.get("novo") === "true";
 
   const [status, setStatus] = useState<StatusSinistro | "">("");
   const [tipoSinistro, setTipoSinistro] = useState<TipoSinistro | "">("");
@@ -30,6 +42,7 @@ export const SinistrosListPage: React.FC = () => {
   // Modal de Criação de Sinistro
   const [modalAberto, setModalAberto] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const isModalCriarAberto = modalAberto || isNovoQuery;
 
   // Modal de Aprovação / Rejeição
   const [acaoModal, setAcaoModal] = useState<TipoAcaoSinistro | null>(null);
@@ -37,6 +50,11 @@ export const SinistrosListPage: React.FC = () => {
     null,
   );
   const [acaoError, setAcaoError] = useState<string | null>(null);
+
+  // Modal de Atribuição de Analista
+  const [sinistroParaAtribuir, setSinistroParaAtribuir] =
+    useState<Sinistro | null>(null);
+  const [atribuirError, setAtribuirError] = useState<string | null>(null);
 
   // Drawer de Detalhes
   const [sinistroManual, setSinistroManual] = useState<Sinistro | null>(null);
@@ -52,7 +70,7 @@ export const SinistrosListPage: React.FC = () => {
   const sinistroPelaUrl =
     detalheId && data?.content
       ? data.content.find(
-          (s) => s.id === detalheId || s.numeroSinistro === detalheId
+          (s) => s.id === detalheId || s.numeroSinistro === detalheId,
         ) || null
       : null;
 
@@ -70,6 +88,7 @@ export const SinistrosListPage: React.FC = () => {
   const criarMutation = useCadastrarSinistro();
   const aprovarMutation = useAprovarSinistro();
   const rejeitarMutation = useRejeitarSinistro();
+  const atribuirMutation = useAtribuirAnalista();
 
   const handleSearch = (filtros: {
     termo: string;
@@ -96,6 +115,17 @@ export const SinistrosListPage: React.FC = () => {
   const handleFecharModal = () => {
     setModalAberto(false);
     setFormError(null);
+    if (
+      searchParams.has("novo") ||
+      searchParams.has("apoliceId") ||
+      searchParams.has("seguradoId")
+    ) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("novo");
+      next.delete("apoliceId");
+      next.delete("seguradoId");
+      setSearchParams(next);
+    }
   };
 
   const handleSalvarSinistro = async (dto: SinistroRequest) => {
@@ -105,23 +135,12 @@ export const SinistrosListPage: React.FC = () => {
       handleFecharModal();
     } catch (err: unknown) {
       console.error("Erro ao salvar sinistro:", err);
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data
-      ) {
-        setFormError(String(err.response.data.message));
-      } else {
-        setFormError(
+      setFormError(
+        extrairMensagemErro(
+          err,
           "Não foi possível registrar o sinistro. Verifique os dados ou a conexão com o servidor.",
-        );
-      }
+        ),
+      );
     }
   };
 
@@ -152,7 +171,9 @@ export const SinistrosListPage: React.FC = () => {
       handleFecharAcaoModal();
     } catch (err) {
       console.error("Erro ao aprovar sinistro:", err);
-      setAcaoError("Não foi possível aprovar o sinistro.");
+      setAcaoError(
+        extrairMensagemErro(err, "Não foi possível aprovar o sinistro."),
+      );
     }
   };
 
@@ -167,7 +188,42 @@ export const SinistrosListPage: React.FC = () => {
       handleFecharAcaoModal();
     } catch (err) {
       console.error("Erro ao rejeitar sinistro:", err);
-      setAcaoError("Não foi possível rejeitar o sinistro.");
+      setAcaoError(
+        extrairMensagemErro(err, "Não foi possível rejeitar o sinistro."),
+      );
+    }
+  };
+
+  const handleAbrirAtribuir = (sinistro: Sinistro) => {
+    setSinistroParaAtribuir(sinistro);
+    setAtribuirError(null);
+  };
+
+  const handleFecharAtribuir = () => {
+    setSinistroParaAtribuir(null);
+    setAtribuirError(null);
+  };
+
+  const handleConfirmarAtribuicao = async (analistaId: string) => {
+    if (!sinistroParaAtribuir?.id) return;
+    setAtribuirError(null);
+    try {
+      const atualizado = await atribuirMutation.mutateAsync({
+        id: sinistroParaAtribuir.id,
+        analistaId,
+      });
+      handleFecharAtribuir();
+      if (sinistroManual?.id === atualizado.id) {
+        setSinistroManual(atualizado);
+      }
+    } catch (err: unknown) {
+      console.error("Erro ao atribuir analista:", err);
+      setAtribuirError(
+        extrairMensagemErro(
+          err,
+          "Não foi possível atribuir o analista ao sinistro.",
+        ),
+      );
     }
   };
 
@@ -190,7 +246,16 @@ export const SinistrosListPage: React.FC = () => {
           </p>
         </div>
 
-        <Button variant="primary" onClick={handleAbrirNovo}>
+        <Button
+          variant="primary"
+          onClick={handleAbrirNovo}
+          disabled={!podeCadastrarSinistro}
+          title={
+            !podeCadastrarSinistro
+              ? "Apenas Analistas, Gestores ou Administradores podem registrar sinistros."
+              : undefined
+          }
+        >
           <svg
             className="w-4 h-4"
             fill="none"
@@ -210,13 +275,18 @@ export const SinistrosListPage: React.FC = () => {
 
       {/* Modal de Cadastro de Sinistro */}
       <Modal
-        isOpen={modalAberto}
+        isOpen={isModalCriarAberto}
         onClose={handleFecharModal}
         title="Registrar Novo Sinistro"
         description="Preencha os dados do sinistro para abertura do processo."
         maxWidthClass="max-w-3xl"
       >
         <SinistroForm
+          key={
+            isModalCriarAberto ? `open-${apoliceIdQuery || "novo"}` : "closed"
+          }
+          apoliceInicialId={apoliceIdQuery || undefined}
+          seguradoInicialId={seguradoIdQuery || undefined}
           onSubmit={handleSalvarSinistro}
           onCancel={handleFecharModal}
           isLoading={isSaving}
@@ -246,6 +316,7 @@ export const SinistrosListPage: React.FC = () => {
         isLoading={isLoading}
         onEditar={(s: Sinistro) => handleAcaoSinistro(s, "aprovar")}
         onVisualizar={setSinistroManual}
+        onAtribuir={handleAbrirAtribuir}
       />
 
       {/* Paginação */}
@@ -265,6 +336,8 @@ export const SinistrosListPage: React.FC = () => {
         isOpen={Boolean(sinistroParaDetalhes)}
         onClose={handleFecharDetalhes}
         onAlterarStatus={(s: Sinistro) => handleAcaoSinistro(s, "aprovar")}
+        onSinistroAtualizado={setSinistroManual}
+        onAtribuir={handleAbrirAtribuir}
       />
 
       {/* Modal de Aprovar / Rejeitar */}
@@ -277,6 +350,16 @@ export const SinistrosListPage: React.FC = () => {
         onConfirmRejeitar={handleConfirmarRejeicao}
         isLoading={aprovarMutation.isPending || rejeitarMutation.isPending}
         errorMessage={acaoError}
+      />
+
+      {/* Modal de Atribuir Analista */}
+      <AtribuirAnalistaModal
+        isOpen={Boolean(sinistroParaAtribuir)}
+        onClose={handleFecharAtribuir}
+        sinistro={sinistroParaAtribuir}
+        onConfirm={handleConfirmarAtribuicao}
+        isLoading={atribuirMutation.isPending}
+        errorMessage={atribuirError}
       />
     </div>
   );
