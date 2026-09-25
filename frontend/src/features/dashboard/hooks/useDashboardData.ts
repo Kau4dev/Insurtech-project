@@ -218,6 +218,8 @@ export function useDashboardData() {
     seguradosQuery.isLoading ||
     apolicesQuery.isLoading;
 
+  const isError = sinistrosQuery.isError;
+
   const refetch = () => {
     resumoQuery.refetch();
     sinistrosQuery.refetch();
@@ -237,6 +239,7 @@ export function useDashboardData() {
     filaTrabalho,
     ultimoSinistro,
     isLoading,
+    isError,
     refetch,
   };
 }

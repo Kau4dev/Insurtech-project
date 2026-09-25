@@ -30,6 +30,7 @@ export const DashboardPage: React.FC = () => {
     filaTrabalho,
     ultimoSinistro,
     isLoading,
+    isError,
     refetch,
   } = useDashboardData();
   const [modalAberto, setModalAberto] = useState(false);
@@ -107,6 +108,19 @@ export const DashboardPage: React.FC = () => {
           Registrar sinistro
         </Button>
       </div>
+
+      {/* Alerta de Erro de Conexão com Retry */}
+      {isError && (
+        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <span>
+            Não foi possível carregar os dados em tempo real do dashboard.
+            Verifique se os serviços backend estão ativos e tente novamente.
+          </span>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            Tentar novamente
+          </Button>
+        </div>
+      )}
 
       {/* 2. Grid de Cards KPI Reutilizáveis */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
