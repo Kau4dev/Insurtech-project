@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+
 import {
   Badge,
   Button,
@@ -126,7 +126,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
     setSucessoAcao(null);
     try {
       const atualizado = await aguardarDocsMutation.mutateAsync(sinistro.id);
-      setSucessoAcao("Status atualizado para AGUARDANDO_DOCUMENTOS.");
+      setSucessoAcao("Status atualizado para AGUARDANDO DOCUMENTOS.");
       refetchDetalhes();
       if (onSinistroAtualizado) {
         onSinistroAtualizado(atualizado);
@@ -144,7 +144,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
 
   const handleDocumentoAdicionado = (doc: DocumentoSinistro) => {
     setSucessoAcao(
-      `Documento "${doc.nomeArquivo}" anexado com sucesso! Se o status era AGUARDANDO_DOCUMENTOS, agora retornou para EM ANÁLISE.`,
+      `Documento "${doc.nomeArquivo}" anexado com sucesso! Se o status era AGUARDANDO DOCUMENTOS, agora retornou para EM ANÁLISE.`,
     );
     refetchDetalhes();
     if (sinistroDetalhado && onSinistroAtualizado) {
@@ -267,6 +267,19 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                     size="sm"
                     onClick={() => setModalUploadAberto(true)}
                   >
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
                     Anexar Documento
                   </Button>
                 </div>
@@ -380,7 +393,10 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                 <DetailField
                   label="Status"
                   value={
-                    <Badge variant={getSinistroStatusBadgeVariant(statusAtual)}>
+                    <Badge
+                      className="uppercase"
+                      variant={getSinistroStatusBadgeVariant(statusAtual)}
+                    >
                       {formatarStatusSinistro(statusAtual)}
                     </Badge>
                   }
@@ -410,41 +426,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                   Anexe Boletim de Ocorrência, fotos dos danos ou notas fiscais
                   através de URLs para fundamentar a análise e aprovação.
                 </div>
-                <div className="flex items-center gap-2">
-                  <Link
-                    to={`/sinistros/${sinistro.id}/documentos`}
-                    className="text-xs text-(--accent-ink) hover:underline font-medium inline-flex items-center gap-1"
-                  >
-                    <span>Página dedicada</span>
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </Link>
-
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => setModalUploadAberto(true)}
-                    disabled={!sinistro.analistaId}
-                    title={
-                      !sinistro.analistaId
-                        ? "Atribua um analista antes de anexar documentos."
-                        : undefined
-                    }
-                  >
-                    + Anexar Documento via URL
-                  </Button>
-                </div>
+                
               </div>
 
               <TableContainer
@@ -458,7 +440,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                   {documentos.map((doc, idx) => (
                     <TableRow key={doc.id || `${doc.nomeArquivo}-${idx}`}>
                       <TableCell>
-                        <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-(--surface-2) border border-(--border) text-(--fg)">
+                        <span className="px-2.5 py-0.5 text-xs uppercase font-medium rounded-full bg-(--surface-2) border border-(--border) text-(--fg)">
                           {formatarTipoDocumento(doc.tipoDocumento)}
                         </span>
                       </TableCell>
@@ -582,7 +564,20 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                   onClick={() => setModalUploadAberto(true)}
                   className="w-full sm:w-auto"
                 >
-                  + Anexar Documento
+                    <svg
+                className="w-3 h-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+                  Anexar Documento
                 </Button>
               )}
 

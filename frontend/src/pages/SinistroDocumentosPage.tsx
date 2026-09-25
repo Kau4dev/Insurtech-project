@@ -167,7 +167,10 @@ export const SinistroDocumentosPage: React.FC = () => {
               <h1 className="text-2xl font-bold text-(--fg)">
                 Sinistro {sinistro.numeroSinistro}
               </h1>
-              <Badge variant={getSinistroStatusBadgeVariant(sinistro.status)}>
+              <Badge
+                className="uppercase"
+                variant={getSinistroStatusBadgeVariant(sinistro.status)}
+              >
                 {formatarStatusSinistro(sinistro.status)}
               </Badge>
             </div>
@@ -193,33 +196,6 @@ export const SinistroDocumentosPage: React.FC = () => {
                   : "Solicitar Documentos"}
               </Button>
             )}
-
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setModalUploadAberto(true)}
-              disabled={!sinistro.analistaId}
-              title={
-                !sinistro.analistaId
-                  ? "É necessário atribuir um analista ao sinistro antes de anexar documentos."
-                  : undefined
-              }
-            >
-              <svg
-                className="w-4 h-4 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Anexar Documento via URL
-            </Button>
           </div>
         </div>
 
@@ -331,21 +307,33 @@ export const SinistroDocumentosPage: React.FC = () => {
             onClick={() => setModalUploadAberto(true)}
             disabled={!sinistro.analistaId}
           >
-            + Anexar Documento
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>Anexar Documento
           </Button>
         </div>
 
         <TableContainer
           isEmpty={documentos.length === 0}
           emptyTitle="Nenhum documento anexado"
-          emptyDescription="Ainda não foram anexados arquivos ou laudos a este sinistro. Clique em 'Anexar Documento via URL' para registrar o primeiro."
+          emptyDescription="Ainda não foram anexados arquivos ou laudos a este sinistro. Clique em 'Anexar Documento' para registrar o primeiro."
         >
           <TableHeader columns={COLUNAS_DOCUMENTOS} />
           <tbody className="divide-y divide-(--border)">
             {documentos.map((doc, idx) => (
               <TableRow key={doc.id || `${doc.nomeArquivo}-${idx}`}>
                 <TableCell>
-                  <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-(--surface-2) border border-(--border) text-(--fg)">
+                  <span className="px-2.5 py-0.5 text-xs uppercase font-medium rounded-full bg-(--surface-2) border border-(--border) text-(--fg)">
                     {formatarTipoDocumento(doc.tipoDocumento)}
                   </span>
                 </TableCell>
