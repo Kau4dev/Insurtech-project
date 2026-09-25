@@ -201,7 +201,7 @@ export const AprovarRejeitarModal: React.FC<AprovarRejeitarModalProps> = ({
             {ultrapassaLimite && (
               <p className="text-xs font-semibold text-(--danger) flex items-center gap-1">
                 <span>
-                  ⚠️ Atenção: O valor excede o limite segurado da apólice (
+                  Atenção: O valor excede o limite segurado da apólice (
                   {formatarMoeda(apolice!.valorSeguro)}).
                 </span>
               </p>

@@ -134,7 +134,7 @@ export const AdicionarDocumentoModal: React.FC<
             <strong className="text-(--fg)">Fluxo Automático:</strong> Caso o
             sinistro esteja no status{" "}
             <span className="font-semibold text-amber-600">
-              AGUARDANDO_DOCUMENTOS
+              AGUARDANDO DOCUMENTOS
             </span>
             , o envio deste documento fará com que o sistema alterne o status
             automaticamente de volta para{" "}
