@@ -121,7 +121,7 @@ export const ApoliceDetailDrawer: React.FC<ApoliceDetailDrawerProps> = ({
               <DetailField
                 label="Status"
                 value={
-                  <Badge variant={getApoliceStatusBadgeVariant(apolice.status)}>
+                  <Badge className="uppercase" variant={getApoliceStatusBadgeVariant(apolice.status)}>
                     {formatarStatusApolice(apolice.status)}
                   </Badge>
                 }
@@ -220,7 +220,7 @@ export const ApoliceDetailDrawer: React.FC<ApoliceDetailDrawerProps> = ({
                     <td className="py-2.5 px-4 text-xs text-(--muted)">
                       {formatarData(st.dataOcorrencia)}
                     </td>
-                    <td className="py-2.5 px-4 text-xs font-semibold">
+                    <td className="py-2.5 px-4 text-xs font-semibold uppercase">
                       <Badge variant={getSinistroStatusBadgeVariant(st.status)}>
                         {formatarStatusSinistro(st.status)}
                       </Badge>

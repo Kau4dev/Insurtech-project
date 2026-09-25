@@ -14,6 +14,7 @@ import type { Segurado } from "../../../interfaces/segurados/segurado";
 import {
   formatarTipoPessoa,
   formatarTipoSinistro,
+  formatarStatusSinistro,
   getApoliceStatusBadgeVariant,
   getPessoaTipoBadgeVariant,
   getSinistroStatusBadgeVariant,
@@ -33,6 +34,7 @@ export interface SeguradoDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
 
 type Aba = "detalhes" | "apolices" | "sinistros";
 
@@ -260,9 +262,9 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
                   <td className="py-2.5 px-4 text-xs text-(--muted)">
                     {formatarData(st.dataOcorrencia)}
                   </td>
-                  <td className="py-2.5 px-4 text-xs font-semibold">
+                  <td className="py-2.5 px-4 text-xs font-semibold uppercase">
                     <Badge variant={getSinistroStatusBadgeVariant(st.status)}>
-                      {st.status}
+                      {formatarStatusSinistro(st.status)}
                     </Badge>
                   </td>
                 </tr>
