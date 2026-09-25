@@ -86,9 +86,9 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 }) => {
   return (
     <div className="w-full bg-(--surface) border border-rose-200 dark:border-rose-900/50 rounded-(--radius) p-8 text-center text-(--muted) shadow-xs">
-      <div className="w-10 h-10 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 mx-auto flex items-center justify-center mb-3">
+      <div className="w-10 h-10 text-rose-500 mx-auto flex items-center justify-center mb-3">
         <svg
-          className="w-5 h-5"
+          className="w-8 h-8"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
