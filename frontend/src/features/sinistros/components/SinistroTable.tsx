@@ -37,7 +37,7 @@ const COLUNAS = [
   "Evento",
   "Ocorrência",
   { label: "Estimado", align: "right" as const },
-  "Status",
+  { label: "Status", align: "center" as const },
   "Analista",
   { label: "Ações", align: "center" as const },
 ];
@@ -103,10 +103,15 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
               {formatarMoeda(sinistro.valorEstimado)}
             </TableCell>
 
-            <TableCell className="uppercase">
-              <Badge variant={getSinistroStatusBadgeVariant(sinistro.status)}>
-                {formatarStatusSinistro(sinistro.status)}
-              </Badge>
+            <TableCell align="center">
+              <div className="flex justify-center">
+                <Badge
+                  variant={getSinistroStatusBadgeVariant(sinistro.status)}
+                  className="whitespace-nowrap uppercase"
+                >
+                  {formatarStatusSinistro(sinistro.status)}
+                </Badge>
+              </div>
             </TableCell>
 
             <TableCell className="text-xs">
@@ -121,8 +126,7 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
               {(() => {
                 const podeDecidir =
                   podeGerenciar &&
-                  (sinistro.status === "EM_ANALISE" ||
-                    sinistro.status === "AGUARDANDO_DOCUMENTOS");
+                  sinistro.status === "EM_ANALISE";
                 return (
                   <TableActions
                     onVisualizar={

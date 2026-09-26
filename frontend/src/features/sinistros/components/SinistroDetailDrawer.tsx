@@ -558,31 +558,32 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                 </Button>
               )}
 
-              {sinistro.analistaId && (
-                <Button
-                  variant="secondary"
-                  onClick={() => setModalUploadAberto(true)}
-                  className="w-full sm:w-auto"
-                >
+              {sinistro.analistaId &&
+                !["APROVADO", "REJEITADO", "PAGO"].includes(statusAtual) && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => setModalUploadAberto(true)}
+                    className="w-full sm:w-auto"
+                  >
                     <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-                  Anexar Documento
-                </Button>
-              )}
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                    Anexar Documento
+                  </Button>
+                )}
 
               {podeGerenciarSinistros &&
-                ["EM_ANALISE", "AGUARDANDO_DOCUMENTOS"].includes(statusAtual) &&
+                statusAtual === "EM_ANALISE" &&
                 onAlterarStatus && (
                   <Button
                     variant="primary"

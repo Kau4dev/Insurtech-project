@@ -301,26 +301,29 @@ export const SinistroDocumentosPage: React.FC = () => {
             </span>
           </div>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setModalUploadAberto(true)}
-            disabled={!sinistro.analistaId}
-          >
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {!["APROVADO", "REJEITADO", "PAGO"].includes(sinistro.status) && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setModalUploadAberto(true)}
+              disabled={!sinistro.analistaId}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>Anexar Documento
-          </Button>
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Anexar Documento
+            </Button>
+          )}
         </div>
 
         <TableContainer
