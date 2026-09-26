@@ -90,9 +90,9 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
         {/* Notifications */}
         <NotificationsPopover />
 
-        {/* User menu */}
+        {/* User menu — oculto em mobile, visível em md+ */}
         {usuario && (
-          <div className="relative" ref={menuRef}>
+          <div className="relative hidden md:block" ref={menuRef}>
             <button
               onClick={() => setMenuAberto(!menuAberto)}
               className="flex items-center gap-2.5 pl-1 pr-2.5 py-1 rounded-lg hover:bg-(--surface-2) transition-colors"

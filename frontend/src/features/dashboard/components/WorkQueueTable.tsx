@@ -85,7 +85,7 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
               <th className="py-2.5 pl-5 pr-2">Número</th>
               <th className="py-2.5 px-2">Evento</th>
               <th className="py-2.5 px-2">Estimado</th>
-              <th className="py-2.5 px-2">Status</th>
+              <th className="py-2.5 px-2 pl-8.5">Status</th>
               <th className="py-2.5 pl-2 pr-5">Segurado</th>
             </tr>
           </thead>
@@ -146,21 +146,23 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
                   <td className="py-3 px-2 font-mono text-(--fg) whitespace-nowrap">
                     {formatCurrency(item.valorEstimado)}
                   </td>
-
+                 
                   {/* 4. Status com Badge Padronizado compacto */}
-                  <td className="py-3 px-2 whitespace-nowrap">
+                  <td className=" center py-3 px-2 whitespace-nowrap">
+                    <div className="flex justify-center">
                     <Badge
                       variant={getSinistroStatusBadgeVariant(item.status)}
-                      className="text-[10.5px] px-2 py-0.5 whitespace-nowrap font-medium"
+                      className="text-[10.5px] uppercase px-2 py-0.5 whitespace-nowrap font-medium"
                     >
                       {item.status === "AGUARDANDO_DOCUMENTOS"
                         ? "Aguardando docs"
                         : formatarStatusSinistro(item.status)}
                     </Badge>
+                    </div>
                   </td>
 
                   {/* 5. Nome do Segurado */}
-                  <td className="py-3 pl-2 pr-5 text-(--muted) group-hover:text-(--fg) transition-colors whitespace-nowrap truncate">
+                  <td className="py-3 pl-5 pr-5 text-(--muted) group-hover:text-(--fg) transition-colors whitespace-nowrap truncate">
                     {item.seguradoNome}
                   </td>
                 </tr>

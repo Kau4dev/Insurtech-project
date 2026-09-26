@@ -163,7 +163,7 @@ export const MicroserviceTimelineCard: React.FC<
               {/* Rótulo da etapa e microservice correspondente */}
               <div className="flex items-baseline gap-2 min-w-0">
                 <span
-                  className={`text-[13px] tracking-tight font-medium ${
+                  className={`text-[13px] tracking-tight font-medium ml-1 ${
                     step.status === "pending" ? "text-(--muted)" : "text-(--fg)"
                   }`}
                 >
