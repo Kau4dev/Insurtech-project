@@ -1,6 +1,7 @@
 package com.insurtech.sinistros.infrastructure.client;
 
 import com.insurtech.sinistros.infrastructure.client.dto.ApoliceResponseDTO;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,5 +12,6 @@ import java.util.UUID;
 public interface ApoliceClient {
 
     @GetMapping("/api/v1/apolices/{id}")
+    @Cacheable(value = "apolicesCache", key = "#id")
     ApoliceResponseDTO buscarPorId(@PathVariable("id") UUID id);
 }
