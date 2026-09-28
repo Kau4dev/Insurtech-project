@@ -1,6 +1,7 @@
 import type { StatusSinistro, TipoSinistro } from "../enums";
 
 export interface FiltrosSinistros {
+  numeroSinistro?: string;
   apoliceId?: string;
   seguradoId?: string;
   analistaId?: string;

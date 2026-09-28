@@ -1,12 +1,15 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   Badge,
+  Button,
   TableActions,
   TableCell,
   TableContainer,
   TableHeader,
   TableRow,
 } from "../../../components/ui";
+import { useAuth } from "../../../context/useAuth";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
 import {
   formatarStatusSinistro,
@@ -16,12 +19,16 @@ import {
 import { formatarData, formatarMoeda } from "../../../utils/formatters";
 import { ApoliceNumero } from "../../apolices/components/ApoliceNumero";
 import { SeguradoNome } from "../../segurados/components/SeguradoNome";
+import { AnalistaNome } from "./AnalistaNome";
 
 interface SinistroTableProps {
   sinistros: Sinistro[];
   isLoading?: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
   onEditar?: (sinistro: Sinistro) => void;
   onVisualizar?: (sinistro: Sinistro) => void;
+  onAtribuir?: (sinistro: Sinistro) => void;
 }
 
 const COLUNAS = [
@@ -30,7 +37,7 @@ const COLUNAS = [
   "Evento",
   "Ocorrência",
   { label: "Estimado", align: "right" as const },
-  "Status",
+  { label: "Status", align: "center" as const },
   "Analista",
   { label: "Ações", align: "center" as const },
 ];
@@ -38,14 +45,27 @@ const COLUNAS = [
 export const SinistroTable: React.FC<SinistroTableProps> = ({
   sinistros,
   isLoading = false,
+  isError = false,
+  onRetry,
   onEditar,
   onVisualizar,
+  onAtribuir,
 }) => {
+  const { usuario } = useAuth();
+  const isAnalista = usuario?.papel === "ANALISTA";
+  const podeGerenciar =
+    usuario?.papel === "ANALISTA" ||
+    usuario?.papel === "GESTOR" ||
+    usuario?.papel === "ADMIN";
+  const textoBotaoAtribuir = isAnalista ? "Assumir" : "Atribuir";
   return (
     <TableContainer
       isLoading={isLoading}
+      isError={isError}
+      onRetry={onRetry}
       isEmpty={sinistros.length === 0}
       loadingMessage="Carregando sinistros..."
+      errorMessage="Ocorreu um erro ao carregar os sinistros. Verifique se o backend está ativo."
       emptyTitle="Nenhum sinistro encontrado"
       emptyDescription="Não há registros para os filtros selecionados ou ainda não há sinistros cadastrados."
     >
@@ -83,26 +103,81 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
               {formatarMoeda(sinistro.valorEstimado)}
             </TableCell>
 
-            <TableCell className="uppercase">
-              <Badge variant={getSinistroStatusBadgeVariant(sinistro.status)}>
-                {formatarStatusSinistro(sinistro.status)}
-              </Badge>
+            <TableCell align="center">
+              <div className="flex justify-center">
+                <Badge
+                  variant={getSinistroStatusBadgeVariant(sinistro.status)}
+                  className="whitespace-nowrap uppercase"
+                >
+                  {formatarStatusSinistro(sinistro.status)}
+                </Badge>
+              </div>
             </TableCell>
 
-            <TableCell className="text-xs text-(--muted) mono">
-              {sinistro.analistaId
-                ? `${sinistro.analistaId.slice(0, 8)}…`
-                : "—"}
+            <TableCell className="text-xs">
+              <AnalistaNome
+                analistaId={sinistro.analistaId}
+                fallbackText="-------------------"
+                showIcon={Boolean(sinistro.analistaId)}
+              />
             </TableCell>
 
             <TableCell align="center">
-              <TableActions
-                onVisualizar={
-                  onVisualizar ? () => onVisualizar(sinistro) : undefined
-                }
-                onEditar={onEditar ? () => onEditar(sinistro) : undefined}
-                editarTitle="Editar sinistro"
-              />
+              {(() => {
+                const podeDecidir =
+                  podeGerenciar &&
+                  sinistro.status === "EM_ANALISE";
+                return (
+                  <TableActions
+                    onVisualizar={
+                      onVisualizar ? () => onVisualizar(sinistro) : undefined
+                    }
+                    onEditar={
+                      onEditar && podeDecidir
+                        ? () => onEditar(sinistro)
+                        : undefined
+                    }
+                    editarTitle="Decidir sinistro (Aprovar / Rejeitar)"
+                  >
+                    <Link
+                      to={`/sinistros/${sinistro.id}/documentos`}
+                      className="p-1.5 rounded hover:bg-(--surface-2) text-(--muted) hover:text-(--accent-ink) transition-colors inline-flex items-center"
+                      title="Gerenciar documentos e anexos do sinistro"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                    </Link>
+
+                    {sinistro.status === "REGISTRADO" &&
+                      onAtribuir &&
+                      podeGerenciar && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => onAtribuir(sinistro)}
+                          title={
+                            isAnalista
+                              ? "Assumir análise deste sinistro"
+                              : "Atribuir analista responsável"
+                          }
+                        >
+                          {textoBotaoAtribuir}
+                        </Button>
+                      )}
+                  </TableActions>
+                );
+              })()}
             </TableCell>
           </TableRow>
         ))}

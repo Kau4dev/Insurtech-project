@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button, Modal, Pagination } from "../components/ui";
+import { useAuth } from "../context/useAuth";
 import {
   ApoliceDetailDrawer,
   ApoliceFilters,
@@ -16,17 +18,28 @@ import type {
   ApoliceUpdateRequest,
 } from "../interfaces/apolices/apoliceRequest";
 import type { StatusApolice, TipoSeguro } from "../interfaces/enums";
+import { extrairMensagemErro } from "../utils/errorUtils";
 
 export const ApolicesListPage: React.FC = () => {
+  const { usuario } = useAuth();
+  const podeGerenciar =
+    usuario?.papel === "GESTOR" || usuario?.papel === "ADMIN";
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const buscaNumeroApolice = searchParams.get("busca") || "";
+  const detalheId = searchParams.get("detalheId") || "";
+  const seguradoIdQuery = searchParams.get("seguradoId") || "";
+  const isNovoQuery = searchParams.get("novo") === "true";
+
   const [status, setStatus] = useState<StatusApolice | "">("");
   const [tipoSeguro, setTipoSeguro] = useState<TipoSeguro | "">("");
-  const [seguradoId, setSeguradoId] = useState<string | "">("");
   const [page, setPage] = useState<number>(0);
   const size = 10;
 
   // Modal de Criação de Apólice
   const [modalAberto, setModalAberto] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const isModalCriarAberto = modalAberto || isNovoQuery;
 
   // Modal de Alteração de Status da Apólice
   const [statusModalAberto, setStatusModalAberto] = useState<boolean>(false);
@@ -36,16 +49,34 @@ export const ApolicesListPage: React.FC = () => {
   const [statusError, setStatusError] = useState<string | null>(null);
 
   // Drawer de Detalhes
-  const [apoliceParaDetalhes, setApoliceParaDetalhes] =
-    useState<Apolice | null>(null);
+  const [apoliceManual, setApoliceManual] = useState<Apolice | null>(null);
 
-  const { data, isLoading, isError } = useApolices({
+  const { data, isLoading, isError, refetch } = useApolices({
+    numeroApolice: buscaNumeroApolice || undefined,
     status: status || undefined,
     tipoSeguro: tipoSeguro || undefined,
-    seguradoId: seguradoId || undefined,
+    seguradoId: seguradoIdQuery || undefined,
     page,
     size,
   });
+
+  const apolicePelaUrl =
+    detalheId && data?.content
+      ? data.content.find(
+          (a) => a.id === detalheId || a.numeroApolice === detalheId,
+        ) || null
+      : null;
+
+  const apoliceParaDetalhes = apoliceManual || apolicePelaUrl;
+
+  const handleFecharDetalhes = () => {
+    setApoliceManual(null);
+    if (searchParams.has("detalheId")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("detalheId");
+      setSearchParams(next);
+    }
+  };
 
   const criarMutation = useCadastrarApolice();
   const atualizarMutation = useAtualizarStatus();
@@ -55,10 +86,16 @@ export const ApolicesListPage: React.FC = () => {
     status: StatusApolice | "";
     tipoSeguro: TipoSeguro | "";
   }) => {
-    setSeguradoId(filtros.termo);
     setStatus(filtros.status);
     setTipoSeguro(filtros.tipoSeguro);
     setPage(0);
+    const next = new URLSearchParams(searchParams);
+    if (filtros.termo) {
+      next.set("busca", filtros.termo);
+    } else {
+      next.delete("busca");
+    }
+    setSearchParams(next);
   };
 
   const handleAbrirNovo = () => {
@@ -69,6 +106,12 @@ export const ApolicesListPage: React.FC = () => {
   const handleFecharModal = () => {
     setModalAberto(false);
     setFormError(null);
+    if (searchParams.has("novo") || searchParams.has("seguradoId")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("novo");
+      next.delete("seguradoId");
+      setSearchParams(next);
+    }
   };
 
   const handleEditar = (apolice: Apolice) => {
@@ -84,7 +127,7 @@ export const ApolicesListPage: React.FC = () => {
   };
 
   const handleVisualizar = (apolice: Apolice) => {
-    setApoliceParaDetalhes(apolice);
+    setApoliceManual(apolice);
   };
 
   const handleSalvarApolice = async (
@@ -96,23 +139,12 @@ export const ApolicesListPage: React.FC = () => {
       handleFecharModal();
     } catch (err: unknown) {
       console.error("Erro ao salvar apólice:", err);
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data
-      ) {
-        setFormError(String(err.response.data.message));
-      } else {
-        setFormError(
+      setFormError(
+        extrairMensagemErro(
+          err,
           "Não foi possível salvar a apólice. Verifique os dados ou a conexão com o servidor.",
-        );
-      }
+        ),
+      );
     }
   };
 
@@ -127,7 +159,7 @@ export const ApolicesListPage: React.FC = () => {
 
       // Se a apólice também estiver aberta no drawer de detalhes, sincroniza o status
       if (apoliceParaDetalhes?.id === apoliceParaStatus.id) {
-        setApoliceParaDetalhes((prev) =>
+        setApoliceManual((prev) =>
           prev ? { ...prev, status: novoStatus } : null,
         );
       }
@@ -135,7 +167,12 @@ export const ApolicesListPage: React.FC = () => {
       handleFecharStatusModal();
     } catch (err: unknown) {
       console.error("Erro ao atualizar status:", err);
-      setStatusError("Não foi possível atualizar o status da apólice.");
+      setStatusError(
+        extrairMensagemErro(
+          err,
+          "Não foi possível atualizar o status da apólice.",
+        ),
+      );
     }
   };
 
@@ -161,6 +198,12 @@ export const ApolicesListPage: React.FC = () => {
         <Button
           variant="primary"
           onClick={handleAbrirNovo}
+          disabled={!podeGerenciar}
+          title={
+            !podeGerenciar
+              ? "Apenas Gestores ou Administradores podem cadastrar novas apólices."
+              : undefined
+          }
           icon={
             <svg
               className="w-4 h-4"
@@ -181,15 +224,32 @@ export const ApolicesListPage: React.FC = () => {
         </Button>
       </div>
 
+      {!podeGerenciar && (
+        <div className="p-3.5 rounded-lg bg-(--surface-2) border border-(--border) text-xs text-(--muted) flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-(--accent)" />
+            <span>
+              Perfil conectado: <strong>{usuario?.papel || "ANALISTA"}</strong>.
+              O cadastro e a alteração de status de apólices exigem permissão de{" "}
+              <strong>Gestor</strong> ou <strong>Administrador</strong>.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Modal de Criação de Apólice */}
       <Modal
-        isOpen={modalAberto}
+        isOpen={isModalCriarAberto}
         onClose={handleFecharModal}
         title="Nova Apólice"
         description="Preencha os dados abaixo para cadastrar uma nova apólice no sistema."
         maxWidthClass="max-w-3xl"
       >
         <ApoliceForm
+          key={
+            isModalCriarAberto ? `open-${seguradoIdQuery || "novo"}` : "closed"
+          }
+          seguradoInicialId={seguradoIdQuery || undefined}
           onSubmit={handleSalvarApolice}
           onCancel={handleFecharModal}
           isLoading={isSaving}
@@ -208,13 +268,23 @@ export const ApolicesListPage: React.FC = () => {
       />
 
       {/* Filtros */}
-      <ApoliceFilters onSearch={handleSearch} isLoading={isLoading} />
+      <ApoliceFilters
+        key={buscaNumeroApolice}
+        onSearch={handleSearch}
+        isLoading={isLoading}
+        initialTermo={buscaNumeroApolice}
+      />
 
       {/* Mensagem de Erro de Carga */}
       {isError && (
-        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm">
-          Ocorreu um erro ao carregar as apólices. Verifique se o serviço
-          backend está ativo e tente novamente.
+        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <span>
+            Ocorreu um erro ao carregar as apólices. Verifique se o serviço
+            backend está ativo e tente novamente.
+          </span>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            Tentar novamente
+          </Button>
         </div>
       )}
 
@@ -222,7 +292,9 @@ export const ApolicesListPage: React.FC = () => {
       <ApoliceTable
         apolices={apolices}
         isLoading={isLoading}
-        onEditar={handleEditar}
+        isError={isError}
+        onRetry={refetch}
+        onEditar={podeGerenciar ? handleEditar : undefined}
         onVisualizar={handleVisualizar}
       />
 
@@ -241,8 +313,8 @@ export const ApolicesListPage: React.FC = () => {
       <ApoliceDetailDrawer
         apolice={apoliceParaDetalhes}
         isOpen={Boolean(apoliceParaDetalhes)}
-        onClose={() => setApoliceParaDetalhes(null)}
-        onAlterarStatus={handleEditar}
+        onClose={handleFecharDetalhes}
+        onAlterarStatus={podeGerenciar ? handleEditar : undefined}
       />
     </div>
   );

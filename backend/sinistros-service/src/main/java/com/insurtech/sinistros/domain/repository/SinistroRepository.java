@@ -22,6 +22,7 @@ public interface SinistroRepository {
     Optional<Sinistro> buscarPorNumero(String numeroSinistro);
 
     Page<Sinistro> listar(
+            String numeroSinistro,
             UUID apoliceId,
             UUID seguradoId,
             UUID analistaId,

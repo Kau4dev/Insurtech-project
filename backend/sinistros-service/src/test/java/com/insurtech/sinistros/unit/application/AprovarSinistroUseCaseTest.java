@@ -1,28 +1,22 @@
 package com.insurtech.sinistros.unit.application;
 
-import com.insurtech.sinistros.application.dto.request.AprovarSinistroRequestDTO;
-import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
-import com.insurtech.sinistros.application.port.EventPublisherPort;
-import com.insurtech.sinistros.domain.event.SinistroAprovadoEvent;
-import com.insurtech.sinistros.application.usecase.AprovarSinistroUseCase;
-import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
-import com.insurtech.sinistros.domain.exception.ApoliceNaoEncontradaException;
-import com.insurtech.sinistros.domain.exception.SinistroNaoEncontradoException;
-import com.insurtech.sinistros.domain.exception.StatusInvalidoException;
-import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
-import com.insurtech.sinistros.domain.exception.ValorInvalidoException;
-import com.insurtech.sinistros.domain.exception.DocumentoObrigatorioException;
-import com.insurtech.sinistros.domain.model.Sinistro;
-import com.insurtech.sinistros.domain.model.Status;
-import com.insurtech.sinistros.domain.model.DocumentoSinistro;
-import com.insurtech.sinistros.domain.repository.SinistroRepository;
-import com.insurtech.sinistros.infrastructure.client.ApoliceClient;
-import com.insurtech.sinistros.infrastructure.client.dto.ApoliceResponseDTO;
-import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
-import com.insurtech.sinistros.infrastructure.security.UserContext;
-import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
-import feign.FeignException;
-import feign.Request;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,14 +24,30 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.UUID;
+import com.insurtech.sinistros.application.dto.request.AprovarSinistroRequestDTO;
+import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
+import com.insurtech.sinistros.application.port.EventPublisherPort;
+import com.insurtech.sinistros.application.usecase.AprovarSinistroUseCase;
+import com.insurtech.sinistros.domain.event.SinistroAprovadoEvent;
+import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
+import com.insurtech.sinistros.domain.exception.ApoliceNaoEncontradaException;
+import com.insurtech.sinistros.domain.exception.DocumentoObrigatorioException;
+import com.insurtech.sinistros.domain.exception.SinistroNaoEncontradoException;
+import com.insurtech.sinistros.domain.exception.StatusInvalidoException;
+import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
+import com.insurtech.sinistros.domain.exception.ValorInvalidoException;
+import com.insurtech.sinistros.domain.model.DocumentoSinistro;
+import com.insurtech.sinistros.domain.model.Sinistro;
+import com.insurtech.sinistros.domain.model.Status;
+import com.insurtech.sinistros.domain.repository.SinistroRepository;
+import com.insurtech.sinistros.infrastructure.client.ApoliceClient;
+import com.insurtech.sinistros.infrastructure.client.dto.ApoliceResponseDTO;
+import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
+import com.insurtech.sinistros.infrastructure.security.UserContext;
+import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import feign.FeignException;
+import feign.Request;
 
 @ExtendWith(MockitoExtension.class)
 class AprovarSinistroUseCaseTest {
@@ -92,7 +102,7 @@ class AprovarSinistroUseCaseTest {
 
         AprovarSinistroRequestDTO dto = new AprovarSinistroRequestDTO(new BigDecimal("1000.00"));
         ApoliceResponseDTO apoliceDTO = mock(ApoliceResponseDTO.class);
-        when(apoliceDTO.valorPremio()).thenReturn(new BigDecimal("5000.00"));
+        when(apoliceDTO.valorSeguro()).thenReturn(new BigDecimal("5000.00"));
 
         SinistroResponseDTO responseDTO = mock(SinistroResponseDTO.class);
 
@@ -119,7 +129,7 @@ class AprovarSinistroUseCaseTest {
 
         AprovarSinistroRequestDTO dto = new AprovarSinistroRequestDTO(new BigDecimal("1000.00"));
         ApoliceResponseDTO apoliceDTO = mock(ApoliceResponseDTO.class);
-        when(apoliceDTO.valorPremio()).thenReturn(new BigDecimal("5000.00"));
+        when(apoliceDTO.valorSeguro()).thenReturn(new BigDecimal("5000.00"));
 
         when(repository.buscarPorId(id)).thenReturn(Optional.of(sinistro));
         when(client.buscarPorId(apoliceId)).thenReturn(apoliceDTO);
@@ -194,7 +204,7 @@ class AprovarSinistroUseCaseTest {
 
         AprovarSinistroRequestDTO dto = new AprovarSinistroRequestDTO(new BigDecimal("1000.00"));
         ApoliceResponseDTO apoliceDTO = mock(ApoliceResponseDTO.class);
-        when(apoliceDTO.valorPremio()).thenReturn(new BigDecimal("5000.00"));
+        when(apoliceDTO.valorSeguro()).thenReturn(new BigDecimal("5000.00"));
 
         when(repository.buscarPorId(id)).thenReturn(Optional.of(sinistro));
         when(client.buscarPorId(apoliceId)).thenReturn(apoliceDTO);
@@ -214,7 +224,7 @@ class AprovarSinistroUseCaseTest {
 
         AprovarSinistroRequestDTO dto = new AprovarSinistroRequestDTO(BigDecimal.ZERO);
         ApoliceResponseDTO apoliceDTO = mock(ApoliceResponseDTO.class);
-        when(apoliceDTO.valorPremio()).thenReturn(new BigDecimal("5000.00"));
+        when(apoliceDTO.valorSeguro()).thenReturn(new BigDecimal("5000.00"));
 
         when(repository.buscarPorId(id)).thenReturn(Optional.of(sinistro));
         when(client.buscarPorId(apoliceId)).thenReturn(apoliceDTO);
@@ -225,7 +235,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
-    void deveLancarExcecao_quandoValorAprovadoExcedeValorPremio() {
+    void deveLancarExcecao_quandoValorAprovadoExcedeValorSeguro() {
         setUserContext(UUID.randomUUID().toString(), "ANALISTA");
 
         UUID id = UUID.randomUUID();
@@ -234,7 +244,7 @@ class AprovarSinistroUseCaseTest {
 
         AprovarSinistroRequestDTO dto = new AprovarSinistroRequestDTO(new BigDecimal("6000.00"));
         ApoliceResponseDTO apoliceDTO = mock(ApoliceResponseDTO.class);
-        when(apoliceDTO.valorPremio()).thenReturn(new BigDecimal("5000.00"));
+        when(apoliceDTO.valorSeguro()).thenReturn(new BigDecimal("5000.00"));
 
         when(repository.buscarPorId(id)).thenReturn(Optional.of(sinistro));
         when(client.buscarPorId(apoliceId)).thenReturn(apoliceDTO);
@@ -255,7 +265,7 @@ class AprovarSinistroUseCaseTest {
 
         AprovarSinistroRequestDTO dto = new AprovarSinistroRequestDTO(new BigDecimal("1000.00"));
         ApoliceResponseDTO apoliceDTO = mock(ApoliceResponseDTO.class);
-        when(apoliceDTO.valorPremio()).thenReturn(new BigDecimal("5000.00"));
+        when(apoliceDTO.valorSeguro()).thenReturn(new BigDecimal("5000.00"));
 
         when(repository.buscarPorId(id)).thenReturn(Optional.of(sinistro));
         when(client.buscarPorId(apoliceId)).thenReturn(apoliceDTO);

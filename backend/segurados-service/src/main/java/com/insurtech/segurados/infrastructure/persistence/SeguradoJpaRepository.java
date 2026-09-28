@@ -12,5 +12,7 @@ public interface SeguradoJpaRepository extends JpaRepository<SeguradoJpaEntity, 
     Optional<SeguradoJpaEntity> findByCpfCnpj(String cpfCnpj);
 
     Page<SeguradoJpaEntity> findByNomeRazaoSocialContainingIgnoreCase(String nome, Pageable pageable);
+
+    Page<SeguradoJpaEntity> findByNomeRazaoSocialContainingIgnoreCaseOrCpfCnpjContaining(String nome, String cpfCnpj, Pageable pageable);
 }
 

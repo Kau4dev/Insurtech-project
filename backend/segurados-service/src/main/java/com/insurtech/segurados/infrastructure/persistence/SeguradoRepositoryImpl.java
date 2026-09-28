@@ -39,10 +39,13 @@ public class SeguradoRepositoryImpl implements SeguradoRepository {
 
     @Override
     public Page<Segurado> listar(String nome, Pageable pageable) {
-        if (nome == null || nome.trim().isEmpty()) {
-            return jpaRepository.findAll(pageable).map(mapper::toDomain);
+        String termo = nome.trim();
+        String apenasDigitos = termo.replaceAll("\\D", "");
+        if (!apenasDigitos.isEmpty()) {
+            return jpaRepository.findByNomeRazaoSocialContainingIgnoreCaseOrCpfCnpjContaining(termo, apenasDigitos, pageable)
+                    .map(mapper::toDomain);
         }
-        return jpaRepository.findByNomeRazaoSocialContainingIgnoreCase(nome, pageable)
+        return jpaRepository.findByNomeRazaoSocialContainingIgnoreCase(termo, pageable)
                 .map(mapper::toDomain);
     }
 }

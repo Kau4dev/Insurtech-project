@@ -43,7 +43,7 @@ public interface SeguradoControllerDocs {
     ResponseEntity<SeguradoResponseDTO> buscarPorId(
             @Parameter(description = "ID do segurado", required = true) UUID id);
 
-    @Operation(summary = "Listar segurados", description = "Listagem paginada com filtro por nome.")
+    @Operation(summary = "Listar segurados", description = "Listagem paginada com filtro por nome ou CPF/CNPJ.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Campo de ordenação inválido", 
@@ -52,7 +52,7 @@ public interface SeguradoControllerDocs {
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<PageResponseDTO<SeguradoResponseDTO>> listarSegurados(
-            @Parameter(description = "Nome para filtrar") String nome,
+            @Parameter(description = "Nome ou CPF/CNPJ para filtrar") String nome,
             Pageable pageable);
 
     @Operation(summary = "Atualizar segurado")

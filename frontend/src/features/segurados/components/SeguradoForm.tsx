@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   FormActions,
   FormErrorBanner,
@@ -17,9 +17,9 @@ import type {
 } from "../../../interfaces/segurados/seguradoRequest";
 import {
   apenasNumeros,
-  formatarCep,
-  formatarCpfCnpj,
-  formatarTelefone,
+  maskCep,
+  maskCpfCnpj,
+  maskTelefone,
 } from "../../../utils/formatters";
 import {
   seguradoSchema,
@@ -49,107 +49,127 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
     register,
     handleSubmit,
     watch,
+    getValues,
     setValue,
+    clearErrors,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<SeguradoFormData>({
     resolver: zodResolver(seguradoSchema),
     defaultValues: {
-      tipoPessoa: "PF",
-      nomeRazaoSocial: "",
-      cpfCnpj: "",
-      email: "",
-      telefone: "",
-      dataNascimento: "",
-      enderecoLogradouro: "",
-      enderecoCidade: "",
-      enderecoUf: "",
-      enderecoCep: "",
+      tipoPessoa: seguradoInicial?.tipoPessoa || "PF",
+      nomeRazaoSocial: seguradoInicial?.nomeRazaoSocial || "",
+      cpfCnpj: seguradoInicial
+        ? maskCpfCnpj(seguradoInicial.cpfCnpj, seguradoInicial.tipoPessoa)
+        : "",
+      email: seguradoInicial?.email || "",
+      telefone: seguradoInicial?.telefone
+        ? maskTelefone(seguradoInicial.telefone)
+        : "",
+      dataNascimento: seguradoInicial?.dataNascimento || "",
+      enderecoLogradouro: seguradoInicial?.enderecoLogradouro || "",
+      enderecoCidade: seguradoInicial?.enderecoCidade || "",
+      enderecoUf: seguradoInicial?.enderecoUf || "",
+      enderecoCep: seguradoInicial?.enderecoCep
+        ? maskCep(seguradoInicial.enderecoCep)
+        : "",
     },
   });
 
-  const tipoPessoa = watch("tipoPessoa");
+  const tipoPessoa = watch("tipoPessoa") || "PF";
 
+  // Apenas popula se houver alteração em seguradoInicial (modo edição)
   useEffect(() => {
     if (seguradoInicial) {
       reset({
         tipoPessoa: seguradoInicial.tipoPessoa || "PF",
         nomeRazaoSocial: seguradoInicial.nomeRazaoSocial || "",
-        cpfCnpj: formatarCpfCnpj(
+        cpfCnpj: maskCpfCnpj(
           seguradoInicial.cpfCnpj,
           seguradoInicial.tipoPessoa,
         ),
         email: seguradoInicial.email || "",
-        telefone:
-          formatarTelefone(seguradoInicial.telefone) === "-"
-            ? ""
-            : formatarTelefone(seguradoInicial.telefone),
+        telefone: seguradoInicial.telefone
+          ? maskTelefone(seguradoInicial.telefone)
+          : "",
         dataNascimento: seguradoInicial.dataNascimento || "",
         enderecoLogradouro: seguradoInicial.enderecoLogradouro || "",
         enderecoCidade: seguradoInicial.enderecoCidade || "",
         enderecoUf: seguradoInicial.enderecoUf || "",
-        enderecoCep:
-          formatarCep(seguradoInicial.enderecoCep) === "-"
-            ? ""
-            : formatarCep(seguradoInicial.enderecoCep),
-      });
-    } else {
-      reset({
-        tipoPessoa: "PF",
-        nomeRazaoSocial: "",
-        cpfCnpj: "",
-        email: "",
-        telefone: "",
-        dataNascimento: "",
-        enderecoLogradouro: "",
-        enderecoCidade: "",
-        enderecoUf: "",
-        enderecoCep: "",
+        enderecoCep: seguradoInicial.enderecoCep
+          ? maskCep(seguradoInicial.enderecoCep)
+          : "",
       });
     }
   }, [seguradoInicial, reset]);
 
+  // Se trocar para PJ, limpa a data de nascimento
   useEffect(() => {
     if (tipoPessoa === "PJ") {
       setValue("dataNascimento", "");
+      clearErrors("dataNascimento");
     }
-  }, [tipoPessoa, setValue]);
+  }, [tipoPessoa, setValue, clearErrors]);
+
+  const handleCpfCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const formatado = maskCpfCnpj(raw, tipoPessoa);
+    setValue("cpfCnpj", formatado, { shouldValidate: true, shouldDirty: true });
+  };
+
+  const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const formatado = maskTelefone(raw);
+    setValue("telefone", formatado, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
+
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const formatado = maskCep(raw);
+    setValue("enderecoCep", formatado, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
 
   const handleFormSubmit = async (data: SeguradoFormData) => {
+    const telLimpo = apenasNumeros(data.telefone);
+    const cepLimpo = apenasNumeros(data.enderecoCep);
+
     if (isEdicao) {
       const updatePayload: SeguradoUpdateRequest = {
-        nomeRazaoSocial: data.nomeRazaoSocial,
-        email: data.email,
-        telefone: data.telefone ? apenasNumeros(data.telefone) : undefined,
+        nomeRazaoSocial: data.nomeRazaoSocial.trim(),
+        email: data.email.trim(),
+        telefone: telLimpo.length > 0 ? telLimpo : undefined,
         dataNascimento:
-          data.tipoPessoa === "PF" && data.dataNascimento
+          data.tipoPessoa === "PF" && data.dataNascimento?.trim()
             ? data.dataNascimento
             : undefined,
-        enderecoLogradouro: data.enderecoLogradouro || undefined,
-        enderecoCidade: data.enderecoCidade || undefined,
-        enderecoUf: data.enderecoUf || undefined,
-        enderecoCep: data.enderecoCep
-          ? apenasNumeros(data.enderecoCep)
-          : undefined,
+        enderecoLogradouro: data.enderecoLogradouro?.trim() || undefined,
+        enderecoCidade: data.enderecoCidade?.trim() || undefined,
+        enderecoUf: data.enderecoUf?.trim() || undefined,
+        enderecoCep: cepLimpo.length > 0 ? cepLimpo : undefined,
       };
       await onSubmit(updatePayload);
     } else {
       const createPayload: SeguradoRequest = {
         tipoPessoa: data.tipoPessoa as "PF" | "PJ",
-        nomeRazaoSocial: data.nomeRazaoSocial,
+        nomeRazaoSocial: data.nomeRazaoSocial.trim(),
         cpfCnpj: apenasNumeros(data.cpfCnpj),
-        email: data.email,
-        telefone: data.telefone ? apenasNumeros(data.telefone) : undefined,
+        email: data.email.trim(),
+        telefone: telLimpo.length > 0 ? telLimpo : undefined,
         dataNascimento:
-          data.tipoPessoa === "PF" && data.dataNascimento
+          data.tipoPessoa === "PF" && data.dataNascimento?.trim()
             ? data.dataNascimento
             : undefined,
-        enderecoLogradouro: data.enderecoLogradouro || undefined,
-        enderecoCidade: data.enderecoCidade || undefined,
-        enderecoUf: data.enderecoUf || undefined,
-        enderecoCep: data.enderecoCep
-          ? apenasNumeros(data.enderecoCep)
-          : undefined,
+        enderecoLogradouro: data.enderecoLogradouro?.trim() || undefined,
+        enderecoCidade: data.enderecoCidade?.trim() || undefined,
+        enderecoUf: data.enderecoUf?.trim() || undefined,
+        enderecoCep: cepLimpo.length > 0 ? cepLimpo : undefined,
       };
       await onSubmit(createPayload);
     }
@@ -161,15 +181,39 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
 
       <div className="space-y-4">
         {/* Tipo de Pessoa */}
-        <RadioGroup
-          label="Tipo de Pessoa *"
-          disabled={isEdicao}
-          error={errors.tipoPessoa?.message}
-          options={[
-            { value: "PF", label: "Pessoa Física (PF)" },
-            { value: "PJ", label: "Pessoa Jurídica (PJ)" },
-          ]}
-          {...register("tipoPessoa")}
+        <Controller
+          name="tipoPessoa"
+          control={control}
+          render={({ field }) => (
+            <RadioGroup
+              label="Tipo de Pessoa *"
+              disabled={isEdicao}
+              error={errors.tipoPessoa?.message}
+              name={field.name}
+              value={field.value}
+              options={[
+                { value: "PF", label: "Pessoa Física (PF)" },
+                { value: "PJ", label: "Pessoa Jurídica (PJ)" },
+              ]}
+              onChange={(e) => {
+                const novoTipo = e.target.value as "PF" | "PJ";
+                field.onChange(novoTipo);
+                if (novoTipo === "PJ") {
+                  setValue("dataNascimento", "");
+                  clearErrors("dataNascimento");
+                }
+                const docAtual = getValues("cpfCnpj");
+                if (docAtual) {
+                  setValue("cpfCnpj", maskCpfCnpj(docAtual, novoTipo), {
+                    shouldValidate: true,
+                  });
+                }
+                clearErrors("tipoPessoa");
+                clearErrors("cpfCnpj");
+              }}
+              onBlur={field.onBlur}
+            />
+          )}
         />
 
         {/* Nome / Razão Social & CPF / CNPJ */}
@@ -193,6 +237,8 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
             disabled={isEdicao}
             error={errors.cpfCnpj?.message}
             {...register("cpfCnpj")}
+            value={watch("cpfCnpj") || ""}
+            onChange={handleCpfCnpjChange}
           />
         </div>
 
@@ -211,6 +257,8 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
             placeholder="(11) 99999-8888"
             error={errors.telefone?.message}
             {...register("telefone")}
+            value={watch("telefone") || ""}
+            onChange={handleTelefoneChange}
           />
 
           {tipoPessoa === "PF" && (
@@ -255,6 +303,8 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
                 placeholder="00000-000"
                 error={errors.enderecoCep?.message}
                 {...register("enderecoCep")}
+                value={watch("enderecoCep") || ""}
+                onChange={handleCepChange}
               />
             </div>
           </div>

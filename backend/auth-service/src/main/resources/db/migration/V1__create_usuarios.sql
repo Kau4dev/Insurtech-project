@@ -13,8 +13,8 @@ INSERT INTO usuarios (id, nome, email, senha_hash, papel, ativo) VALUES
     '$2a$12$lfHl6aOJtGfJf.6quhSILeN58.4AdACwTGhgOlY6qM0UjEWw9Exu6', -- senha: password
     'ADMIN', true),
     (gen_random_uuid(), 'Analista', 'analista@insurtech.com',
-    '$2a$12$lfHl6aOJtGfJf.6quhSILeN58.4AdACwTGhgOlY6qM0UjEWw9Exu6.',
+    '$2a$12$lfHl6aOJtGfJf.6quhSILeN58.4AdACwTGhgOlY6qM0UjEWw9Exu6',
     'ANALISTA', true),
     (gen_random_uuid(), 'Gestor', 'gestor@insurtech.com',
-    '$2a$12$lfHl6aOJtGfJf.6quhSILeN58.4AdACwTGhgOlY6qM0UjEWw9Exu6.',
+    '$2a$12$lfHl6aOJtGfJf.6quhSILeN58.4AdACwTGhgOlY6qM0UjEWw9Exu6',
     'GESTOR', true);

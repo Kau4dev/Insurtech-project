@@ -46,6 +46,7 @@ public class SinistroController implements SinistroControllerDocs {
     @Override
     @GetMapping
     public ResponseEntity<PageResponseDTO<SinistroResponseDTO>> listarSinistros(
+            @RequestParam(required = false) String numeroSinistro,
             @RequestParam(required = false) UUID apoliceId,
             @RequestParam(required = false) UUID seguradoId,
             @RequestParam(required = false) UUID analistaId,
@@ -54,7 +55,7 @@ public class SinistroController implements SinistroControllerDocs {
             @RequestParam(required = false) LocalDate dataInicio,
             @RequestParam(required = false) LocalDate dataFim,
             @ParameterObject Pageable pageable) {
-        return ResponseEntity.ok(listarSinistrosUseCase.executar(apoliceId, seguradoId, analistaId, status, tipoSinistro, dataInicio, dataFim, pageable));
+        return ResponseEntity.ok(listarSinistrosUseCase.executar(numeroSinistro, apoliceId, seguradoId, analistaId, status, tipoSinistro, dataInicio, dataFim, pageable));
     }
 
     @Override

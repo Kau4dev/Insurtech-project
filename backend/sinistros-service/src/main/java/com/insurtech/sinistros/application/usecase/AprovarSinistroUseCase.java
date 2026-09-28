@@ -1,5 +1,10 @@
 package com.insurtech.sinistros.application.usecase;
 
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.insurtech.sinistros.application.dto.request.AprovarSinistroRequestDTO;
 import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
 import com.insurtech.sinistros.application.port.EventPublisherPort;
@@ -14,12 +19,9 @@ import com.insurtech.sinistros.infrastructure.client.ApoliceClient;
 import com.insurtech.sinistros.infrastructure.client.dto.ApoliceResponseDTO;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
 import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
+
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Transactional
 @Service
@@ -53,7 +55,7 @@ public class AprovarSinistroUseCase {
             throw new ApoliceNaoEncontradaException("Apólice não encontrada com o ID: " + sinistro.getApoliceId());
         }
 
-        sinistro.aprovar(dto.valorAprovado(), apolice.valorPremio());
+        sinistro.aprovar(dto.valorAprovado(), apolice.valorSeguro());
         Sinistro savedSinistro = repository.salvar(sinistro);
 
         eventPublisher.publicarSinistroAprovado(new SinistroAprovadoEvent(

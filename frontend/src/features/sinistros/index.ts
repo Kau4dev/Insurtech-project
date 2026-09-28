@@ -1,5 +1,7 @@
-// Components
+export * from "./components/AdicionarDocumentoModal";
+export * from "./components/AnalistaNome";
 export * from "./components/AprovarRejeitarModal";
+export * from "./components/AtribuirAnalistaModal";
 export * from "./components/SinistroDetailDrawer";
 export * from "./components/SinistroFilters";
 export * from "./components/SinistroForm";

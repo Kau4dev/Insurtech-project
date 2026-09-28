@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button, Modal, Pagination } from "../components/ui";
+import { useAuth } from "../context/useAuth";
 import {
   SeguradoDetailDrawer,
   SeguradoFilters,
@@ -14,9 +16,17 @@ import type {
   SeguradoRequest,
   SeguradoUpdateRequest,
 } from "../interfaces/segurados/seguradoRequest";
+import { extrairMensagemErro } from "../utils/errorUtils";
 
 export const SeguradosListPage: React.FC = () => {
-  const [nome, setNome] = useState<string>("");
+  const { usuario } = useAuth();
+  const podeCadastrar =
+    usuario?.papel === "GESTOR" || usuario?.papel === "ADMIN";
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const nome = searchParams.get("busca") || "";
+  const detalheId = searchParams.get("detalheId") || "";
+
   const [page, setPage] = useState<number>(0);
   const size = 10;
 
@@ -24,22 +34,48 @@ export const SeguradosListPage: React.FC = () => {
   const [seguradoEmEdicao, setSeguradoEmEdicao] = useState<Segurado | null>(
     null,
   );
-  const [seguradoParaDetalhes, setSeguradoParaDetalhes] =
-    useState<Segurado | null>(null);
+  const [seguradoManual, setSeguradoManual] = useState<Segurado | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const { data, isLoading, isError } = useSegurados({
+  const { data, isLoading, isError, refetch } = useSegurados({
     nome: nome || undefined,
     page,
     size,
   });
 
+  const seguradoPelaUrl =
+    detalheId && data?.content
+      ? data.content.find(
+          (s) =>
+            s.id === detalheId ||
+            s.nomeRazaoSocial === detalheId ||
+            s.cpfCnpj === detalheId,
+        ) || null
+      : null;
+
+  const seguradoParaDetalhes = seguradoManual || seguradoPelaUrl;
+
+  const handleFecharDetalhes = () => {
+    setSeguradoManual(null);
+    if (searchParams.has("detalheId")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("detalheId");
+      setSearchParams(next);
+    }
+  };
+
   const criarMutation = useCadastrarSegurado();
   const atualizarMutation = useAtualizarSegurado();
 
   const handleSearch = (termo: string) => {
-    setNome(termo);
     setPage(0);
+    const next = new URLSearchParams(searchParams);
+    if (termo) {
+      next.set("busca", termo);
+    } else {
+      next.delete("busca");
+    }
+    setSearchParams(next);
   };
 
   const handleAbrirNovo = () => {
@@ -61,7 +97,7 @@ export const SeguradosListPage: React.FC = () => {
   };
 
   const handleVisualizar = (segurado: Segurado) => {
-    setSeguradoParaDetalhes(segurado);
+    setSeguradoManual(segurado);
   };
 
   const handleSalvarSegurado = async (
@@ -80,23 +116,12 @@ export const SeguradosListPage: React.FC = () => {
       handleFecharModal();
     } catch (err: unknown) {
       console.error("Erro ao salvar segurado:", err);
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data
-      ) {
-        setFormError(String(err.response.data.message));
-      } else {
-        setFormError(
+      setFormError(
+        extrairMensagemErro(
+          err,
           "Não foi possível salvar o segurado. Verifique os dados ou a conexão com o servidor.",
-        );
-      }
+        ),
+      );
     }
   };
 
@@ -122,6 +147,12 @@ export const SeguradosListPage: React.FC = () => {
         <Button
           variant="primary"
           onClick={handleAbrirNovo}
+          disabled={!podeCadastrar}
+          title={
+            !podeCadastrar
+              ? "Apenas Gestores ou Administradores podem cadastrar novos segurados."
+              : undefined
+          }
           icon={
             <svg
               className="w-4 h-4"
@@ -142,6 +173,19 @@ export const SeguradosListPage: React.FC = () => {
         </Button>
       </div>
 
+      {!podeCadastrar && (
+        <div className="p-3.5 rounded-lg bg-(--surface-2) border border-(--border) text-xs text-(--muted) flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-(--accent)" />
+            <span>
+              Perfil conectado: <strong>{usuario?.papel || "ANALISTA"}</strong>.
+              O cadastro e a edição de segurados exigem permissão de{" "}
+              <strong>Gestor</strong> ou <strong>Administrador</strong>.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Modal Reutilizável com Formulário */}
       <Modal
         isOpen={modalAberto}
@@ -154,6 +198,7 @@ export const SeguradosListPage: React.FC = () => {
         }
       >
         <SeguradoForm
+          key={seguradoEmEdicao ? `edit-${seguradoEmEdicao.id}` : "novo"}
           seguradoInicial={seguradoEmEdicao}
           onSubmit={handleSalvarSegurado}
           onCancel={handleFecharModal}
@@ -163,13 +208,23 @@ export const SeguradosListPage: React.FC = () => {
       </Modal>
 
       {/* Filtros */}
-      <SeguradoFilters onSearch={handleSearch} isLoading={isLoading} />
+      <SeguradoFilters
+        key={nome}
+        onSearch={handleSearch}
+        isLoading={isLoading}
+        initialTermo={nome}
+      />
 
       {/* Mensagem de Erro de Carga */}
       {isError && (
-        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm">
-          Ocorreu um erro ao carregar os segurados. Verifique se o serviço
-          backend está ativo e tente novamente.
+        <div className="p-4 rounded-lg bg-(--danger-soft) border border-rose-200 text-(--danger) text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <span>
+            Ocorreu um erro ao carregar os segurados. Verifique se o serviço
+            backend está ativo e tente novamente.
+          </span>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            Tentar novamente
+          </Button>
         </div>
       )}
 
@@ -177,7 +232,9 @@ export const SeguradosListPage: React.FC = () => {
       <SeguradoTable
         segurados={segurados}
         isLoading={isLoading}
-        onEditar={handleEditar}
+        isError={isError}
+        onRetry={refetch}
+        onEditar={podeCadastrar ? handleEditar : undefined}
         onVisualizar={handleVisualizar}
       />
 
@@ -194,7 +251,7 @@ export const SeguradosListPage: React.FC = () => {
       <SeguradoDetailDrawer
         segurado={seguradoParaDetalhes}
         isOpen={Boolean(seguradoParaDetalhes)}
-        onClose={() => setSeguradoParaDetalhes(null)}
+        onClose={handleFecharDetalhes}
       />
     </div>
   );

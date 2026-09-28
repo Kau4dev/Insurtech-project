@@ -76,14 +76,14 @@ class ListarApolicesUseCaseTest {
         Page<Apolice> page = new PageImpl<>(List.of(apolice));
 
         when(client.buscarPorId(seguradoId)).thenReturn(null);
-        when(repository.listar(seguradoId, null, null, pageable)).thenReturn(page);
+        when(repository.listar(null, seguradoId, null, null, pageable)).thenReturn(page);
         when(mapper.toResponse(apolice)).thenReturn(responseDTO);
 
-        PageResponseDTO<ApoliceResponseDTO> resultado = useCase.executar(seguradoId, null, null, pageable);
+        PageResponseDTO<ApoliceResponseDTO> resultado = useCase.executar(null, seguradoId, null, null, pageable);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.totalElements());
-        verify(repository, times(1)).listar(seguradoId, null, null, pageable);
+        verify(repository, times(1)).listar(null, seguradoId, null, null, pageable);
     }
 
     @Test
@@ -111,14 +111,14 @@ class ListarApolicesUseCaseTest {
 
         Page<Apolice> page = new PageImpl<>(List.of(apolice));
 
-        when(repository.listar(null, null, null, pageable)).thenReturn(page);
+        when(repository.listar("AP-2026", null, null, null, pageable)).thenReturn(page);
         when(mapper.toResponse(apolice)).thenReturn(responseDTO);
 
-        PageResponseDTO<ApoliceResponseDTO> resultado = useCase.executar(null, null, null, pageable);
+        PageResponseDTO<ApoliceResponseDTO> resultado = useCase.executar("AP-2026", null, null, null, pageable);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.totalElements());
-        verify(repository, times(1)).listar(null, null, null, pageable);
+        verify(repository, times(1)).listar("AP-2026", null, null, null, pageable);
         verify(client, never()).buscarPorId(any());
     }
 
@@ -132,7 +132,7 @@ class ListarApolicesUseCaseTest {
 
         when(client.buscarPorId(seguradoId)).thenThrow(exception);
 
-        assertThrows(SeguradoNaoEncontradoException.class, () -> useCase.executar(seguradoId, null, null, pageable));
-        verify(repository, never()).listar(any(), any(), any(), any());
+        assertThrows(SeguradoNaoEncontradoException.class, () -> useCase.executar(null, seguradoId, null, null, pageable));
+        verify(repository, never()).listar(any(), any(), any(), any(), any());
     }
 }

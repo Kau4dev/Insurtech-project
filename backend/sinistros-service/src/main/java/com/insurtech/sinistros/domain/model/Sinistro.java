@@ -67,7 +67,7 @@ public class Sinistro {
 
     public void aprovar(BigDecimal valorAprovado, BigDecimal valorSeguradoApolice) {
         if (!Status.EM_ANALISE.equals(this.status)) {
-            throw new StatusInvalidoException("Sinistro precisa estar EM_ANALISE para ser aprovado");
+            throw new StatusInvalidoException("Sinistro precisa estar EM ANALISE para ser aprovado");
         }
         if (valorAprovado == null || valorAprovado.compareTo(BigDecimal.ZERO) <= 0) {
             throw new ValorInvalidoException("Valor aprovado deve ser maior que zero");
@@ -86,7 +86,7 @@ public class Sinistro {
 
     public void rejeitar(String motivoRejeicao) {
         if (!Status.EM_ANALISE.equals(this.status)) {
-            throw new StatusInvalidoException("Sinistro precisa estar EM_ANALISE para ser rejeitado");
+            throw new StatusInvalidoException("Sinistro precisa estar EM ANALISE para ser rejeitado");
         }
         if (motivoRejeicao == null || motivoRejeicao.isBlank()) {
             throw new MotivoRejeicaoObrigatorioException("Motivo de rejeição é obrigatório");
@@ -103,7 +103,7 @@ public class Sinistro {
     public void aguardarDocumentos() {
         if (!Status.EM_ANALISE.equals(this.status)) {
             throw new StatusInvalidoException(
-                    "Sinistro precisa estar EM_ANALISE para aguardar documentos"
+                    "Sinistro precisa estar EM ANALISE para aguardar documentos"
             );
         }
         registrarHistorico(this.status, Status.AGUARDANDO_DOCUMENTOS, this.analistaId, null);

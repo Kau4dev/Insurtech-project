@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
+import { HeaderSearch } from "./HeaderSearch";
+import { NotificationsPopover } from "./NotificationsPopover";
 
 interface HeaderProps {
   onToggleMobileMenu?: () => void;
@@ -79,47 +81,18 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
       </div>
 
       {/* Search (Empurrado para a direita com ml-auto) */}
-      <div className="ml-auto w-60 sm:w-72 lg:w-80 min-h-0">
-        <div className="relative flex items-center">
-          <svg
-            className="absolute left-2.5 w-4 h-4 text-(--muted) pointer-events-none"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.9"
-          >
-            <circle cx="11" cy="11" r="6.5" />
-            <path d="M20 20l-3.6-3.6" />
-          </svg>
-          <input
-            className="w-full pl-9 pr-3 py-1.5 text-[13px] placeholder:text-(--muted) border border-(--border) rounded-lg bg-(--surface-2) focus:outline-none focus:border-(--accent) focus:ring-1 focus:ring-(--accent) transition-colors"
-            placeholder="Buscar nº do sinistro, apólice ou CNPJ…"
-          />
-        </div>
+      <div className="ml-auto min-h-0">
+        <HeaderSearch />
       </div>
 
       {/* Right side */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Notifications */}
-        <button
-          className="relative p-2 rounded-lg text-(--muted) hover:bg-(--surface-2) hover:text-(--fg) transition-colors"
-          aria-label="Notificações"
-        >
-          <svg
-            className="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-          >
-            <path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6" />
-            <path d="M10 19a2 2 0 0 0 4 0" />
-          </svg>
-        </button>
+        <NotificationsPopover />
 
-        {/* User menu */}
+        {/* User menu — oculto em mobile, visível em md+ */}
         {usuario && (
-          <div className="relative" ref={menuRef}>
+          <div className="relative hidden md:block" ref={menuRef}>
             <button
               onClick={() => setMenuAberto(!menuAberto)}
               className="flex items-center gap-2.5 pl-1 pr-2.5 py-1 rounded-lg hover:bg-(--surface-2) transition-colors"
@@ -162,9 +135,10 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
                 <button
                   onClick={() => {
                     setMenuAberto(false);
+                    sessionStorage.setItem("insurtech_logout", "true");
                     logout();
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] text-(--danger) hover:bg-(--danger-soft) transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[13px] text-(--danger) hover:bg-(--danger-soft) transition-colors cursor-pointer"
                 >
                   <svg
                     className="w-4 h-4"
