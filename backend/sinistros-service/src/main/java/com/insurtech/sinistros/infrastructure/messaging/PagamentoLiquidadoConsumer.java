@@ -2,6 +2,7 @@ package com.insurtech.sinistros.infrastructure.messaging;
 
 import com.insurtech.sinistros.domain.event.PagamentoLiquidadoEvent;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
+import com.insurtech.sinistros.infrastructure.cache.DashboardCacheInvalidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PagamentoLiquidadoConsumer {
 
     private final SinistroRepository repository;
+    private final DashboardCacheInvalidator cacheInvalidator;
 
     @KafkaListener(
             topics = "pagamento.liquidado",
@@ -31,6 +33,7 @@ public class PagamentoLiquidadoConsumer {
                     sinistro -> {
                         sinistro.marcarComoPago();
                         repository.salvar(sinistro);
+                        cacheInvalidator.invalidar();
                         log.info("Status do sinistro {} atualizado com sucesso para PAGO.", sinistro.getId());
                     },
                     () -> log.error("Sinistro não encontrado para o ID: {}", event.sinistroId())

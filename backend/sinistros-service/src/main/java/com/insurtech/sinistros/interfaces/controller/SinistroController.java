@@ -11,6 +11,7 @@ import com.insurtech.sinistros.domain.model.TipoSinistro;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,6 +84,7 @@ public class SinistroController implements SinistroControllerDocs {
 
 
     @Override
+    @CacheEvict(value = "dashboardMetricas", allEntries = true)
     @PatchMapping("/{id}/aprovar")
     public ResponseEntity<SinistroResponseDTO> aprovar(
             @PathVariable UUID id,
@@ -92,6 +94,7 @@ public class SinistroController implements SinistroControllerDocs {
     }
 
     @Override
+    @CacheEvict(value = "dashboardMetricas", allEntries = true)
     @PatchMapping("/{id}/rejeitar")
     public ResponseEntity<SinistroResponseDTO> rejeitar(
             @PathVariable UUID id,
