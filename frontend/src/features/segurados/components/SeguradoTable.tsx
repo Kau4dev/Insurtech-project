@@ -84,7 +84,7 @@ export const SeguradoTable: React.FC<SeguradoTableProps> = ({
               </TableCell>
 
               <TableCell align="left" className="text-xs text-(--muted)">
-                {localidade || "-"}
+                {localidade || "-------------------"}
               </TableCell>
 
               <TableCell align="center">
