@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import { Button, FormErrorBanner, Input, Modal } from "../../../components/ui";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button, FormErrorBanner, Modal, Select } from "../../../components/ui";
 import { useAuth } from "../../../context/useAuth";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
-import { formatarTipoSinistro } from "../../../utils/enumUtils";
+import { formatarPapelUsuario, formatarTipoSinistro } from "../../../utils/enumUtils";
 import { extrairMensagemErro } from "../../../utils/errorUtils";
 import { formatarData, formatarMoeda } from "../../../utils/formatters";
 import { ApoliceNumero } from "../../apolices/components/ApoliceNumero";
+import { useUsuarios } from "../../auth/hooks/useUsuarios";
 import { SeguradoNome } from "../../segurados/components/SeguradoNome";
 
 export interface AtribuirAnalistaModalProps {
@@ -31,11 +32,37 @@ export const AtribuirAnalistaModal: React.FC<AtribuirAnalistaModalProps> = ({
   const { usuario } = useAuth();
   const isAnalista = usuario?.papel === "ANALISTA";
 
-  // Se for gestor/admin, inicia vazio ou com o próprio ID do usuário
+  const { data: usuarios = [], isLoading: isLoadingUsuarios } = useUsuarios();
+
+  const analistas = useMemo(() => {
+    return usuarios.filter(
+      (u) => u.papel === "ANALISTA" || u.papel === "GESTOR",
+    );
+  }, [usuarios]);
+
+  const analistaOptions = useMemo(() => {
+    return analistas.map((u) => ({
+      value: u.id,
+      label: `${u.nome} (${formatarPapelUsuario(u.papel)}) - ${u.email}`,
+    }));
+  }, [analistas]);
+
+  // Se for gestor/admin, inicia com o próprio ID ou analista atual do sinistro
   const [analistaIdInput, setAnalistaIdInput] = useState<string>(() => {
-    return usuario?.id || "";
+    return sinistro?.analistaId || usuario?.id || "";
   });
   const [erroLocal, setErroLocal] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setErroLocal(null);
+      if (isAnalista) {
+        setAnalistaIdInput(usuario?.id || "");
+      } else {
+        setAnalistaIdInput(sinistro?.analistaId || usuario?.id || "");
+      }
+    }
+  }, [isOpen, sinistro?.analistaId, usuario?.id, isAnalista]);
 
   if (!sinistro) return null;
 
@@ -46,13 +73,13 @@ export const AtribuirAnalistaModal: React.FC<AtribuirAnalistaModalProps> = ({
     const targetId = isAnalista ? usuario?.id : analistaIdInput.trim();
 
     if (!targetId) {
-      setErroLocal("Informe ou selecione o ID do analista responsável.");
+      setErroLocal("Selecione o analista responsável.");
       return;
     }
 
     if (!UUID_REGEX.test(targetId)) {
       setErroLocal(
-        "O identificador do analista deve ser um UUID válido (ex: 8d6d4a5e-4abd-49a6-b388-7c70de10c3e4).",
+        "O identificador do analista deve ser um UUID válido.",
       );
       return;
     }
@@ -168,35 +195,41 @@ export const AtribuirAnalistaModal: React.FC<AtribuirAnalistaModalProps> = ({
           </div>
         ) : (
           <div className="space-y-3">
-            <Input
-              label="ID do Analista Responsável (UUID) *"
+            <Select
+              label="Analista Responsável *"
               name="analistaId"
               value={analistaIdInput}
               onChange={(e) => setAnalistaIdInput(e.target.value)}
-              placeholder="Ex: 8d6d4a5e-4abd-49a6-b388-7c70de10c3e4"
-              disabled={isLoading}
+              options={analistaOptions}
+              placeholder={
+                isLoadingUsuarios
+                  ? "Carregando usuários..."
+                  : "-- Selecione um analista responsável --"
+              }
+              disabled={isLoading || isLoadingUsuarios}
               required
             />
 
-            {usuario?.id && (
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-(--muted)">
-                  Conectado como: <strong>{usuario.nome}</strong> (
-                  {usuario.papel})
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setAnalistaIdInput(usuario.id)}
-                  className="text-(--accent-ink) hover:underline font-medium cursor-pointer"
-                >
-                  Atribuir a mim mesmo
-                </button>
-              </div>
-            )}
+            {usuario?.id &&
+              (usuario.papel === "ANALISTA" || usuario.papel === "GESTOR") && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-(--muted)">
+                    Conectado como: <strong>{usuario.nome}</strong> (
+                    {formatarPapelUsuario(usuario.papel)})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setAnalistaIdInput(usuario.id)}
+                    className="text-(--accent-ink) hover:underline font-medium cursor-pointer"
+                  >
+                    Atribuir a mim mesmo
+                  </button>
+                </div>
+              )}
 
             <p className="text-xs text-(--muted)">
-              Regra de negócio: o analista informado deve ser um usuário ativo
-              com papel <strong>ANALISTA</strong> ou <strong>GESTOR</strong>. Ao
+              Regra de negócio: o analista selecionado deve ser um usuário ativo
+              com perfil <strong>Analista</strong> ou <strong>Gestor</strong>. Ao
               atribuir, o sinistro mudará para <strong>EM ANÁLISE</strong>.
             </p>
           </div>

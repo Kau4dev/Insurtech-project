@@ -176,3 +176,19 @@ export function formatarTipoDocumento(tipo?: string | null): string {
   const item = TIPO_DOCUMENTO_OPTIONS.find((o) => o.value === tipo);
   return item ? item.label : tipo;
 }
+
+export function formatarPapelUsuario(papel?: string | null): string {
+  if (!papel) return "-";
+  switch (papel) {
+    case "ADMIN":
+      return "Administrador";
+    case "GESTOR":
+      return "Gestor";
+    case "ANALISTA":
+      return "Analista";
+    case "SEGURADO":
+      return "Segurado";
+    default:
+      return papel;
+  }
+}
