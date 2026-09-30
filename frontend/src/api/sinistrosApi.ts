@@ -26,7 +26,7 @@ export const sinistrosApi = {
   ): Promise<RespostaPaginada<Sinistro>> => {
     const response = await axiosClient.get<RespostaPaginada<Sinistro>>(
       "/sinistros",
-      { params: filtros },
+      { params: { sort: "createdAt,desc", ...filtros } },
     );
     return response.data;
   },

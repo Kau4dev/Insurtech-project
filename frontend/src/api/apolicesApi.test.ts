@@ -73,7 +73,9 @@ describe("apolicesApi", () => {
 
     const result = await apolicesApi.listar(mockFiltros);
 
-    expect(axiosClient.get).toHaveBeenCalledWith("/apolices", { params: mockFiltros });
+    expect(axiosClient.get).toHaveBeenCalledWith("/apolices", {
+      params: { sort: "createdAt,desc", ...mockFiltros },
+    });
     expect(result).toEqual(mockPagina);
   });
 

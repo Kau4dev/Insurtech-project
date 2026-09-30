@@ -55,7 +55,7 @@ describe("sinistrosApi", () => {
     const result = await sinistrosApi.listar(mockFiltros);
 
     expect(axiosClient.get).toHaveBeenCalledWith("/sinistros", {
-      params: mockFiltros,
+      params: { sort: "createdAt,desc", ...mockFiltros },
     });
     expect(result).toEqual(mockPaginado);
   });
