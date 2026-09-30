@@ -40,4 +40,17 @@ describe("StatusBreakdownCard", () => {
     const pulses = container.querySelectorAll(".animate-pulse");
     expect(pulses.length).toBeGreaterThan(0);
   });
+
+  it("deve renderizar contagens reais zeradas quando contagemPorStatus estiver vazio", () => {
+    render(
+      <MemoryRouter>
+        <StatusBreakdownCard contagemPorStatus={{}} />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Saldos por status")).toBeInTheDocument();
+    // Verifica que exibe 0% e não números mocados (como 1, 2)
+    const zeros = screen.getAllByText("0%");
+    expect(zeros.length).toBe(6);
+  });
 });
