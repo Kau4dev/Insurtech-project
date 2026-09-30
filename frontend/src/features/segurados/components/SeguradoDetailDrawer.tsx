@@ -11,6 +11,7 @@ import {
   TabsNav,
 } from "../../../components/ui";
 import type { Segurado } from "../../../interfaces/segurados/segurado";
+import { apiParaEndereco } from "../../../interfaces/segurados/enderecoMapper";
 import {
   formatarTipoPessoa,
   formatarTipoSinistro,
@@ -78,16 +79,22 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
   const apolices = apolicesData?.content || [];
   const sinistros = sinistrosData?.content || [];
 
-  const enderecoFormatado = [
+  const endereco = apiParaEndereco(
     segurado.enderecoLogradouro,
     segurado.enderecoCidade,
     segurado.enderecoUf,
-    segurado.enderecoCep
-      ? `CEP: ${formatarCep(segurado.enderecoCep)}`
-      : undefined,
-  ]
-    .filter(Boolean)
-    .join(", ");
+    segurado.enderecoCep,
+  );
+
+  const temEndereco = Boolean(
+    endereco.rua ||
+      endereco.numero ||
+      endereco.bairro ||
+      endereco.cidade ||
+      endereco.uf ||
+      endereco.cep ||
+      segurado.enderecoLogradouro,
+  );
 
   return (
     <Modal
@@ -116,48 +123,116 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
               <CopyableId id={segurado.id} truncate />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-(--surface-2)/40 p-5 rounded-lg border border-(--border)">
-              <DetailField
-                label="Tipo de Pessoa"
-                value={
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={getPessoaTipoBadgeVariant(segurado.tipoPessoa)}
-                    >
-                      {segurado.tipoPessoa}
-                    </Badge>
-                    <span>{formatarTipoPessoa(segurado.tipoPessoa)}</span>
-                  </div>
-                }
-              />
-
-              <DetailField
-                label={isPF ? "CPF" : "CNPJ"}
-                value={
-                  <span className="mono font-semibold">
-                    {formatarCpfCnpj(segurado.cpfCnpj, segurado.tipoPessoa)}
-                  </span>
-                }
-              />
-
-              <DetailField label="E-mail" value={segurado.email} />
-              <DetailField
-                label="Telefone"
-                value={formatarTelefone(segurado.telefone)}
-              />
-
-              {isPF && segurado.dataNascimento && (
+            {/* Dados Cadastrais e Contato */}
+            <div className="bg-(--surface-2)/40 p-5 rounded-lg border border-(--border) space-y-4">
+              <h4 className="text-xs font-semibold text-(--muted) uppercase tracking-wider">
+                Dados Principais e Contato
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <DetailField
-                  label="Data de Nascimento"
-                  value={formatarData(segurado.dataNascimento)}
+                  label="Tipo de Pessoa"
+                  value={
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={getPessoaTipoBadgeVariant(segurado.tipoPessoa)}
+                      >
+                        {segurado.tipoPessoa}
+                      </Badge>
+                      <span>{formatarTipoPessoa(segurado.tipoPessoa)}</span>
+                    </div>
+                  }
                 />
-              )}
 
-              <DetailField
-                label="Endereço"
-                fullWidth
-                value={enderecoFormatado || "Logradouro não informado"}
-              />
+                <DetailField
+                  label={isPF ? "CPF" : "CNPJ"}
+                  value={
+                    <span className="mono font-semibold">
+                      {formatarCpfCnpj(segurado.cpfCnpj, segurado.tipoPessoa)}
+                    </span>
+                  }
+                />
+
+                {isPF && segurado.dataNascimento && (
+                  <DetailField
+                    label="Data de Nascimento"
+                    value={formatarData(segurado.dataNascimento)}
+                  />
+                )}
+
+                <DetailField label="E-mail" value={segurado.email} />
+
+                <DetailField
+                  label="Telefone"
+                  value={formatarTelefone(segurado.telefone)}
+                />
+              </div>
+            </div>
+
+            {/* Endereço Estruturado */}
+            <div className="bg-(--surface-2)/40 p-5 rounded-lg border border-(--border) space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-semibold text-(--muted) uppercase tracking-wider flex items-center gap-1.5">
+                  <svg
+                    className="w-3.5 h-3.5 text-(--muted)"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  Endereço
+                </h4>
+                {endereco.cep && (
+                  <span className="mono text-xs text-(--muted) px-2 py-0.5 rounded bg-(--surface) border border-(--border)">
+                    CEP: {formatarCep(endereco.cep)}
+                  </span>
+                )}
+              </div>
+
+              {temEndereco ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <DetailField
+                    label="Logradouro / Rua"
+                    value={endereco.rua || "-"}
+                    className="sm:col-span-2"
+                  />
+                  <DetailField
+                    label="Número"
+                    value={endereco.numero || "S/N"}
+                  />
+                  <DetailField
+                    label="Bairro"
+                    value={endereco.bairro || "-"}
+                  />
+                  <DetailField
+                    label="Complemento"
+                    value={endereco.complemento || "-"}
+                  />
+                  <DetailField
+                    label="Cidade / UF"
+                    value={
+                      endereco.cidade
+                        ? `${endereco.cidade}${endereco.uf ? ` - ${endereco.uf}` : ""}`
+                        : endereco.uf || "-"
+                    }
+                  />
+                </div>
+              ) : (
+                <span className="text-sm text-(--muted) italic">
+                  Endereço não informado.
+                </span>
+              )}
             </div>
           </div>
         )}
