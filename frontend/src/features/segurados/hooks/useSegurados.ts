@@ -23,7 +23,7 @@ export function useCadastrarSegurado() {
 
 export function useSeguradoPorId(id?: string) {
   return useQuery({
-    queryKey: [...SEGURADOS_QUERY_KEY, id],
+    queryKey: [...SEGURADOS_QUERY_KEY, "detail", id],
     queryFn: () => seguradoApi.buscarPorId(id!),
     enabled: !!id,
   });
