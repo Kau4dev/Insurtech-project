@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,5 +35,10 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
     @Override
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioJpaRepository.findByEmail(email).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Usuario> listarTodos() {
+        return usuarioJpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
 }
