@@ -75,7 +75,7 @@ describe("seguradoApi", () => {
     const result = await seguradoApi.listar(mockFiltros);
 
     expect(axiosClient.get).toHaveBeenCalledWith("/segurados", {
-      params: mockFiltros,
+      params: { sort: "createdAt,desc", ...mockFiltros },
     });
     expect(result).toEqual(mockPaginado);
   });
