@@ -1,8 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
-  CopyableId,
   FormActions,
   FormErrorBanner,
   FormSection,
@@ -14,8 +13,7 @@ import type {
   ApoliceRequest,
   ApoliceUpdateRequest,
 } from "../../../interfaces/apolices/apoliceRequest";
-import { formatarCpfCnpj } from "../../../utils/formatters";
-import { useSegurados } from "../../segurados/hooks/useSegurados";
+import { SeguradoSelectFilter } from "../../segurados";
 import type { ApoliceFormData } from "../schemas/apoliceSchema";
 import { apoliceSchema } from "../schemas/apoliceSchema";
 import { CoberturaList } from "./CoberturaList";
@@ -49,17 +47,11 @@ export const ApoliceForm: React.FC<ApoliceFormProps> = ({
 }) => {
   const isEdicao = !!apoliceInicial?.id;
 
-  const { data: seguradosData, isLoading: loadingSegurados } = useSegurados({
-    size: 100,
-  });
-  const segurados = seguradosData?.content || [];
-
   const {
     register,
     handleSubmit,
     control,
     reset,
-    watch,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<ApoliceFormData>({
@@ -75,9 +67,6 @@ export const ApoliceForm: React.FC<ApoliceFormProps> = ({
       coberturas: [],
     },
   });
-
-  const seguradoIdAtual = watch("seguradoId");
-  const seguradoSelecionado = segurados.find((s) => s.id === seguradoIdAtual);
 
   useEffect(() => {
     if (apoliceInicial) {
@@ -153,62 +142,26 @@ export const ApoliceForm: React.FC<ApoliceFormProps> = ({
         {/* Identificação da Apólice */}
         <FormSection title="Identificação">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Seletor de Segurado */}
-            <div>
-              <label className="block text-xs font-semibold text-(--fg) uppercase tracking-wider mb-2">
-                Segurado *
-              </label>
-              <select
-                value={seguradoIdAtual}
-                disabled={isEdicao || Boolean(seguradoInicialId && !isEdicao)}
-                onChange={(e) =>
-                  setValue("seguradoId", e.target.value, {
-                    shouldValidate: true,
-                  })
-                }
-                className={`w-full px-3 py-2 text-sm bg-(--surface) border rounded-lg outline-none transition-colors ${
-                  errors.seguradoId
-                    ? "border-(--danger)"
-                    : "border-(--border) focus:border-(--accent)"
-                } ${isEdicao || (seguradoInicialId && !isEdicao) ? "bg-(--surface-2) cursor-not-allowed opacity-80" : ""}`}
-              >
-                <option value="">
-                  {loadingSegurados
-                    ? "Carregando segurados..."
-                    : "Selecione o Segurado (Nome ou CPF/CNPJ)"}
-                </option>
-                {segurados.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.nomeRazaoSocial} —{" "}
-                    {s.tipoPessoa === "PF" ? "CPF: " : "CNPJ: "}
-                    {formatarCpfCnpj(s.cpfCnpj, s.tipoPessoa)}
-                  </option>
-                ))}
-              </select>
-              {errors.seguradoId && (
-                <span className="text-xs text-(--danger) mt-1 block">
-                  {errors.seguradoId.message}
-                </span>
+            {/* Seletor de Segurado com Filtro de Busca por Nome, CPF ou CNPJ */}
+            <Controller
+              name="seguradoId"
+              control={control}
+              render={({ field }) => (
+                <SeguradoSelectFilter
+                  value={field.value}
+                  onChange={(id) =>
+                    setValue("seguradoId", id, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                  disabled={isEdicao || Boolean(seguradoInicialId && !isEdicao)}
+                  error={errors.seguradoId?.message}
+                  label="Segurado"
+                  required
+                />
               )}
-
-              {seguradoSelecionado && (
-                <div className="mt-2 p-2.5 rounded-lg bg-(--surface-2)/60 border border-(--border) text-xs flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-(--fg)">
-                      {seguradoSelecionado.nomeRazaoSocial}
-                    </span>
-                    <span className="text-(--muted)">•</span>
-                    <span className="mono text-(--muted)">
-                      {formatarCpfCnpj(
-                        seguradoSelecionado.cpfCnpj,
-                        seguradoSelecionado.tipoPessoa,
-                      )}
-                    </span>
-                  </div>
-                  <CopyableId id={seguradoSelecionado.id} truncate />
-                </div>
-              )}
-            </div>
+            />
 
             <Input
               label="Número da Apólice *"
