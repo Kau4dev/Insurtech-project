@@ -95,10 +95,10 @@ services:
       SERVICES_APOLICES_URL: http://apolices-service:8086
       SERVICES_SINISTROS_URL: http://sinistros-service:8087
 
-  frontend:
-    build: ./frontend
-    ports: ["5173:80"]
-    depends_on: [gateway-service]
+  #frontend:
+   # build: ./frontend
+    #ports: ["5173:80"]
+    #depends_on: [gateway-service]
 
 volumes:
   pgdata:
