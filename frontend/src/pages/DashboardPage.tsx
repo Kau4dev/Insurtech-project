@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Button,
-  FormErrorBanner,
   Modal,
   ToastNotification,
 } from "../components/ui";
@@ -14,7 +13,12 @@ import {
   useDashboardData,
   WorkQueueTable,
 } from "../features/dashboard";
-import { SinistroForm, useCadastrarSinistro } from "../features/sinistros";
+import {
+  SinistroDetailDrawer,
+  SinistroForm,
+  useCadastrarSinistro,
+} from "../features/sinistros";
+import type { Sinistro } from "../interfaces/sinistros/sinistro";
 import type { SinistroRequest } from "../interfaces/sinistros/sinistroRequest";
 
 export const DashboardPage: React.FC = () => {
@@ -36,6 +40,10 @@ export const DashboardPage: React.FC = () => {
   const [modalAberto, setModalAberto] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [toastAberto, setToastAberto] = useState(true);
+  const [sinistroSelecionadoId, setSinistroSelecionadoId] = useState<
+    string | null
+  >(null);
+  const [sinistroDrawer, setSinistroDrawer] = useState<Sinistro | null>(null);
 
   const cadastrarMutation = useCadastrarSinistro();
 
@@ -238,13 +246,25 @@ export const DashboardPage: React.FC = () => {
         />
       </div>
 
-      {/* 4. Seção Inferior: Fila de Trabalho + Ciclo de Emissão Ponta a Ponta */}
+      {/* 4. Seção Inferior: Fila de Trabalho + Esteira de Microsserviços */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5 items-stretch">
         <div className="lg:col-span-2">
-          <WorkQueueTable sinistros={filaTrabalho} isLoading={isLoading} />
+          <WorkQueueTable
+            sinistros={filaTrabalho}
+            isLoading={isLoading}
+            sinistroSelecionadoId={sinistroSelecionadoId}
+            onSelectSinistro={(id) => setSinistroSelecionadoId(id)}
+          />
         </div>
         <div className="lg:col-span-1">
-          <MicroserviceTimelineCard ultimoSinistro={ultimoSinistro} />
+          <MicroserviceTimelineCard
+            ultimoSinistro={ultimoSinistro}
+            sinistros={filaTrabalho}
+            sinistroSelecionadoId={sinistroSelecionadoId}
+            onSelecionarSinistro={(id) => setSinistroSelecionadoId(id)}
+            onVerDetalhes={(s) => setSinistroDrawer(s as Sinistro)}
+            isLoading={isLoading}
+          />
         </div>
       </div>
 
@@ -254,13 +274,23 @@ export const DashboardPage: React.FC = () => {
         onClose={() => setModalAberto(false)}
         title="Registrar Novo Sinistro"
       >
-        <FormErrorBanner message={formError} />
         <SinistroForm
           onSubmit={handleSalvarSinistro}
           onCancel={() => setModalAberto(false)}
           isLoading={cadastrarMutation.isPending}
+          errorMessage={formError}
         />
       </Modal>
+
+      {/* 6. Drawer de Detalhes do Sinistro */}
+      <SinistroDetailDrawer
+        sinistro={sinistroDrawer}
+        isOpen={Boolean(sinistroDrawer)}
+        onClose={() => setSinistroDrawer(null)}
+        onSinistroAtualizado={() => {
+          refetch();
+        }}
+      />
 
       {/* 6. Popup na Aba Inferior (Toast de Sessão Iniciada conforme imagem 3) */}
       <ToastNotification

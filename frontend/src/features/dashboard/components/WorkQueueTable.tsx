@@ -22,16 +22,20 @@ export interface WorkQueueItem {
 export interface WorkQueueTableProps {
   sinistros?: (Sinistro & { numeroApolice?: string; seguradoNome?: string })[];
   isLoading?: boolean;
+  sinistroSelecionadoId?: string | null;
+  onSelectSinistro?: (id: string) => void;
 }
 
 export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
   sinistros,
   isLoading = false,
+  sinistroSelecionadoId,
+  onSelectSinistro,
 }) => {
-  // Limita estritamente às últimas 6 na fila
+  // Limita estritamente às últimas 8 na fila
   const items: WorkQueueItem[] =
     sinistros && sinistros.length > 0
-      ? sinistros.slice(0, 6).map((s, index) => ({
+      ? sinistros.slice(0, 8).map((s, index) => ({
           id: s.id || `sin-${index}`,
           numeroSinistro: s.numeroSinistro || "—",
           numeroApolice: s.numeroApolice,
@@ -59,7 +63,7 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
             Fila de trabalho
           </h2>
           <span className="text-[12px] text-(--muted)">
-            {items.length > 0 ? "Últimos 6 registros" : "Sem pendências"}
+            {items.length > 0 ? "Últimos 8 registros" : "Sem pendências"}
           </span>
         </div>
         <Link
@@ -120,11 +124,27 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
                 </td>
               </tr>
             ) : (
-              items.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-(--surface-2)/50 transition-colors group"
-                >
+              items.map((item) => {
+                const isSelected =
+                  Boolean(sinistroSelecionadoId) &&
+                  item.id === sinistroSelecionadoId;
+                return (
+                  <tr
+                    key={item.id}
+                    onClick={() => item.id && onSelectSinistro?.(item.id)}
+                    className={`transition-colors group ${
+                      onSelectSinistro ? "cursor-pointer" : ""
+                    } ${
+                      isSelected
+                        ? "bg-(--surface-2) ring-1 ring-inset ring-(--accent)/30"
+                        : "hover:bg-(--surface-2)/50"
+                    }`}
+                    title={
+                      onSelectSinistro
+                        ? "Clique para rastrear na esteira de microsserviços"
+                        : undefined
+                    }
+                  >
                   {/* 1. Número do Sinistro e Apólice */}
                   <td className="py-3 pl-5 pr-2">
                     <div className="font-semibold text-(--fg) tracking-tight text-[12px] whitespace-nowrap truncate">
@@ -166,7 +186,8 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
                     {item.seguradoNome}
                   </td>
                 </tr>
-              ))
+              );
+            })
             )}
           </tbody>
         </table>
