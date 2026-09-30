@@ -149,6 +149,17 @@ export const ApoliceSelectFilter: React.FC<ApoliceSelectFilterProps> = ({
                   </span>
                 </>
               )}
+              {apoliceSelecionada.dataInicioVigencia && (
+                <>
+                  <span className="text-(--muted)">•</span>
+                  <span className="mono text-xs text-(--muted) shrink-0">
+                    Vigência: {formatarData(apoliceSelecionada.dataInicioVigencia)}
+                    {apoliceSelecionada.dataFimVigencia
+                      ? ` a ${formatarData(apoliceSelecionada.dataFimVigencia)}`
+                      : ""}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
