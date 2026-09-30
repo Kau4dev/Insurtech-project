@@ -134,9 +134,21 @@ export const ApoliceForm: React.FC<ApoliceFormProps> = ({
     }
   };
 
+  const handleFormInvalid = (formErrors: typeof errors) => {
+    console.warn("Erros de validação no formulário de apólice:", formErrors);
+  };
+
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      <FormErrorBanner message={errorMessage} />
+    <form
+      onSubmit={handleSubmit(handleFormSubmit, handleFormInvalid)}
+      className="space-y-6"
+    >
+      <FormErrorBanner
+        message={
+          errorMessage ||
+          (errors.root?.message ? String(errors.root.message) : null)
+        }
+      />
 
       <div className="space-y-4">
         {/* Identificação da Apólice */}
