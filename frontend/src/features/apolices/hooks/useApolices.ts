@@ -20,7 +20,7 @@ export function useCadastrarApolice() {
 
 export function useApolicePorId(id?: string) {
   return useQuery({
-    queryKey: ["apolices", id],
+    queryKey: ["apolices", "detail", id],
     queryFn: () => apolicesApi.buscarPorId(id!),
     enabled: !!id,
   });

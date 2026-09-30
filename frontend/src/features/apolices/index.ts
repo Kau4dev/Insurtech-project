@@ -5,6 +5,7 @@ export * from "./components/ApoliceForm";
 export * from "./components/ApoliceStatusModal";
 export * from "./components/ApoliceTable";
 export * from "./components/CoberturaList";
+export * from "./components/ApoliceSelectFilter";
 
 // Hooks
 export * from "./hooks/useApolices";
