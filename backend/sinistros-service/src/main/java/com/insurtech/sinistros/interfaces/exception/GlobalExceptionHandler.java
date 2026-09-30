@@ -74,6 +74,7 @@ public class GlobalExceptionHandler {
             DocumentoObrigatorioException.class,
             ValorInvalidoException.class,
             AnalistaInvalidoException.class,
+            DataOcorrenciaInvalidaException.class,
             IllegalArgumentException.class,
             IllegalStateException.class
     })

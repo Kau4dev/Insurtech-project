@@ -6,6 +6,7 @@ import com.insurtech.sinistros.application.port.EventPublisherPort;
 import com.insurtech.sinistros.domain.event.SinistroRegistradoEvent;
 import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
 import com.insurtech.sinistros.domain.exception.ApoliceNaoEncontradaException;
+import com.insurtech.sinistros.domain.exception.DataOcorrenciaInvalidaException;
 import com.insurtech.sinistros.domain.exception.SeguradoNaoEncontradoException;
 import com.insurtech.sinistros.domain.exception.SinistrojaCadastradaException;
 import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
@@ -14,6 +15,7 @@ import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.client.ApoliceClient;
 import com.insurtech.sinistros.infrastructure.client.SeguradoClient;
+import com.insurtech.sinistros.infrastructure.client.dto.ApoliceResponseDTO;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
 import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
 import feign.FeignException;
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Transactional
@@ -54,10 +57,25 @@ public class CadastrarSinistroUseCase {
             throw new SeguradoNaoEncontradoException("Segurado não encontrado: " + dto.seguradoId());
         }
 
+        ApoliceResponseDTO apolice;
         try {
-            apoliceClient.buscarPorId(dto.apoliceId());
+            apolice = apoliceClient.buscarPorId(dto.apoliceId());
         } catch (FeignException.NotFound e) {
             throw new ApoliceNaoEncontradaException("Apólice não encontrada: " + dto.apoliceId());
+        }
+
+        if (apolice != null && dto.dataOcorrencia() != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            if (apolice.dataInicioVigencia() != null && dto.dataOcorrencia().isBefore(apolice.dataInicioVigencia())) {
+                throw new DataOcorrenciaInvalidaException(
+                        "Data do ocorrido anterior ao início da vigência da apólice (" + apolice.dataInicioVigencia().format(formatter) + ")"
+                );
+            }
+            if (apolice.dataFimVigencia() != null && dto.dataOcorrencia().isAfter(apolice.dataFimVigencia())) {
+                throw new DataOcorrenciaInvalidaException(
+                        "Data do ocorrido posterior ao término da vigência da apólice (" + apolice.dataFimVigencia().format(formatter) + ")"
+                );
+            }
         }
 
         repository.buscarPorNumero(dto.numeroSinistro())

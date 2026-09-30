@@ -7,9 +7,11 @@ import com.insurtech.sinistros.application.port.EventPublisherPort;
 import com.insurtech.sinistros.domain.event.SinistroRegistradoEvent;
 import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
 import com.insurtech.sinistros.domain.exception.ApoliceNaoEncontradaException;
+import com.insurtech.sinistros.domain.exception.DataOcorrenciaInvalidaException;
 import com.insurtech.sinistros.domain.exception.SeguradoNaoEncontradoException;
 import com.insurtech.sinistros.domain.exception.SinistrojaCadastradaException;
 import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
+import com.insurtech.sinistros.infrastructure.client.dto.ApoliceResponseDTO;
 import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.model.TipoSinistro;
@@ -236,6 +238,76 @@ class CadastrarSinistroUseCaseTest {
         when(repository.buscarPorNumero("SIN-12345")).thenReturn(Optional.of(new Sinistro()));
 
         assertThrows(SinistrojaCadastradaException.class, () -> useCase.executar(dto));
+        verify(repository, never()).salvar(any());
+        verifyNoInteractions(eventPublisher);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoDataOcorrenciaAnteriorAoInicioDaVigencia() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+
+        UUID seguradoId = UUID.randomUUID();
+        UUID apoliceId = UUID.randomUUID();
+
+        // Ocorrência em 21/09/2026, mas vigência inicia em 01/10/2026
+        LocalDate dataOcorrencia = LocalDate.of(2026, 9, 21);
+        SinistroRequestDTO dto = new SinistroRequestDTO(
+                "SIN-VIGENCIA-1", apoliceId, seguradoId,
+                TipoSinistro.COLISAO, "Batida antes da vigência",
+                dataOcorrencia, new BigDecimal("3000.00")
+        );
+
+        ApoliceResponseDTO apolice = new ApoliceResponseDTO(
+                apoliceId, seguradoId, "AP-1020-9090",
+                null, new BigDecimal("50000.00"), new BigDecimal("1000.00"),
+                LocalDate.of(2026, 10, 1), LocalDate.of(2027, 10, 1),
+                null, Collections.emptyList(), Instant.now(), Instant.now()
+        );
+
+        when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(apolice);
+
+        DataOcorrenciaInvalidaException ex = assertThrows(
+                DataOcorrenciaInvalidaException.class,
+                () -> useCase.executar(dto)
+        );
+
+        assertTrue(ex.getMessage().contains("Data do ocorrido anterior ao início da vigência da apólice"));
+        verify(repository, never()).salvar(any());
+        verifyNoInteractions(eventPublisher);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoDataOcorrenciaPosteriorAoFimDaVigencia() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+
+        UUID seguradoId = UUID.randomUUID();
+        UUID apoliceId = UUID.randomUUID();
+
+        // Ocorrência em 15/10/2027, mas vigência terminou em 01/10/2027
+        LocalDate dataOcorrencia = LocalDate.of(2027, 10, 15);
+        SinistroRequestDTO dto = new SinistroRequestDTO(
+                "SIN-VIGENCIA-2", apoliceId, seguradoId,
+                TipoSinistro.COLISAO, "Batida após a vigência",
+                dataOcorrencia, new BigDecimal("3000.00")
+        );
+
+        ApoliceResponseDTO apolice = new ApoliceResponseDTO(
+                apoliceId, seguradoId, "AP-1020-9090",
+                null, new BigDecimal("50000.00"), new BigDecimal("1000.00"),
+                LocalDate.of(2026, 10, 1), LocalDate.of(2027, 10, 1),
+                null, Collections.emptyList(), Instant.now(), Instant.now()
+        );
+
+        when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(apolice);
+
+        DataOcorrenciaInvalidaException ex = assertThrows(
+                DataOcorrenciaInvalidaException.class,
+                () -> useCase.executar(dto)
+        );
+
+        assertTrue(ex.getMessage().contains("Data do ocorrido posterior ao término da vigência da apólice"));
         verify(repository, never()).salvar(any());
         verifyNoInteractions(eventPublisher);
     }
