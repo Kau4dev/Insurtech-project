@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   FormActions,
@@ -8,9 +8,12 @@ import {
   Input,
   Select,
 } from "../../../components/ui";
+import type { Apolice } from "../../../interfaces/apolices/apolice";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
 import type { SinistroRequest } from "../../../interfaces/sinistros/sinistroRequest";
+import { formatarData } from "../../../utils/formatters";
 import { ApoliceSelectFilter } from "../../apolices";
+import { useApolicePorId } from "../../apolices/hooks/useApolices";
 import type { SinistroFormData } from "../schemas/sinistroSchema";
 import { sinistroSchema } from "../schemas/sinistroSchema";
 
@@ -45,12 +48,15 @@ export const SinistroForm: React.FC<SinistroFormProps> = ({
 }) => {
   const isEdicao = !!sinistroInicial?.id;
 
+  const [apoliceSelecionada, setApoliceSelecionada] = useState<Apolice | null>(null);
+
   const {
     register,
     handleSubmit,
     control,
     reset,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<SinistroFormData>({
     resolver: zodResolver(sinistroSchema),
@@ -64,6 +70,13 @@ export const SinistroForm: React.FC<SinistroFormProps> = ({
       valorEstimado: "",
     },
   });
+
+  const apoliceIdAtual = sinistroInicial?.apoliceId || apoliceInicialId;
+  const { data: apoliceCarregada } = useApolicePorId(
+    apoliceSelecionada?.id ? undefined : apoliceIdAtual,
+  );
+
+  const apoliceEfetiva = apoliceSelecionada || apoliceCarregada;
 
   useEffect(() => {
     if (sinistroInicial) {
@@ -80,6 +93,28 @@ export const SinistroForm: React.FC<SinistroFormProps> = ({
   }, [sinistroInicial, reset]);
 
   const handleFormSubmit = async (formData: SinistroFormData) => {
+    if (apoliceEfetiva?.dataInicioVigencia && formData.dataOcorrencia) {
+      const dataOcorrenciaStr = formData.dataOcorrencia.split("T")[0];
+      const inicioVigenciaStr = apoliceEfetiva.dataInicioVigencia.split("T")[0];
+      if (dataOcorrenciaStr < inicioVigenciaStr) {
+        setError("dataOcorrencia", {
+          type: "manual",
+          message: `Data do ocorrido anterior ao início da vigência da apólice (${formatarData(apoliceEfetiva.dataInicioVigencia)})`,
+        });
+        return;
+      }
+      if (apoliceEfetiva.dataFimVigencia) {
+        const fimVigenciaStr = apoliceEfetiva.dataFimVigencia.split("T")[0];
+        if (dataOcorrenciaStr > fimVigenciaStr) {
+          setError("dataOcorrencia", {
+            type: "manual",
+            message: `Data do ocorrido posterior ao término da vigência da apólice (${formatarData(apoliceEfetiva.dataFimVigencia)})`,
+          });
+          return;
+        }
+      }
+    }
+
     const payload: SinistroRequest = {
       numeroSinistro: formData.numeroSinistro,
       apoliceId: formData.apoliceId,
@@ -117,6 +152,7 @@ export const SinistroForm: React.FC<SinistroFormProps> = ({
               <ApoliceSelectFilter
                 value={field.value}
                 onChange={(id, apolice) => {
+                  setApoliceSelecionada(apolice || null);
                   setValue("apoliceId", id, {
                     shouldValidate: true,
                     shouldDirty: true,
