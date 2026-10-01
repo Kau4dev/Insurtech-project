@@ -41,8 +41,8 @@ public class AprovarSinistroUseCase {
             throw new UsuarioNaoAutenticadoException("Usuário não autenticado");
         }
 
-        if (!"ANALISTA".equals(usuarioPapel) && !"GESTOR".equals(usuarioPapel) && !"ADMIN".equals(usuarioPapel)) {
-            throw new AcessoNegadoException("Acesso negado. Apenas analistas, gestores ou administradores podem aprovar sinistros.");
+        if (!"ANALISTA".equals(usuarioPapel) && !"GESTOR".equals(usuarioPapel)) {
+            throw new AcessoNegadoException("Acesso negado. Apenas analistas ou gestores podem aprovar sinistros.");
         }
 
         Sinistro sinistro = repository.buscarPorId(id)

@@ -160,6 +160,17 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    void deveLancarExcecao_quandoAdminTentarAprovar() {
+        setUserContext(UUID.randomUUID().toString(), "ADMIN");
+
+        UUID id = UUID.randomUUID();
+        AprovarSinistroRequestDTO dto = new AprovarSinistroRequestDTO(new BigDecimal("1000.00"));
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(id, dto));
+        verifyNoInteractions(repository, client, mapper, eventPublisher);
+    }
+
+    @Test
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
         setUserContext(UUID.randomUUID().toString(), "ANALISTA");
 

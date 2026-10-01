@@ -33,8 +33,8 @@ public class RejeitarSinistroUseCase {
             throw new UsuarioNaoAutenticadoException("Usuário não autenticado");
         }
 
-        if (!"ANALISTA".equals(usuarioPapel) && !"GESTOR".equals(usuarioPapel) && !"ADMIN".equals(usuarioPapel)) {
-            throw new AcessoNegadoException("Acesso negado. Apenas analistas, gestores ou administradores podem rejeitar sinistros.");
+        if (!"ANALISTA".equals(usuarioPapel) && !"GESTOR".equals(usuarioPapel)) {
+            throw new AcessoNegadoException("Acesso negado. Apenas analistas ou gestores podem rejeitar sinistros.");
         }
 
         var sinistro = repository.buscarPorId(id)

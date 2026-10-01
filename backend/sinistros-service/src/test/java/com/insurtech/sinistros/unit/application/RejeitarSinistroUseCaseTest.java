@@ -129,6 +129,17 @@ class RejeitarSinistroUseCaseTest {
     }
 
     @Test
+    void deveLancarExcecao_quandoAdminTentarRejeitar() {
+        setUserContext(UUID.randomUUID().toString(), "ADMIN");
+
+        UUID id = UUID.randomUUID();
+        RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Motivo");
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(id, dto));
+        verifyNoInteractions(repository, mapper, eventPublisher);
+    }
+
+    @Test
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
         setUserContext(UUID.randomUUID().toString(), "ANALISTA");
 
