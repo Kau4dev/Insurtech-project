@@ -63,10 +63,8 @@ export const SinistroDocumentosPage: React.FC = () => {
 
   const aguardarDocsMutation = useAguardarDocumentos();
 
-  const podeGerenciar =
-    usuario?.papel === "ANALISTA" ||
-    usuario?.papel === "GESTOR" ||
-    usuario?.papel === "ADMIN";
+  const podeSolicitarDocumentos =
+    usuario?.papel === "ANALISTA" || usuario?.papel === "GESTOR";
 
   const handleSolicitarDocumentos = async () => {
     if (!sinistro?.id) return;
@@ -184,7 +182,7 @@ export const SinistroDocumentosPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {podeGerenciar && sinistro.status === "EM_ANALISE" && (
+            {podeSolicitarDocumentos && sinistro.status === "EM_ANALISE" && (
               <Button
                 variant="secondary"
                 size="sm"

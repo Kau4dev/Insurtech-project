@@ -53,10 +53,12 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
 }) => {
   const { usuario } = useAuth();
   const isAnalista = usuario?.papel === "ANALISTA";
-  const podeGerenciar =
-    usuario?.papel === "ANALISTA" ||
+  const podeDecidir =
+    usuario?.papel === "ANALISTA" || usuario?.papel === "GESTOR";
+  const podeAtribuir =
+    usuario?.papel === "ADMIN" ||
     usuario?.papel === "GESTOR" ||
-    usuario?.papel === "ADMIN";
+    usuario?.papel === "ANALISTA";
   const textoBotaoAtribuir = isAnalista ? "Assumir" : "Atribuir";
   return (
     <TableContainer
@@ -124,8 +126,8 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
 
             <TableCell align="center">
               {(() => {
-                const podeDecidir =
-                  podeGerenciar &&
+                const podeDecidirSinistro =
+                  podeDecidir &&
                   sinistro.status === "EM_ANALISE";
                 return (
                   <TableActions
@@ -133,7 +135,7 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
                       onVisualizar ? () => onVisualizar(sinistro) : undefined
                     }
                     onEditar={
-                      onEditar && podeDecidir
+                      onEditar && podeDecidirSinistro
                         ? () => onEditar(sinistro)
                         : undefined
                     }
@@ -161,7 +163,7 @@ export const SinistroTable: React.FC<SinistroTableProps> = ({
 
                     {sinistro.status === "REGISTRADO" &&
                       onAtribuir &&
-                      podeGerenciar && (
+                      podeAtribuir && (
                         <Button
                           variant="secondary"
                           size="sm"

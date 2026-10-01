@@ -77,10 +77,14 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
   const aguardarDocsMutation = useAguardarDocumentos();
 
   const isAnalista = usuario?.papel === "ANALISTA";
-  const podeGerenciarSinistros =
-    usuario?.papel === "ANALISTA" ||
+  const podeDecidir =
+    usuario?.papel === "ANALISTA" || usuario?.papel === "GESTOR";
+  const podeSolicitarDocumentos =
+    usuario?.papel === "ANALISTA" || usuario?.papel === "GESTOR";
+  const podeAtribuir =
+    usuario?.papel === "ADMIN" ||
     usuario?.papel === "GESTOR" ||
-    usuario?.papel === "ADMIN";
+    usuario?.papel === "ANALISTA";
   const textoBotaoAtribuir = isAnalista
     ? "Assumir Análise"
     : "Atribuir Analista";
@@ -235,7 +239,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                       documentos e prosseguir.
                     </div>
                   </div>
-                  {usuario?.id && podeGerenciarSinistros && (
+                  {usuario?.id && podeAtribuir && (
                     <Button
                       variant="primary"
                       size="sm"
@@ -341,7 +345,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                         </span>
                         {statusAtual === "REGISTRADO" &&
                           usuario?.id &&
-                          podeGerenciarSinistros && (
+                          podeAtribuir && (
                             <Button
                               variant="secondary"
                               size="sm"
@@ -532,7 +536,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               {statusAtual === "REGISTRADO" &&
                 usuario?.id &&
-                podeGerenciarSinistros && (
+                podeAtribuir && (
                   <Button
                     variant="primary"
                     onClick={handleClickAtribuir}
@@ -545,7 +549,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                   </Button>
                 )}
 
-              {podeGerenciarSinistros && statusAtual === "EM_ANALISE" && (
+              {podeSolicitarDocumentos && statusAtual === "EM_ANALISE" && (
                 <Button
                   variant="secondary"
                   onClick={handleSolicitarDocumentos}
@@ -582,7 +586,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                   </Button>
                 )}
 
-              {podeGerenciarSinistros &&
+              {podeDecidir &&
                 statusAtual === "EM_ANALISE" &&
                 onAlterarStatus && (
                   <Button
