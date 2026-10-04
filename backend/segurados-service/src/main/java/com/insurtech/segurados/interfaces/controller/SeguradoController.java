@@ -4,10 +4,7 @@ import com.insurtech.segurados.application.dto.PageResponseDTO;
 import com.insurtech.segurados.application.dto.SeguradoRequestDTO;
 import com.insurtech.segurados.application.dto.SeguradoResponseDTO;
 import com.insurtech.segurados.application.dto.SeguradoUpdateDTO;
-import com.insurtech.segurados.application.usecase.AtualizarSeguradoUseCase;
-import com.insurtech.segurados.application.usecase.BuscarPorIdSeguradoUseCase;
-import com.insurtech.segurados.application.usecase.CadastrarSeguradoUseCase;
-import com.insurtech.segurados.application.usecase.ListarSeguradosUseCase;
+import com.insurtech.segurados.application.usecase.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -30,12 +27,21 @@ public class SeguradoController implements SeguradoControllerDocs {
     private final BuscarPorIdSeguradoUseCase buscarPorIdSeguradoUseCase;
     private final ListarSeguradosUseCase listarSeguradosUseCase;
     private final AtualizarSeguradoUseCase atualizarSeguradoUseCase;
+    private final BuscarMeuSeguradoUseCase buscarMeuSeguradoUseCase;
 
     @Override
     @PostMapping
     public ResponseEntity<SeguradoResponseDTO> cadastrarSegurado(@RequestBody @Valid SeguradoRequestDTO dto) {
         SeguradoResponseDTO segurado = cadastrarSeguradoUseCase.executar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(segurado);
+    }
+
+
+    @Override
+    @GetMapping("/me")
+    public ResponseEntity<SeguradoResponseDTO> buscarMeuSegurado() {
+        SeguradoResponseDTO segurado = buscarMeuSeguradoUseCase.executar();
+        return ResponseEntity.status(HttpStatus.OK).body(segurado);
     }
 
     @Override
