@@ -5,6 +5,7 @@ import com.insurtech.segurados.application.dto.SeguradoResponseDTO;
 import com.insurtech.segurados.domain.exception.AcessoNegadoException;
 import com.insurtech.segurados.domain.exception.SeguradoNaoEncontradoException;
 import com.insurtech.segurados.domain.exception.UsuarioNaoAutenticadoException;
+import com.insurtech.segurados.domain.model.Segurado;
 import com.insurtech.segurados.domain.repository.SeguradoRepository;
 import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
 import com.insurtech.segurados.infrastructure.security.UserContextHolder;
@@ -27,17 +28,14 @@ public class BuscarPorIdSeguradoUseCase {
         if (usuarioId == null || usuarioId.isBlank()) {
             throw new UsuarioNaoAutenticadoException("Usuário não autenticado");
         }
-
-        if ("SEGURADO".equals(usuarioPapel) && !usuarioId.equals(id.toString())) {
-            throw new AcessoNegadoException("Acesso negado. Você só pode visualizar suas próprias informações.");
-        }
-
-        if (!"SEGURADO".equals(usuarioPapel) && !"ADMIN".equals(usuarioPapel) && !"GESTOR".equals(usuarioPapel) && !"ANALISTA".equals(usuarioPapel)) {
-            throw new AcessoNegadoException("Acesso negado. Você não tem permissão para visualizar informações de segurados.");
-        }
-
-        return repository.buscarPorId(id)
-                .map(mapper::toResponse)
+        Segurado segurado = repository.buscarPorId(id)
                 .orElseThrow(() -> new SeguradoNaoEncontradoException("Segurado não encontrado com o ID: " + id));
+
+        if ("SEGURADO".equals(usuarioPapel)) {
+            if (segurado.getUsuarioId() == null || !usuarioId.equals(segurado.getUsuarioId().toString())) {
+                throw new AcessoNegadoException("Acesso negado. Você só pode visualizar suas próprias informações.");
+            }
+        }
+        return mapper.toResponse(segurado);
     }
 }
