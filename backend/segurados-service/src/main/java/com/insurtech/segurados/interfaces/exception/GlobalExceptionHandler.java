@@ -35,6 +35,24 @@ public class GlobalExceptionHandler {
                 .body(buildError(HttpStatus.FORBIDDEN, ex.getMessage(), request, null));
     }
 
+    @ExceptionHandler(UsuarioJaCadastradoException.class)
+    public ResponseEntity<ErrorResponse> handleUsuarioJaCadastrado(UsuarioJaCadastradoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(buildError(HttpStatus.CONFLICT, ex.getMessage(), request, null));
+    }
+
+    @ExceptionHandler(UsuarioNaoEncontradoException.class)
+    public ResponseEntity<ErrorResponse> handleUsuarioNaoEncontrado(UsuarioNaoEncontradoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request, null));
+    }
+
+    @ExceptionHandler(UsuarioInvalidoParaSeguradoException.class)
+    public ResponseEntity<ErrorResponse> handleUsuarioInvalidoParaSegurado(UsuarioInvalidoParaSeguradoException ex, ServletWebRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null));
+    }
+
     @ExceptionHandler(CpfCnpjJaCadastradoException.class)
     public ResponseEntity<ErrorResponse> handleCpfCnpjJaCadastrado(CpfCnpjJaCadastradoException ex, ServletWebRequest request) {
         return ResponseEntity.status(HttpStatus.CONFLICT)

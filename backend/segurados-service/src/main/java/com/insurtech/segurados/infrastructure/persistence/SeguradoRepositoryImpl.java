@@ -33,6 +33,11 @@ public class SeguradoRepositoryImpl implements SeguradoRepository {
     }
 
     @Override
+    public Optional<Segurado> buscarPorUsuarioId(UUID usuarioId) {
+        return jpaRepository.findByUsuarioId(usuarioId).map(mapper::toDomain);
+    }
+
+    @Override
     public Optional<Segurado> buscarPorCpfCnpj(String cpfCnpj) {
         return jpaRepository.findByCpfCnpj(cpfCnpj).map(mapper::toDomain);
     }

@@ -11,8 +11,12 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public record SeguradoRequestDTO(
+
+        @NotNull(message = "ID do usuário é obrigatório")
+        UUID usuarioId,
 
         @NotNull(message = "Tipo de pessoa é obrigatório")
         TipoPessoa tipoPessoa,

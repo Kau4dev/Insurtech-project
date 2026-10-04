@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public record SeguradoResponseDTO(
         UUID id,
+        UUID usuarioId,
         TipoPessoa tipoPessoa,
         String nomeRazaoSocial,
         String cpfCnpj,
