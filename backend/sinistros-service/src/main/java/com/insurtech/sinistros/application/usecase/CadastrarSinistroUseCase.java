@@ -5,6 +5,7 @@ import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
 import com.insurtech.sinistros.application.port.EventPublisherPort;
 import com.insurtech.sinistros.domain.event.SinistroRegistradoEvent;
 import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
+import com.insurtech.sinistros.domain.exception.ApoliceInvalidaException;
 import com.insurtech.sinistros.domain.exception.ApoliceNaoEncontradaException;
 import com.insurtech.sinistros.domain.exception.DataOcorrenciaInvalidaException;
 import com.insurtech.sinistros.domain.exception.SeguradoNaoEncontradoException;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
@@ -64,7 +66,22 @@ public class CadastrarSinistroUseCase {
             throw new ApoliceNaoEncontradaException("Apólice não encontrada: " + dto.apoliceId());
         }
 
-        if (apolice != null && dto.dataOcorrencia() != null) {
+        if (apolice == null) {
+            throw new ApoliceNaoEncontradaException("Apólice não encontrada: " + dto.apoliceId());
+        }
+
+        if (apolice.seguradoId() != null && !apolice.seguradoId().equals(dto.seguradoId())) {
+            throw new ApoliceInvalidaException("A apólice informada não pertence ao segurado informado");
+        }
+
+        if (apolice.status() != null && apolice.status() != com.insurtech.sinistros.infrastructure.client.dto.Status.ATIVA) {
+            throw new ApoliceInvalidaException("Só é possível registrar sinistro para apólice ATIVA (status atual: " + apolice.status() + ")");
+        }
+
+        if (dto.dataOcorrencia() != null) {
+            if (dto.dataOcorrencia().isAfter(LocalDate.now())) {
+                throw new DataOcorrenciaInvalidaException("Data do ocorrido não pode ser futura");
+            }
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             if (apolice.dataInicioVigencia() != null && dto.dataOcorrencia().isBefore(apolice.dataInicioVigencia())) {
                 throw new DataOcorrenciaInvalidaException(

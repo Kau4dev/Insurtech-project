@@ -6,6 +6,7 @@ import com.insurtech.sinistros.application.usecase.CadastrarSinistroUseCase;
 import com.insurtech.sinistros.application.port.EventPublisherPort;
 import com.insurtech.sinistros.domain.event.SinistroRegistradoEvent;
 import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
+import com.insurtech.sinistros.domain.exception.ApoliceInvalidaException;
 import com.insurtech.sinistros.domain.exception.ApoliceNaoEncontradaException;
 import com.insurtech.sinistros.domain.exception.DataOcorrenciaInvalidaException;
 import com.insurtech.sinistros.domain.exception.SeguradoNaoEncontradoException;
@@ -105,7 +106,7 @@ class CadastrarSinistroUseCaseTest {
         );
 
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
-        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(null);
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(apoliceValida(apoliceId, seguradoId));
         when(repository.buscarPorNumero("SIN-12345")).thenReturn(Optional.empty());
         when(mapper.toDomain(dto)).thenReturn(sinistro);
         when(repository.salvar(any())).thenReturn(sinistro);
@@ -139,7 +140,7 @@ class CadastrarSinistroUseCaseTest {
         sinistro.setNumeroSinistro("SIN-GESTOR");
 
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
-        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(null);
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(apoliceValida(apoliceId, seguradoId));
         when(repository.buscarPorNumero("SIN-GESTOR")).thenReturn(Optional.empty());
         when(mapper.toDomain(dto)).thenReturn(sinistro);
         when(repository.salvar(any())).thenReturn(sinistro);
@@ -234,7 +235,7 @@ class CadastrarSinistroUseCaseTest {
         );
 
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
-        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(null);
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(apoliceValida(apoliceId, seguradoId));
         when(repository.buscarPorNumero("SIN-12345")).thenReturn(Optional.of(new Sinistro()));
 
         assertThrows(SinistrojaCadastradaException.class, () -> useCase.executar(dto));
@@ -284,8 +285,8 @@ class CadastrarSinistroUseCaseTest {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
 
-        // Ocorrência em 15/10/2027, mas vigência terminou em 01/10/2027
-        LocalDate dataOcorrencia = LocalDate.of(2027, 10, 15);
+        // Ocorrência em 15/02/2025, mas vigência terminou em 01/01/2025
+        LocalDate dataOcorrencia = LocalDate.of(2025, 2, 15);
         SinistroRequestDTO dto = new SinistroRequestDTO(
                 "SIN-VIGENCIA-2", apoliceId, seguradoId,
                 TipoSinistro.COLISAO, "Batida após a vigência",
@@ -295,7 +296,7 @@ class CadastrarSinistroUseCaseTest {
         ApoliceResponseDTO apolice = new ApoliceResponseDTO(
                 apoliceId, seguradoId, "AP-1020-9090",
                 null, new BigDecimal("50000.00"), new BigDecimal("1000.00"),
-                LocalDate.of(2026, 10, 1), LocalDate.of(2027, 10, 1),
+                LocalDate.of(2024, 1, 1), LocalDate.of(2025, 1, 1),
                 null, Collections.emptyList(), Instant.now(), Instant.now()
         );
 
@@ -310,5 +311,86 @@ class CadastrarSinistroUseCaseTest {
         assertTrue(ex.getMessage().contains("Data do ocorrido posterior ao término da vigência da apólice"));
         verify(repository, never()).salvar(any());
         verifyNoInteractions(eventPublisher);
+    }
+
+    private ApoliceResponseDTO apoliceValida(UUID apoliceId, UUID seguradoId) {
+        return apolice(apoliceId, seguradoId, com.insurtech.sinistros.infrastructure.client.dto.Status.ATIVA);
+    }
+
+    private ApoliceResponseDTO apolice(UUID apoliceId, UUID seguradoId,
+                                       com.insurtech.sinistros.infrastructure.client.dto.Status status) {
+        return new ApoliceResponseDTO(
+                apoliceId, seguradoId, "AP-1",
+                null, new BigDecimal("50000.00"), new BigDecimal("1000.00"),
+                LocalDate.now().minusYears(1), LocalDate.now().plusYears(1),
+                status, Collections.emptyList(), Instant.now(), Instant.now()
+        );
+    }
+
+    private SinistroRequestDTO dtoPadrao(UUID apoliceId, UUID seguradoId, LocalDate data) {
+        return new SinistroRequestDTO(
+                "SIN-X", apoliceId, seguradoId,
+                TipoSinistro.COLISAO, "desc", data, new BigDecimal("1000.00")
+        );
+    }
+
+    @Test
+    void deveLancarExcecao_quandoApoliceRetornarNula() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+        UUID seguradoId = UUID.randomUUID();
+        UUID apoliceId = UUID.randomUUID();
+
+        when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(null);
+
+        assertThrows(ApoliceNaoEncontradaException.class,
+                () -> useCase.executar(dtoPadrao(apoliceId, seguradoId, LocalDate.now())));
+        verify(repository, never()).salvar(any());
+    }
+
+    @Test
+    void deveLancarExcecao_quandoApoliceNaoPertenceAoSegurado() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+        UUID seguradoId = UUID.randomUUID();
+        UUID apoliceId = UUID.randomUUID();
+
+        when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(apoliceValida(apoliceId, UUID.randomUUID()));
+
+        assertThrows(ApoliceInvalidaException.class,
+                () -> useCase.executar(dtoPadrao(apoliceId, seguradoId, LocalDate.now())));
+        verify(repository, never()).salvar(any());
+        verifyNoInteractions(eventPublisher);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoApoliceNaoEstiverAtiva() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+        UUID seguradoId = UUID.randomUUID();
+        UUID apoliceId = UUID.randomUUID();
+
+        when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(
+                apolice(apoliceId, seguradoId, com.insurtech.sinistros.infrastructure.client.dto.Status.CANCELADA));
+
+        assertThrows(ApoliceInvalidaException.class,
+                () -> useCase.executar(dtoPadrao(apoliceId, seguradoId, LocalDate.now())));
+        verify(repository, never()).salvar(any());
+        verifyNoInteractions(eventPublisher);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoDataOcorrenciaFutura() {
+        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
+        UUID seguradoId = UUID.randomUUID();
+        UUID apoliceId = UUID.randomUUID();
+
+        when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(apoliceValida(apoliceId, seguradoId));
+
+        DataOcorrenciaInvalidaException ex = assertThrows(DataOcorrenciaInvalidaException.class,
+                () -> useCase.executar(dtoPadrao(apoliceId, seguradoId, LocalDate.now().plusDays(1))));
+        assertTrue(ex.getMessage().contains("futura"));
+        verify(repository, never()).salvar(any());
     }
 }
