@@ -1,0 +1,1 @@
+ALTER TABLE segurados ADD COLUMN usuario_id UUID UNIQUE;
