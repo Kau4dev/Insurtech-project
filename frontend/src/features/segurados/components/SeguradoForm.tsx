@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import {
   FormActions,
   FormErrorBanner,
@@ -52,7 +52,6 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
   const {
     register,
     handleSubmit,
-    watch,
     getValues,
     setValue,
     clearErrors,
@@ -90,7 +89,10 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
     })(),
   });
 
-  const tipoPessoa = watch("tipoPessoa") || "PF";
+  const tipoPessoa = useWatch({ control, name: "tipoPessoa" }) || "PF";
+  const cpfCnpjValue = useWatch({ control, name: "cpfCnpj" }) || "";
+  const telefoneValue = useWatch({ control, name: "telefone" }) || "";
+  const enderecoCepValue = useWatch({ control, name: "enderecoCep" }) || "";
 
   // Apenas popula se houver alteração em seguradoInicial (modo edição)
   useEffect(() => {
@@ -267,7 +269,7 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
             disabled={isEdicao}
             error={errors.cpfCnpj?.message}
             {...register("cpfCnpj")}
-            value={watch("cpfCnpj") || ""}
+            value={cpfCnpjValue}
             onChange={handleCpfCnpjChange}
           />
         </div>
@@ -287,7 +289,7 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
             placeholder="(11) 99999-8888"
             error={errors.telefone?.message}
             {...register("telefone")}
-            value={watch("telefone") || ""}
+            value={telefoneValue}
             onChange={handleTelefoneChange}
           />
 
@@ -367,7 +369,7 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
                 placeholder="00000-000"
                 error={errors.enderecoCep?.message}
                 {...register("enderecoCep")}
-                value={watch("enderecoCep") || ""}
+                value={enderecoCepValue}
                 onChange={handleCepChange}
               />
             </div>
