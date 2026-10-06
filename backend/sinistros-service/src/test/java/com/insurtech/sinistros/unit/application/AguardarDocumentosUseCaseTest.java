@@ -2,8 +2,11 @@ package com.insurtech.sinistros.unit.application;
 
 import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
 import com.insurtech.sinistros.application.usecase.AguardarDocumentosUseCase;
+import com.insurtech.sinistros.application.validator.SinistroSecurityValidator;
+import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
 import com.insurtech.sinistros.domain.exception.SinistroNaoEncontradoException;
 import com.insurtech.sinistros.domain.exception.StatusInvalidoException;
+import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
@@ -30,11 +33,14 @@ class AguardarDocumentosUseCaseTest {
     @Mock
     private SinistroMapper mapper;
 
+    @Mock
+    private SinistroSecurityValidator securityValidator;
+
     @InjectMocks
     private AguardarDocumentosUseCase useCase;
 
     @Test
-    void deveAguardarDocumentos_comSucesso() {
+    void deveAguardarDocumentos_comSucesso_comoAnalista() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
 
@@ -54,9 +60,30 @@ class AguardarDocumentosUseCaseTest {
         assertNotNull(resultado);
         assertEquals(Status.AGUARDANDO_DOCUMENTOS, sinistro.getStatus());
 
+        verify(securityValidator, times(1)).validarPapeis(anyString(), eq("ANALISTA"), eq("GESTOR"));
         verify(repository, times(1)).buscarPorId(sinistroId);
         verify(repository, times(1)).salvar(sinistro);
         verify(mapper, times(1)).toResponse(sinistro);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
+        UUID sinistroId = UUID.randomUUID();
+        doThrow(new UsuarioNaoAutenticadoException("Usuário não autenticado"))
+                .when(securityValidator).validarPapeis(anyString(), eq("ANALISTA"), eq("GESTOR"));
+
+        assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar(sinistroId));
+        verifyNoInteractions(repository, mapper);
+    }
+
+    @Test
+    void deveLancarExcecao_quandoPapelNaoPermitido() {
+        UUID sinistroId = UUID.randomUUID();
+        doThrow(new AcessoNegadoException("Acesso negado."))
+                .when(securityValidator).validarPapeis(anyString(), eq("ANALISTA"), eq("GESTOR"));
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(sinistroId));
+        verifyNoInteractions(repository, mapper);
     }
 
     @Test
@@ -67,6 +94,7 @@ class AguardarDocumentosUseCaseTest {
 
         assertThrows(SinistroNaoEncontradoException.class, () -> useCase.executar(sinistroId));
 
+        verify(securityValidator, times(1)).validarPapeis(anyString(), eq("ANALISTA"), eq("GESTOR"));
         verify(repository, times(1)).buscarPorId(sinistroId);
         verify(repository, never()).salvar(any());
         verifyNoInteractions(mapper);

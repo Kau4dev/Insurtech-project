@@ -10,6 +10,7 @@ import com.insurtech.auth.infrastructure.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,5 +33,9 @@ public class BuscarUsuarioUseCase {
         Usuario usuario = repository.buscarPorId(id)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com o ID: " + id));
         return mapper.toResponse(usuario);
+    }
+
+    public List<UsuarioResponseDTO> listarTodos() {
+        return repository.listarTodos().stream().map(mapper::toResponse).toList();
     }
 }

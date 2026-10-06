@@ -23,7 +23,7 @@ export const seguradoApi = {
   ): Promise<RespostaPaginada<Segurado>> => {
     const response = await axiosClient.get<RespostaPaginada<Segurado>>(
       "/segurados",
-      { params: filtros },
+      { params: { sort: "createdAt,desc", ...filtros } },
     );
     return response.data;
   },

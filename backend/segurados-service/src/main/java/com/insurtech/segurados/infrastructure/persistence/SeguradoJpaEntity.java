@@ -20,6 +20,9 @@ public class SeguradoJpaEntity {
     @Id
     private UUID id;
 
+    @Column(name = "usuario_id")
+    private UUID usuarioId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_pessoa", nullable = false, length = 2)
     private TipoPessoa tipoPessoa;

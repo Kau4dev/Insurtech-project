@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, SearchInput } from "../../../components/ui";
 
 interface SeguradoFiltersProps {
-  onSearch: (nome: string) => void;
+  onSearch: (termo: string) => void;
   isLoading?: boolean;
   initialTermo?: string;
 }
@@ -24,6 +24,13 @@ export const SeguradoFilters: React.FC<SeguradoFiltersProps> = ({
     onSearch("");
   };
 
+  const handleValueChange = (val: string) => {
+    setTermo(val);
+    if (!val.trim() && initialTermo) {
+      onSearch("");
+    }
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -31,8 +38,8 @@ export const SeguradoFilters: React.FC<SeguradoFiltersProps> = ({
     >
       <SearchInput
         value={termo}
-        onValueChange={setTermo}
-        placeholder="Buscar por nome ou razão social..."
+        onValueChange={handleValueChange}
+        placeholder="Buscar por nome, razão social, CPF ou CNPJ..."
       />
 
       <div className="flex items-center gap-2 w-full sm:w-auto justify-end">

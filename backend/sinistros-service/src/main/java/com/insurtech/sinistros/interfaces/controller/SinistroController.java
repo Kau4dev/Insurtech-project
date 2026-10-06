@@ -11,7 +11,10 @@ import com.insurtech.sinistros.domain.model.TipoSinistro;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,7 +57,7 @@ public class SinistroController implements SinistroControllerDocs {
             @RequestParam(required = false) TipoSinistro tipoSinistro,
             @RequestParam(required = false) LocalDate dataInicio,
             @RequestParam(required = false) LocalDate dataFim,
-            @ParameterObject Pageable pageable) {
+            @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(listarSinistrosUseCase.executar(numeroSinistro, apoliceId, seguradoId, analistaId, status, tipoSinistro, dataInicio, dataFim, pageable));
     }
 
@@ -83,6 +86,7 @@ public class SinistroController implements SinistroControllerDocs {
 
 
     @Override
+    @CacheEvict(value = "dashboardMetricas", allEntries = true)
     @PatchMapping("/{id}/aprovar")
     public ResponseEntity<SinistroResponseDTO> aprovar(
             @PathVariable UUID id,
@@ -92,6 +96,7 @@ public class SinistroController implements SinistroControllerDocs {
     }
 
     @Override
+    @CacheEvict(value = "dashboardMetricas", allEntries = true)
     @PatchMapping("/{id}/rejeitar")
     public ResponseEntity<SinistroResponseDTO> rejeitar(
             @PathVariable UUID id,

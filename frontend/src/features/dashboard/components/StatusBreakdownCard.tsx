@@ -57,24 +57,16 @@ export const StatusBreakdownCard: React.FC<StatusBreakdownProps> = ({
   contagemPorStatus,
   isLoading = false,
 }) => {
-  const hasRealData =
-    contagemPorStatus &&
-    Object.values(contagemPorStatus).some(
-      (v) => typeof v === "number" && v > 0,
-    );
-
   const counts: Record<StatusSinistro, number> = {
-    REGISTRADO: hasRealData ? (contagemPorStatus?.REGISTRADO ?? 0) : 1,
-    EM_ANALISE: hasRealData ? (contagemPorStatus?.EM_ANALISE ?? 0) : 2,
-    AGUARDANDO_DOCUMENTOS: hasRealData
-      ? (contagemPorStatus?.AGUARDANDO_DOCUMENTOS ?? 0)
-      : 1,
-    APROVADO: hasRealData ? (contagemPorStatus?.APROVADO ?? 0) : 1,
-    PAGO: hasRealData ? (contagemPorStatus?.PAGO ?? 0) : 2,
-    REJEITADO: hasRealData ? (contagemPorStatus?.REJEITADO ?? 0) : 1,
+    REGISTRADO: contagemPorStatus?.REGISTRADO ?? 0,
+    EM_ANALISE: contagemPorStatus?.EM_ANALISE ?? 0,
+    AGUARDANDO_DOCUMENTOS: contagemPorStatus?.AGUARDANDO_DOCUMENTOS ?? 0,
+    APROVADO: contagemPorStatus?.APROVADO ?? 0,
+    PAGO: contagemPorStatus?.PAGO ?? 0,
+    REJEITADO: contagemPorStatus?.REJEITADO ?? 0,
   };
 
-  const total = Object.values(counts).reduce((acc, curr) => acc + curr, 0) || 1;
+  const total = Object.values(counts).reduce((acc, curr) => acc + curr, 0);
 
   return (
     <div className="bg-(--surface) border border-(--border) rounded-2xl p-5 shadow-xs flex flex-col justify-between h-full">
@@ -93,27 +85,28 @@ export const StatusBreakdownCard: React.FC<StatusBreakdownProps> = ({
 
       {/* Barra de Distribuição Horizontal Contínua */}
       <div className="w-full h-2 rounded-full overflow-hidden flex bg-(--surface-2) mb-5">
-        {STATUS_CONFIGS.map((item) => {
-          const count = counts[item.status] || 0;
-          const pct = Math.round((count / total) * 100);
-          if (pct <= 0) return null;
+        {total > 0 &&
+          STATUS_CONFIGS.map((item) => {
+            const count = counts[item.status] || 0;
+            const pct = Math.round((count / total) * 100);
+            if (pct <= 0) return null;
 
-          return (
-            <div
-              key={item.status}
-              style={{ width: `${pct}%` }}
-              title={`${item.label}: ${count} (${pct}%)`}
-              className={`${item.colorClass} transition-all duration-300`}
-            />
-          );
-        })}
+            return (
+              <div
+                key={item.status}
+                style={{ width: `${pct}%` }}
+                title={`${item.label}: ${count} (${pct}%)`}
+                className={`${item.colorClass} transition-all duration-300`}
+              />
+            );
+          })}
       </div>
 
       {/* Lista de Status */}
       <div className="flex flex-col divide-y divide-(--border)/60">
         {STATUS_CONFIGS.map((item) => {
           const count = counts[item.status] || 0;
-          const percentage = Math.round((count / total) * 100);
+          const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
 
           return (
             <div

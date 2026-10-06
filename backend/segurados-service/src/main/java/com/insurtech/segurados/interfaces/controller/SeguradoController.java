@@ -4,15 +4,14 @@ import com.insurtech.segurados.application.dto.PageResponseDTO;
 import com.insurtech.segurados.application.dto.SeguradoRequestDTO;
 import com.insurtech.segurados.application.dto.SeguradoResponseDTO;
 import com.insurtech.segurados.application.dto.SeguradoUpdateDTO;
-import com.insurtech.segurados.application.usecase.AtualizarSeguradoUseCase;
-import com.insurtech.segurados.application.usecase.BuscarPorIdSeguradoUseCase;
-import com.insurtech.segurados.application.usecase.CadastrarSeguradoUseCase;
-import com.insurtech.segurados.application.usecase.ListarSeguradosUseCase;
+import com.insurtech.segurados.application.usecase.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,12 +27,21 @@ public class SeguradoController implements SeguradoControllerDocs {
     private final BuscarPorIdSeguradoUseCase buscarPorIdSeguradoUseCase;
     private final ListarSeguradosUseCase listarSeguradosUseCase;
     private final AtualizarSeguradoUseCase atualizarSeguradoUseCase;
+    private final BuscarMeuSeguradoUseCase buscarMeuSeguradoUseCase;
 
     @Override
     @PostMapping
     public ResponseEntity<SeguradoResponseDTO> cadastrarSegurado(@RequestBody @Valid SeguradoRequestDTO dto) {
         SeguradoResponseDTO segurado = cadastrarSeguradoUseCase.executar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(segurado);
+    }
+
+
+    @Override
+    @GetMapping("/me")
+    public ResponseEntity<SeguradoResponseDTO> buscarMeuSegurado() {
+        SeguradoResponseDTO segurado = buscarMeuSeguradoUseCase.executar();
+        return ResponseEntity.status(HttpStatus.OK).body(segurado);
     }
 
     @Override
@@ -47,7 +55,7 @@ public class SeguradoController implements SeguradoControllerDocs {
     @GetMapping
     public ResponseEntity<PageResponseDTO<SeguradoResponseDTO>> listarSegurados(
             @RequestParam(required = false) String nome,
-            @ParameterObject Pageable pageable) {
+            @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(listarSeguradosUseCase.executar(nome, pageable));
     }
 

@@ -11,10 +11,10 @@ const dataPassadaOuPresente = (
     .refine((val) => !isNaN(Date.parse(val)), { message: msgInvalida })
     .refine(
       (val) => {
-        const dataInput = new Date(val);
         const hoje = new Date();
-        hoje.setHours(23, 59, 59, 999);
-        return dataInput <= hoje;
+        const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
+        const dataStr = val.split("T")[0];
+        return dataStr <= hojeStr;
       },
       { message: msgFutura },
     );

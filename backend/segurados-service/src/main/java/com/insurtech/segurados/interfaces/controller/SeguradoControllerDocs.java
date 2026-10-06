@@ -32,6 +32,18 @@ public interface SeguradoControllerDocs {
     })
     ResponseEntity<SeguradoResponseDTO> cadastrarSegurado(SeguradoRequestDTO dto);
 
+    @Operation(summary = "Buscar meu segurado", description = "Retorna os dados do segurado associado ao usuário autenticado.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Segurado encontrado"),
+        @ApiResponse(responseCode = "403", description = "Acesso negado. Usuário não possui papel de segurado ou não está autorizado a acessar os dados do segurado",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Segurado não encontrado para o usuário autenticado",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    ResponseEntity<SeguradoResponseDTO> buscarMeuSegurado();
+
     @Operation(summary = "Buscar segurado por ID")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Segurado encontrado"),

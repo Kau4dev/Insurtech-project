@@ -10,6 +10,10 @@ import {
   Select,
 } from "../../../components/ui";
 import { UFS } from "../../../interfaces/enums";
+import {
+  apiParaEndereco,
+  enderecoParaApi,
+} from "../../../interfaces/segurados/enderecoMapper";
 import type { Segurado } from "../../../interfaces/segurados/segurado";
 import type {
   SeguradoRequest,
@@ -57,24 +61,33 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
     formState: { errors, isSubmitting },
   } = useForm<SeguradoFormData>({
     resolver: zodResolver(seguradoSchema),
-    defaultValues: {
-      tipoPessoa: seguradoInicial?.tipoPessoa || "PF",
-      nomeRazaoSocial: seguradoInicial?.nomeRazaoSocial || "",
-      cpfCnpj: seguradoInicial
-        ? maskCpfCnpj(seguradoInicial.cpfCnpj, seguradoInicial.tipoPessoa)
-        : "",
-      email: seguradoInicial?.email || "",
-      telefone: seguradoInicial?.telefone
-        ? maskTelefone(seguradoInicial.telefone)
-        : "",
-      dataNascimento: seguradoInicial?.dataNascimento || "",
-      enderecoLogradouro: seguradoInicial?.enderecoLogradouro || "",
-      enderecoCidade: seguradoInicial?.enderecoCidade || "",
-      enderecoUf: seguradoInicial?.enderecoUf || "",
-      enderecoCep: seguradoInicial?.enderecoCep
-        ? maskCep(seguradoInicial.enderecoCep)
-        : "",
-    },
+    defaultValues: (() => {
+      const end = apiParaEndereco(
+        seguradoInicial?.enderecoLogradouro,
+        seguradoInicial?.enderecoCidade,
+        seguradoInicial?.enderecoUf,
+        seguradoInicial?.enderecoCep,
+      );
+      return {
+        tipoPessoa: seguradoInicial?.tipoPessoa || "PF",
+        nomeRazaoSocial: seguradoInicial?.nomeRazaoSocial || "",
+        cpfCnpj: seguradoInicial
+          ? maskCpfCnpj(seguradoInicial.cpfCnpj, seguradoInicial.tipoPessoa)
+          : "",
+        email: seguradoInicial?.email || "",
+        telefone: seguradoInicial?.telefone
+          ? maskTelefone(seguradoInicial.telefone)
+          : "",
+        dataNascimento: seguradoInicial?.dataNascimento || "",
+        enderecoRua: end.rua || "",
+        enderecoNumero: end.numero || "",
+        enderecoBairro: end.bairro || "",
+        enderecoComplemento: end.complemento || "",
+        enderecoCidade: end.cidade || "",
+        enderecoUf: end.uf || "",
+        enderecoCep: end.cep ? maskCep(end.cep) : "",
+      };
+    })(),
   });
 
   const tipoPessoa = watch("tipoPessoa") || "PF";
@@ -82,6 +95,12 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
   // Apenas popula se houver alteração em seguradoInicial (modo edição)
   useEffect(() => {
     if (seguradoInicial) {
+      const end = apiParaEndereco(
+        seguradoInicial.enderecoLogradouro,
+        seguradoInicial.enderecoCidade,
+        seguradoInicial.enderecoUf,
+        seguradoInicial.enderecoCep,
+      );
       reset({
         tipoPessoa: seguradoInicial.tipoPessoa || "PF",
         nomeRazaoSocial: seguradoInicial.nomeRazaoSocial || "",
@@ -94,12 +113,13 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
           ? maskTelefone(seguradoInicial.telefone)
           : "",
         dataNascimento: seguradoInicial.dataNascimento || "",
-        enderecoLogradouro: seguradoInicial.enderecoLogradouro || "",
-        enderecoCidade: seguradoInicial.enderecoCidade || "",
-        enderecoUf: seguradoInicial.enderecoUf || "",
-        enderecoCep: seguradoInicial.enderecoCep
-          ? maskCep(seguradoInicial.enderecoCep)
-          : "",
+        enderecoRua: end.rua || "",
+        enderecoNumero: end.numero || "",
+        enderecoBairro: end.bairro || "",
+        enderecoComplemento: end.complemento || "",
+        enderecoCidade: end.cidade || "",
+        enderecoUf: end.uf || "",
+        enderecoCep: end.cep ? maskCep(end.cep) : "",
       });
     }
   }, [seguradoInicial, reset]);
@@ -140,6 +160,16 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
     const telLimpo = apenasNumeros(data.telefone);
     const cepLimpo = apenasNumeros(data.enderecoCep);
 
+    const enderecoPayload = enderecoParaApi({
+      rua: data.enderecoRua,
+      numero: data.enderecoNumero,
+      bairro: data.enderecoBairro,
+      complemento: data.enderecoComplemento,
+      cidade: data.enderecoCidade,
+      uf: data.enderecoUf,
+      cep: cepLimpo.length > 0 ? cepLimpo : undefined,
+    });
+
     if (isEdicao) {
       const updatePayload: SeguradoUpdateRequest = {
         nomeRazaoSocial: data.nomeRazaoSocial.trim(),
@@ -149,10 +179,10 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
           data.tipoPessoa === "PF" && data.dataNascimento?.trim()
             ? data.dataNascimento
             : undefined,
-        enderecoLogradouro: data.enderecoLogradouro?.trim() || undefined,
-        enderecoCidade: data.enderecoCidade?.trim() || undefined,
-        enderecoUf: data.enderecoUf?.trim() || undefined,
-        enderecoCep: cepLimpo.length > 0 ? cepLimpo : undefined,
+        enderecoLogradouro: enderecoPayload.enderecoLogradouro,
+        enderecoCidade: enderecoPayload.enderecoCidade,
+        enderecoUf: enderecoPayload.enderecoUf,
+        enderecoCep: enderecoPayload.enderecoCep,
       };
       await onSubmit(updatePayload);
     } else {
@@ -166,10 +196,10 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
           data.tipoPessoa === "PF" && data.dataNascimento?.trim()
             ? data.dataNascimento
             : undefined,
-        enderecoLogradouro: data.enderecoLogradouro?.trim() || undefined,
-        enderecoCidade: data.enderecoCidade?.trim() || undefined,
-        enderecoUf: data.enderecoUf?.trim() || undefined,
-        enderecoCep: cepLimpo.length > 0 ? cepLimpo : undefined,
+        enderecoLogradouro: enderecoPayload.enderecoLogradouro,
+        enderecoCidade: enderecoPayload.enderecoCidade,
+        enderecoUf: enderecoPayload.enderecoUf,
+        enderecoCep: enderecoPayload.enderecoCep,
       };
       await onSubmit(createPayload);
     }
@@ -273,31 +303,65 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
 
         {/* Endereço */}
         <FormSection title="Endereço (Opcional)">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+            {/* Logradouro / Rua & Número */}
+            <div className="md:col-span-8">
               <Input
-                label="Logradouro"
-                placeholder="Rua, Av, Número, Complemento"
-                error={errors.enderecoLogradouro?.message}
-                {...register("enderecoLogradouro")}
+                label="Logradouro / Rua"
+                placeholder="Ex: Av. Paulista"
+                error={errors.enderecoRua?.message}
+                {...register("enderecoRua")}
               />
             </div>
 
-            <Input
-              label="Cidade"
-              placeholder="São Paulo"
-              error={errors.enderecoCidade?.message}
-              {...register("enderecoCidade")}
-            />
+            <div className="md:col-span-4">
+              <Input
+                label="Número"
+                placeholder="Ex: 1000 ou S/N"
+                error={errors.enderecoNumero?.message}
+                {...register("enderecoNumero")}
+              />
+            </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            {/* Bairro & Complemento */}
+            <div className="md:col-span-6">
+              <Input
+                label="Bairro"
+                placeholder="Ex: Bela Vista"
+                error={errors.enderecoBairro?.message}
+                {...register("enderecoBairro")}
+              />
+            </div>
+
+            <div className="md:col-span-6">
+              <Input
+                label="Complemento"
+                placeholder="Ex: Apto 42, Bloco B"
+                error={errors.enderecoComplemento?.message}
+                {...register("enderecoComplemento")}
+              />
+            </div>
+
+            {/* Cidade, UF & CEP */}
+            <div className="md:col-span-5">
+              <Input
+                label="Cidade"
+                placeholder="Ex: São Paulo"
+                error={errors.enderecoCidade?.message}
+                {...register("enderecoCidade")}
+              />
+            </div>
+
+            <div className="md:col-span-3">
               <Select
                 label="UF"
                 options={UFS}
                 error={errors.enderecoUf?.message}
                 {...register("enderecoUf")}
               />
+            </div>
 
+            <div className="md:col-span-4">
               <Input
                 label="CEP"
                 placeholder="00000-000"

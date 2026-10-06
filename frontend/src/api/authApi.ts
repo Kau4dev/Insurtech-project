@@ -18,5 +18,10 @@ export const authApi = {
     buscarUsuario: async (id: string): Promise<Usuario> => {
         const response = await axiosClient.get<Usuario>(`/auth/usuarios/${id}`);
         return response.data;
+    },
+
+    listarUsuarios: async (): Promise<Usuario[]> => {
+        const response = await axiosClient.get<Usuario[]>('/auth/usuarios');
+        return response.data;
     }
 }

@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface SeguradoJpaRepository extends JpaRepository<SeguradoJpaEntity, UUID> {
 
+    Optional<SeguradoJpaEntity> findByUsuarioId(UUID usuarioId);
 
     Optional<SeguradoJpaEntity> findByCpfCnpj(String cpfCnpj);
 

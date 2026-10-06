@@ -18,6 +18,7 @@ import java.util.UUID;
 public class Segurado {
 
     private UUID id;
+    private UUID usuarioId;
     private TipoPessoa tipoPessoa;
     private String nomeRazaoSocial;
     private String cpfCnpj;

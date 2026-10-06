@@ -20,7 +20,7 @@ export const apolicesApi = {
   ): Promise<RespostaPaginada<Apolice>> => {
     const response = await axiosClient.get<RespostaPaginada<Apolice>>(
       "/apolices",
-      { params: filtros },
+      { params: { sort: "createdAt,desc", ...filtros } },
     );
     return response.data;
   },

@@ -11,4 +11,5 @@ export interface FiltrosSinistros {
   dataFim?: string;
   page?: number;
   size?: number;
+  sort?: string;
 }

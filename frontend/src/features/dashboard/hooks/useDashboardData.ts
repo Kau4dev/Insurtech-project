@@ -7,10 +7,13 @@ import type { StatusSinistro } from "../../../interfaces/enums";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
 
 export function useDashboardData() {
+
   // 1. Resumo oficial do backend (ou cálculo automático caso sem permissão)
   const resumoQuery = useQuery({
-    queryKey: ["dashboard", "resumo"],
-    queryFn: () => sinistrosApi.obterDashboard(),
+    queryKey: ["sinistros", "dashboard-resumo"],
+    queryFn: sinistrosApi.obterDashboard,
+    staleTime: 1000 * 60 * 3, // Os dados são considerados "frescos" por 3 minutos (ou até haver mutação em sinistros)
+    refetchOnWindowFocus: false, // Não recarrega só por trocar de aba no navegador
   });
 
   // 2. Lista completa de sinistros para cálculos analíticos em tempo real

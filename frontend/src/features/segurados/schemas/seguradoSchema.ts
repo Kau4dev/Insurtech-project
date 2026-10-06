@@ -29,6 +29,22 @@ export const seguradoSchema = z
         "Telefone deve conter 10 ou 11 dígitos numéricos",
       ),
     dataNascimento: z.string().optional(),
+    enderecoRua: z
+      .string()
+      .max(150, "Rua/Logradouro deve ter no máximo 150 caracteres")
+      .optional(),
+    enderecoNumero: z
+      .string()
+      .max(20, "Número deve ter no máximo 20 caracteres")
+      .optional(),
+    enderecoBairro: z
+      .string()
+      .max(100, "Bairro deve ter no máximo 100 caracteres")
+      .optional(),
+    enderecoComplemento: z
+      .string()
+      .max(100, "Complemento deve ter no máximo 100 caracteres")
+      .optional(),
     enderecoLogradouro: z
       .string()
       .max(255, "Logradouro deve ter no máximo 255 caracteres")

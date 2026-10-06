@@ -10,6 +10,7 @@ import java.util.UUID;
 public interface SeguradoRepository {
     Segurado salvar(Segurado segurado);
     Optional<Segurado> buscarPorId(UUID id);
+    Optional<Segurado> buscarPorUsuarioId(UUID usuarioId);
     Optional<Segurado> buscarPorCpfCnpj(String cpfCnpj);
     Page<Segurado> listar(String nome, Pageable pageable);
 }

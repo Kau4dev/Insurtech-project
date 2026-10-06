@@ -13,3 +13,11 @@ export function useUsuarioPorId(id?: string | null) {
   });
 }
 
+export function useUsuarios() {
+  return useQuery({
+    queryKey: USUARIOS_QUERY_KEY,
+    queryFn: () => authApi.listarUsuarios(),
+    staleTime: 1000 * 60 * 5, // 5 minutos de cache
+  });
+}
+

@@ -57,4 +57,10 @@ public interface AuthControllerDocs {
     })
     ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(
             @Parameter(description = "ID do usuário (UUID)", required = true) UUID id);
+
+    @Operation(summary = "Listar todos os usuários", description = "Retorna a listagem de todos os usuários cadastrados no sistema para seleção de analistas/gestores.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso.")
+    })
+    ResponseEntity<java.util.List<UsuarioResponseDTO>> listarUsuarios();
 }

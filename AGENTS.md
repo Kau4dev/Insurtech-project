@@ -31,11 +31,21 @@ InsurTech: insurance claims/underwriting (P&C) platform, event-driven microservi
 - MapStruct + Lombok generate mappers/DTOs (see `maven-compiler-plugin` annotation processor paths). Don't hand-roll mapping that already has a `*Mapper`.
 - DTO/domain mapping, validation, controller contracts (§use case → DTO). Keep interfaces in `interfaces/controller` doc'd (`*ControllerDocs`).
 
-## Auth / security (recent WIP, applies to sinistros/segurados/apolices e.g.)
+## Auth / security (applies to sinistros/segurados/apolices e.g.)
 
-- `gateway-service` validates JWTs (shared secret with `auth-service`, `JWT_SECRET`) and forwards the authenticated user to downstream services (and cannot trust only self — see below).
-- Services read the acting user from **headers `X-Usuario-Id` and `X-Usuario-Papel`** via `infrastructure/security/UserContextFilter` + `UserContextHolder`. Use cases verify the acting user's papel (e.g. `ANALISTA`/`GESTOR`/`ADMIN` in `Papel`) and throw domain exceptions like `AcessoNegadoException` / `UsuarioNaoAutenticadoException`.
-- For authz tests/IT, set these headers (or mock the acting user) or they will behave as unauthenticated.
+- `gateway-service` validates JWTs (shared secret with `auth-service`, `JWT_SECRET`) and forwards the authenticated user to downstream services.
+- Services read the acting user from **headers `X-Usuario-Id` and `X-Usuario-Papel`** via `infrastructure/security/UserContextFilter` + `UserContextHolder`. Supported roles in `Papel`: `ANALISTA`, `GESTOR`, `ADMIN`, and `SEGURADO` (Portal do Segurado).
+- **Centralized Security Validator Pattern (`application/validator/SinistroSecurityValidator`)**:
+  - Do not duplicate raw `UserContextHolder` checks or `SeguradoClient` ownership verifications inside individual UseCases.
+  - Inject a dedicated validator component (e.g. `SinistroSecurityValidator` in `sinistros-service`).
+  - Methods:
+    - `validarAutenticacao()`: verifies non-null/non-blank `usuarioId`, throws `UsuarioNaoAutenticadoException`.
+    - `validarPapeis(String... papeisPermitidos)` and `validarPapeisComMensagem(String mensagem, String... papeisPermitidos)`: checks role membership, throws `AcessoNegadoException` (distinct method name avoids Java varargs ambiguity).
+    - `validarPropriedadeSegurado(seguradoId, mensagem)`: for query/listing contexts, verifies that a `SEGURADO` only queries their own `seguradoId` against `SeguradoClient.buscarPorId(...)`. Non-segurados bypass this check.
+    - `buscarEValidarPropriedadeSegurado(seguradoId, mensagem)`: for entity lookups/mutations, fetches `SeguradoResponseDTO` and verifies ownership if the acting role is `SEGURADO`.
+    - `validarExistenciaSegurado(seguradoId)`: verifies segurado existence, mapping Feign 404 to `SeguradoNaoEncontradoException`.
+- **Anti-IDOR protection**: Any operation accessible by `SEGURADO` MUST validate that the target resource's `seguradoId` links to `usuarioId == ctx.getUsuarioId()`.
+- For authz tests/IT, set `X-Usuario-Id` and `X-Usuario-Papel` (or mock `SinistroSecurityValidator` in UseCase unit tests; test the validator itself in `SinistroSecurityValidatorTest`).
 
 ## Kafka notes
 

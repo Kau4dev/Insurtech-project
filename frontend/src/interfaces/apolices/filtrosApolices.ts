@@ -7,4 +7,5 @@ export interface FiltrosApolices {
     seguradoId?: string;
     page?: number;
     size?: number;
+    sort?: string;
 }

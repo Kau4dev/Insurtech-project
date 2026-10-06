@@ -4,6 +4,7 @@ import com.insurtech.sinistros.application.port.EventPublisherPort;
 import com.insurtech.sinistros.domain.event.SinistroAprovadoEvent;
 import com.insurtech.sinistros.domain.event.SinistroRegistradoEvent;
 import com.insurtech.sinistros.domain.event.SinistroRejeitadoEvent;
+import com.insurtech.sinistros.infrastructure.cache.DashboardCacheInvalidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 public class KafkaSinistroEventPublisher implements EventPublisherPort {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final DashboardCacheInvalidator cacheInvalidator;
 
     private static final String TOPIC_REGISTRADO = "sinistro.registrado";
     private static final String TOPIC_APROVADO   = "sinistro.aprovado";
@@ -24,6 +26,7 @@ public class KafkaSinistroEventPublisher implements EventPublisherPort {
     public void publicarSinistroRegistrado(SinistroRegistradoEvent event) {
         log.info("Publicando evento SinistroRegistrado para sinistroId: {}", event.sinistroId());
         kafkaTemplate.send(TOPIC_REGISTRADO, event.sinistroId().toString(), event);
+        cacheInvalidator.invalidar();
     }
 
     @Override
@@ -37,11 +40,14 @@ public class KafkaSinistroEventPublisher implements EventPublisherPort {
                     log.info("Evento publicado com sucesso no topico: {}", result.getRecordMetadata().topic());
                 }
             });
+        cacheInvalidator.invalidar();
     }
 
     @Override
     public void publicarSinistroRejeitado(SinistroRejeitadoEvent event) {
         log.info("Publicando evento SinistroRejeitado para sinistroId: {}", event.sinistroId());
         kafkaTemplate.send(TOPIC_REJEITADO, event.sinistroId().toString(), event);
+        cacheInvalidator.invalidar();
     }
+
 }

@@ -1,18 +1,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
-  CopyableId,
   FormActions,
   FormErrorBanner,
   FormSection,
   Input,
   Select,
 } from "../../../components/ui";
+import type { Apolice } from "../../../interfaces/apolices/apolice";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
 import type { SinistroRequest } from "../../../interfaces/sinistros/sinistroRequest";
-import { useApolices } from "../../apolices/hooks/useApolices";
-import { SeguradoNome } from "../../segurados/components/SeguradoNome";
+import { formatarData } from "../../../utils/formatters";
+import { ApoliceSelectFilter } from "../../apolices";
+import { useApolicePorId } from "../../apolices/hooks/useApolices";
 import type { SinistroFormData } from "../schemas/sinistroSchema";
 import { sinistroSchema } from "../schemas/sinistroSchema";
 
@@ -47,17 +48,15 @@ export const SinistroForm: React.FC<SinistroFormProps> = ({
 }) => {
   const isEdicao = !!sinistroInicial?.id;
 
-  const { data: apolicesData, isLoading: loadingApolices } = useApolices({
-    size: 100,
-  });
-  const apolices = apolicesData?.content || [];
+  const [apoliceSelecionada, setApoliceSelecionada] = useState<Apolice | null>(null);
 
   const {
     register,
     handleSubmit,
+    control,
     reset,
-    watch,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<SinistroFormData>({
     resolver: zodResolver(sinistroSchema),
@@ -72,9 +71,12 @@ export const SinistroForm: React.FC<SinistroFormProps> = ({
     },
   });
 
-  const apoliceIdAtual = watch("apoliceId");
-  const seguradoIdAtual = watch("seguradoId");
-  const apoliceSelecionada = apolices.find((a) => a.id === apoliceIdAtual);
+  const apoliceIdAtual = sinistroInicial?.apoliceId || apoliceInicialId;
+  const { data: apoliceCarregada } = useApolicePorId(
+    apoliceSelecionada?.id ? undefined : apoliceIdAtual,
+  );
+
+  const apoliceEfetiva = apoliceSelecionada || apoliceCarregada;
 
   useEffect(() => {
     if (sinistroInicial) {
@@ -91,6 +93,28 @@ export const SinistroForm: React.FC<SinistroFormProps> = ({
   }, [sinistroInicial, reset]);
 
   const handleFormSubmit = async (formData: SinistroFormData) => {
+    if (apoliceEfetiva?.dataInicioVigencia && formData.dataOcorrencia) {
+      const dataOcorrenciaStr = formData.dataOcorrencia.split("T")[0];
+      const inicioVigenciaStr = apoliceEfetiva.dataInicioVigencia.split("T")[0];
+      if (dataOcorrenciaStr < inicioVigenciaStr) {
+        setError("dataOcorrencia", {
+          type: "manual",
+          message: `Data do ocorrido anterior ao início da vigência da apólice (${formatarData(apoliceEfetiva.dataInicioVigencia)})`,
+        });
+        return;
+      }
+      if (apoliceEfetiva.dataFimVigencia) {
+        const fimVigenciaStr = apoliceEfetiva.dataFimVigencia.split("T")[0];
+        if (dataOcorrenciaStr > fimVigenciaStr) {
+          setError("dataOcorrencia", {
+            type: "manual",
+            message: `Data do ocorrido posterior ao término da vigência da apólice (${formatarData(apoliceEfetiva.dataFimVigencia)})`,
+          });
+          return;
+        }
+      }
+    }
+
     const payload: SinistroRequest = {
       numeroSinistro: formData.numeroSinistro,
       apoliceId: formData.apoliceId,
@@ -111,7 +135,7 @@ export const SinistroForm: React.FC<SinistroFormProps> = ({
 
       {/* Identificação e Vinculação */}
       <FormSection title="Identificação e Vínculos">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
           <Input
             label="Número do Sinistro *"
             placeholder="Ex: SIN-2026-0001"
@@ -120,112 +144,38 @@ export const SinistroForm: React.FC<SinistroFormProps> = ({
             {...register("numeroSinistro")}
           />
 
-          {/* Seletor de Apólice Vinculada */}
-          <div>
-            <label className="block text-xs font-semibold text-(--fg) uppercase tracking-wider mb-2">
-              Apólice Vinculada *
-            </label>
-            <select
-              value={apoliceIdAtual}
-              disabled={isEdicao || Boolean(apoliceInicialId && !isEdicao)}
-              onChange={(e) => {
-                const chosenId = e.target.value;
-                setValue("apoliceId", chosenId, { shouldValidate: true });
-                const foundApolice = apolices.find((a) => a.id === chosenId);
-                if (foundApolice) {
-                  setValue("seguradoId", foundApolice.seguradoId, {
+          {/* Seletor de Apólice Vinculada com Filtro de Busca */}
+          <Controller
+            name="apoliceId"
+            control={control}
+            render={({ field }) => (
+              <ApoliceSelectFilter
+                value={field.value}
+                onChange={(id, apolice) => {
+                  setApoliceSelecionada(apolice || null);
+                  setValue("apoliceId", id, {
                     shouldValidate: true,
+                    shouldDirty: true,
                   });
-                } else {
-                  setValue("seguradoId", "");
-                }
-              }}
-              className={`w-full px-3 py-2 text-sm bg-(--surface) border rounded-lg outline-none transition-colors ${
-                errors.apoliceId
-                  ? "border-(--danger)"
-                  : "border-(--border) focus:border-(--accent)"
-              } ${isEdicao || (apoliceInicialId && !isEdicao) ? "bg-(--surface-2) cursor-not-allowed opacity-80" : ""}`}
-            >
-              <option value="">
-                {loadingApolices
-                  ? "Carregando apólices..."
-                  : "Selecione a Apólice pelo Número"}
-              </option>
-              {apolices.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.numeroApolice} — {a.tipoSeguro} ({a.status})
-                </option>
-              ))}
-            </select>
-            {errors.apoliceId && (
-              <span className="text-xs text-(--danger) mt-1 block">
-                {errors.apoliceId.message}
-              </span>
+                  if (apolice?.seguradoId) {
+                    setValue("seguradoId", apolice.seguradoId, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  } else if (!id) {
+                    setValue("seguradoId", "", {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  }
+                }}
+                disabled={isEdicao || Boolean(apoliceInicialId && !isEdicao)}
+                error={errors.apoliceId?.message || errors.seguradoId?.message}
+                label="Apólice Vinculada"
+                required
+              />
             )}
-            {errors.seguradoId && !errors.apoliceId && (
-              <span className="text-xs text-(--danger) mt-1 block">
-                {errors.seguradoId.message}
-              </span>
-            )}
-          </div>
-
-          {/* Resumo da Apólice e Segurado Vinculado */}
-          {apoliceIdAtual && (
-            <div className="md:col-span-2 space-y-2">
-              <div className="p-3 rounded-lg bg-(--surface-2)/60 border border-(--border) text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-(--fg)">
-                      Apólice:{" "}
-                      {apoliceSelecionada?.numeroApolice ||
-                        apoliceIdAtual.slice(0, 8) + "..."}
-                    </span>
-                    {apoliceSelecionada && (
-                      <span className="px-1.5 py-0.5 rounded bg-(--surface) text-(--muted) border border-(--border)">
-                        {apoliceSelecionada.tipoSeguro} ({apoliceSelecionada.status})
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-(--muted) flex items-center gap-1.5">
-                    <span>Segurado Vinculado:</span>
-                    <strong className="text-(--fg)">
-                      {seguradoIdAtual ? (
-                        <SeguradoNome seguradoId={seguradoIdAtual} />
-                      ) : (
-                        "—"
-                      )}
-                    </strong>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CopyableId id={apoliceIdAtual} label="ID Apólice" truncate />
-                </div>
-              </div>
-
-              {apoliceSelecionada && apoliceSelecionada.status !== "ATIVA" && (
-                <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-800 text-xs flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 shrink-0 text-amber-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
-                  <span>
-                    <strong>Regra de Negócio:</strong> Esta apólice está{" "}
-                    <strong>{apoliceSelecionada.status}</strong>. O sistema exige
-                    uma apólice <strong>ATIVA</strong> para aprovação do registro.
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
+          />
         </div>
       </FormSection>
 

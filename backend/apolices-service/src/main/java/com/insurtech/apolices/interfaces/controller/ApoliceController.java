@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +52,7 @@ public class ApoliceController implements ApoliceControllerDocs {
             @RequestParam(required = false) UUID idSegurado,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) TipoSeguro tipoSeguro,
-            @ParameterObject Pageable pageable) {
+            @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(listarApolicesUseCase.executar(numeroApolice, idSegurado, status, tipoSeguro, pageable));
     }
 

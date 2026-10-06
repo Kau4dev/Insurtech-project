@@ -55,9 +55,7 @@ class BuscarPorIdSeguradoUseCaseTest {
         segurado.setId(id);
 
         when(repository.buscarPorId(id)).thenReturn(Optional.of(segurado));
-        when(mapper.toResponse(segurado)).thenReturn(new SeguradoResponseDTO(
-                id, null, null, null, null, null, null, null, null, null, null, null, null
-        ));
+        when(mapper.toResponse(segurado)).thenReturn(mock(SeguradoResponseDTO.class));
 
         SeguradoResponseDTO resultado = useCase.executar(id);
 
@@ -69,29 +67,55 @@ class BuscarPorIdSeguradoUseCaseTest {
     @Test
     void deveRetornarSegurado_quandoSeguradoBuscaASiMesmo() {
         UUID id = UUID.randomUUID();
-        setUserContext(id.toString(), "SEGURADO"); // o próprio segurado busca seus dados
+        UUID usuarioId = UUID.randomUUID();
+        setUserContext(usuarioId.toString(), "SEGURADO");
 
         Segurado segurado = new Segurado();
         segurado.setId(id);
+        segurado.setUsuarioId(usuarioId);
 
         when(repository.buscarPorId(id)).thenReturn(Optional.of(segurado));
-        when(mapper.toResponse(segurado)).thenReturn(new SeguradoResponseDTO(
-                id, null, null, null, null, null, null, null, null, null, null, null, null
-        ));
+        when(mapper.toResponse(segurado)).thenReturn(mock(SeguradoResponseDTO.class));
 
         SeguradoResponseDTO resultado = useCase.executar(id);
 
         assertNotNull(resultado);
         verify(repository, times(1)).buscarPorId(id);
+        verify(mapper, times(1)).toResponse(segurado);
     }
 
     @Test
     void deveLancarExcecao_quandoSeguradoBuscaOutroSegurado() {
         UUID id = UUID.randomUUID();
-        setUserContext(UUID.randomUUID().toString(), "SEGURADO"); // ID diferente do buscado
+        UUID usuarioLogadoId = UUID.randomUUID();
+        UUID donoDoSeguradoId = UUID.randomUUID();
+        setUserContext(usuarioLogadoId.toString(), "SEGURADO");
+
+        Segurado segurado = new Segurado();
+        segurado.setId(id);
+        segurado.setUsuarioId(donoDoSeguradoId);
+
+        when(repository.buscarPorId(id)).thenReturn(Optional.of(segurado));
 
         assertThrows(AcessoNegadoException.class, () -> useCase.executar(id));
-        verifyNoInteractions(repository, mapper);
+        verify(repository, times(1)).buscarPorId(id);
+        verify(mapper, never()).toResponse(any());
+    }
+
+    @Test
+    void deveLancarExcecao_quandoSeguradoNaoPossuiUsuarioIdVinculado_eSeguradoTentaAcessar() {
+        UUID id = UUID.randomUUID();
+        setUserContext(UUID.randomUUID().toString(), "SEGURADO");
+
+        Segurado segurado = new Segurado();
+        segurado.setId(id);
+        segurado.setUsuarioId(null);
+
+        when(repository.buscarPorId(id)).thenReturn(Optional.of(segurado));
+
+        assertThrows(AcessoNegadoException.class, () -> useCase.executar(id));
+        verify(repository, times(1)).buscarPorId(id);
+        verify(mapper, never()).toResponse(any());
     }
 
     @Test
