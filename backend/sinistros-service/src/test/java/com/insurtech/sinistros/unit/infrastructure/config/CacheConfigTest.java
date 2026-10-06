@@ -34,6 +34,7 @@ class CacheConfigTest {
 
         SeguradoResponseDTO segurado = new SeguradoResponseDTO(
                 UUID.randomUUID(),
+                UUID.randomUUID(),
                 TipoPessoa.PF,
                 "João Silva",
                 "12345678909",
