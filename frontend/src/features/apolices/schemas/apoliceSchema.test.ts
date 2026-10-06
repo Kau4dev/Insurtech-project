@@ -3,14 +3,19 @@ import { apoliceSchema } from "./apoliceSchema";
 
 describe("apoliceSchema", () => {
   it("deve validar com sucesso os dados válidos de cadastro de apólice (sem status obrigatório)", () => {
+    const hoje = new Date();
+    const hojeStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
+    const proximoAno = new Date(hoje.getFullYear() + 1, hoje.getMonth(), hoje.getDate());
+    const proximoAnoStr = `${proximoAno.getFullYear()}-${String(proximoAno.getMonth() + 1).padStart(2, "0")}-${String(proximoAno.getDate()).padStart(2, "0")}`;
+
     const dadosValidos = {
       seguradoId: "c3b6bfb5-905e-4b68-8097-f651662495d0",
       numeroApolice: "AP-20120-99",
       tipoSeguro: "EMPRESARIAL",
       valorSeguro: "100000",
       valorPremio: "10000",
-      dataInicioVigencia: "2026-10-01",
-      dataFimVigencia: "2027-10-30",
+      dataInicioVigencia: hojeStr,
+      dataFimVigencia: proximoAnoStr,
       coberturas: [
         {
           tipoCobertura: "DANOS_ELETRICOS",
