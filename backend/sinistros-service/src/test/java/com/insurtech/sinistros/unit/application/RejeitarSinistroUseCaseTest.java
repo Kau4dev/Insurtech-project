@@ -2,12 +2,14 @@ package com.insurtech.sinistros.unit.application;
 
 import com.insurtech.sinistros.application.dto.request.RejeitarSinistroRequestDTO;
 import com.insurtech.sinistros.application.dto.response.SinistroResponseDTO;
-import com.insurtech.sinistros.application.usecase.RejeitarSinistroUseCase;
 import com.insurtech.sinistros.application.port.EventPublisherPort;
+import com.insurtech.sinistros.application.usecase.RejeitarSinistroUseCase;
+import com.insurtech.sinistros.application.validator.SinistroSecurityValidator;
 import com.insurtech.sinistros.domain.event.SinistroRejeitadoEvent;
 import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
 import com.insurtech.sinistros.domain.exception.DocumentoObrigatorioException;
 import com.insurtech.sinistros.domain.exception.MotivoRejeicaoObrigatorioException;
+import com.insurtech.sinistros.domain.exception.SinistroNaoEncontradoException;
 import com.insurtech.sinistros.domain.exception.StatusInvalidoException;
 import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.sinistros.domain.model.DocumentoSinistro;
@@ -15,9 +17,6 @@ import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
-import com.insurtech.sinistros.infrastructure.security.UserContext;
-import com.insurtech.sinistros.infrastructure.security.UserContextHolder;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -43,19 +42,11 @@ class RejeitarSinistroUseCaseTest {
     @Mock
     private EventPublisherPort eventPublisher;
 
+    @Mock
+    private SinistroSecurityValidator securityValidator;
+
     @InjectMocks
     private RejeitarSinistroUseCase useCase;
-
-    @AfterEach
-    void tearDown() {
-        UserContextHolder.clear();
-    }
-
-    private void setUserContext(String usuarioId, String papel) {
-        UserContext ctx = UserContextHolder.getContext();
-        ctx.setUsuarioId(usuarioId);
-        ctx.setUsuarioPapel(papel);
-    }
 
     private Sinistro criarSinistroValidoParaRejeicao() {
         Sinistro sinistro = new Sinistro();
@@ -72,8 +63,6 @@ class RejeitarSinistroUseCaseTest {
 
     @Test
     void deveRejeitarSinistro_comSucesso_comoAnalista() {
-        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
-
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Falta de documentacao");
         Sinistro sinistro = criarSinistroValidoParaRejeicao();
@@ -89,14 +78,13 @@ class RejeitarSinistroUseCaseTest {
         assertNotNull(resultado);
         assertEquals(Status.REJEITADO, sinistro.getStatus());
         assertEquals("Falta de documentacao", sinistro.getMotivoRejeicao());
+        verify(securityValidator, times(1)).validarPapeis(anyString(), eq("ANALISTA"), eq("GESTOR"));
         verify(repository, times(1)).salvar(sinistro);
         verify(eventPublisher, times(1)).publicarSinistroRejeitado(any(SinistroRejeitadoEvent.class));
     }
 
     @Test
     void deveRejeitarSinistro_comSucesso_comoGestor() {
-        setUserContext(UUID.randomUUID().toString(), "GESTOR");
-
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Fraude detectada");
         Sinistro sinistro = criarSinistroValidoParaRejeicao();
@@ -106,12 +94,15 @@ class RejeitarSinistroUseCaseTest {
         when(mapper.toResponse(sinistro)).thenReturn(mock(SinistroResponseDTO.class));
 
         assertDoesNotThrow(() -> useCase.executar(id, dto));
+        verify(securityValidator, times(1)).validarPapeis(anyString(), eq("ANALISTA"), eq("GESTOR"));
     }
 
     @Test
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Motivo");
+        doThrow(new UsuarioNaoAutenticadoException("Usuário não autenticado"))
+                .when(securityValidator).validarPapeis(anyString(), eq("ANALISTA"), eq("GESTOR"));
 
         assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar(id, dto));
         verifyNoInteractions(repository, mapper, eventPublisher);
@@ -119,21 +110,10 @@ class RejeitarSinistroUseCaseTest {
 
     @Test
     void deveLancarExcecao_quandoPapelNaoPermitido() {
-        setUserContext(UUID.randomUUID().toString(), "SEGURADO");
-
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Motivo");
-
-        assertThrows(AcessoNegadoException.class, () -> useCase.executar(id, dto));
-        verifyNoInteractions(repository, mapper, eventPublisher);
-    }
-
-    @Test
-    void deveLancarExcecao_quandoAdminTentarRejeitar() {
-        setUserContext(UUID.randomUUID().toString(), "ADMIN");
-
-        UUID id = UUID.randomUUID();
-        RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Motivo");
+        doThrow(new AcessoNegadoException("Acesso negado."))
+                .when(securityValidator).validarPapeis(anyString(), eq("ANALISTA"), eq("GESTOR"));
 
         assertThrows(AcessoNegadoException.class, () -> useCase.executar(id, dto));
         verifyNoInteractions(repository, mapper, eventPublisher);
@@ -141,14 +121,13 @@ class RejeitarSinistroUseCaseTest {
 
     @Test
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
-        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
-
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Falta de documentacao");
 
         when(repository.buscarPorId(id)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> useCase.executar(id, dto));
+        assertThrows(SinistroNaoEncontradoException.class, () -> useCase.executar(id, dto));
+        verify(securityValidator, times(1)).validarPapeis(anyString(), eq("ANALISTA"), eq("GESTOR"));
         verify(repository, times(1)).buscarPorId(id);
         verify(repository, never()).salvar(any());
         verifyNoInteractions(eventPublisher);
@@ -156,8 +135,6 @@ class RejeitarSinistroUseCaseTest {
 
     @Test
     void deveLancarExcecao_quandoStatusInvalido() {
-        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
-
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Falta de documentacao");
         Sinistro sinistro = criarSinistroValidoParaRejeicao();
@@ -172,8 +149,6 @@ class RejeitarSinistroUseCaseTest {
 
     @Test
     void deveLancarExcecao_quandoMotivoRejeicaoNuloOuVazio() {
-        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
-
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("   ");
         Sinistro sinistro = criarSinistroValidoParaRejeicao();
@@ -187,8 +162,6 @@ class RejeitarSinistroUseCaseTest {
 
     @Test
     void deveLancarExcecao_quandoRejeitarSemDocumentos() {
-        setUserContext(UUID.randomUUID().toString(), "ANALISTA");
-
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Motivo");
         Sinistro sinistro = criarSinistroValidoParaRejeicao();
