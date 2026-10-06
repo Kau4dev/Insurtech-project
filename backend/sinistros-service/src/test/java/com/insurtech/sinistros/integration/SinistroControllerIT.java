@@ -17,6 +17,9 @@ import com.insurtech.sinistros.infrastructure.client.AuthClient;
 import com.insurtech.sinistros.infrastructure.client.SeguradoClient;
 import com.insurtech.sinistros.infrastructure.client.dto.ApoliceResponseDTO;
 import com.insurtech.sinistros.infrastructure.client.dto.Papel;
+import com.insurtech.sinistros.infrastructure.client.dto.SeguradoResponseDTO;
+import com.insurtech.sinistros.infrastructure.client.dto.TipoPessoa;
+import com.insurtech.sinistros.infrastructure.client.dto.Uf;
 import com.insurtech.sinistros.infrastructure.client.dto.UsuarioResponseDTO;
 import feign.FeignException;
 import feign.Request;
@@ -67,10 +70,47 @@ class SinistroControllerIT extends IntegrationTestBase {
 
     @Test
     void deveCadastrarSinistro_comoAnalista_retornar201() {
+        UUID apoliceId = UUID.randomUUID();
+        UUID seguradoId = UUID.randomUUID();
         SinistroRequestDTO request = new SinistroRequestDTO(
-                "SIN-123456", UUID.randomUUID(), UUID.randomUUID(),
+                "SIN-123456", apoliceId, seguradoId,
                 TipoSinistro.ROUBO_FURTO, "Roubo do veículo segurado",
                 LocalDate.now().minusDays(2), new BigDecimal("15000.00")
+        );
+
+        when(seguradoClient.buscarPorId(seguradoId)).thenReturn(
+                new SeguradoResponseDTO(
+                        seguradoId,
+                        UUID.randomUUID(),
+                        TipoPessoa.PF,
+                        "Segurado Teste",
+                        "12345678901",
+                        "segurado@email.com",
+                        "11999999999",
+                        LocalDate.of(1990, 1, 1),
+                        "Rua A",
+                        "São Paulo",
+                        Uf.SP,
+                        "01000000",
+                        Instant.now()
+                )
+        );
+
+        when(apoliceClient.buscarPorId(apoliceId)).thenReturn(
+                new ApoliceResponseDTO(
+                        apoliceId,
+                        seguradoId,
+                        "AP-123",
+                        null,
+                        new BigDecimal("100000.00"),
+                        new BigDecimal("2000.00"),
+                        LocalDate.now().minusYears(1),
+                        LocalDate.now().plusYears(1),
+                        com.insurtech.sinistros.infrastructure.client.dto.Status.ATIVA,
+                        null,
+                        null,
+                        null
+                )
         );
 
         HttpHeaders headers = new HttpHeaders();
@@ -103,14 +143,34 @@ class SinistroControllerIT extends IntegrationTestBase {
 
     @Test
     void deveRetornar403_quandoCadastrarSinistroComPapelSegurado() {
+        UUID seguradoId = UUID.randomUUID();
         SinistroRequestDTO request = new SinistroRequestDTO(
-                "SIN-FORBIDDEN", UUID.randomUUID(), UUID.randomUUID(),
+                "SIN-FORBIDDEN", UUID.randomUUID(), seguradoId,
                 TipoSinistro.COLISAO, "desc", LocalDate.now(), new BigDecimal("1000.00")
         );
 
+        UUID usuarioLogado = UUID.randomUUID();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Id", usuarioLogado.toString());
         headers.set("X-Usuario-Papel", "SEGURADO");
+
+        when(seguradoClient.buscarPorId(seguradoId)).thenReturn(
+                new SeguradoResponseDTO(
+                        seguradoId,
+                        UUID.randomUUID(),
+                        TipoPessoa.PF,
+                        "Outro Segurado",
+                        "98765432100",
+                        "outro@email.com",
+                        "11888888888",
+                        LocalDate.of(1985, 5, 5),
+                        "Rua B",
+                        "Rio de Janeiro",
+                        Uf.RJ,
+                        "20000000",
+                        Instant.now()
+                )
+        );
 
         ResponseEntity<ErrorResponse> response = restTemplate.exchange(
                 "/api/v1/sinistros", HttpMethod.POST,
@@ -194,8 +254,14 @@ class SinistroControllerIT extends IntegrationTestBase {
         Sinistro sinistro = createDummySinistro("SIN-GET-BY-ID", Status.REGISTRADO);
         repository.salvar(sinistro);
 
-        ResponseEntity<SinistroDetalhadoResponseDTO> response = restTemplate.getForEntity(
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
+        ResponseEntity<SinistroDetalhadoResponseDTO> response = restTemplate.exchange(
                 "/api/v1/sinistros/" + sinistro.getId(),
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
                 SinistroDetalhadoResponseDTO.class
         );
 
@@ -206,8 +272,15 @@ class SinistroControllerIT extends IntegrationTestBase {
 
     @Test
     void deveRetornar404_quandoSinistroNaoExiste() {
-        ResponseEntity<String> response = restTemplate.getForEntity(
-                "/api/v1/sinistros/" + UUID.randomUUID(), String.class
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + UUID.randomUUID(),
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                String.class
         );
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
@@ -521,9 +594,13 @@ class SinistroControllerIT extends IntegrationTestBase {
         Sinistro sinistro = createDummySinistro("SIN-DOCS", Status.EM_ANALISE);
         repository.salvar(sinistro);
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
         ResponseEntity<SinistroResponseDTO> response = restTemplate.exchange(
                 "/api/v1/sinistros/" + sinistro.getId() + "/aguardar-documentos",
-                HttpMethod.PATCH, null, SinistroResponseDTO.class
+                HttpMethod.PATCH, new HttpEntity<>(headers), SinistroResponseDTO.class
         );
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -540,8 +617,15 @@ class SinistroControllerIT extends IntegrationTestBase {
                 TipoDocumento.BOLETIM_OCORRENCIA, "residencia.pdf", "http://storage/residencia.pdf"
         );
 
-        ResponseEntity<DocumentoSinistroResponseDTO> response = restTemplate.postForEntity(
-                "/api/v1/sinistros/" + sinistro.getId() + "/documentos", request, DocumentoSinistroResponseDTO.class
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
+        ResponseEntity<DocumentoSinistroResponseDTO> response = restTemplate.exchange(
+                "/api/v1/sinistros/" + sinistro.getId() + "/documentos",
+                HttpMethod.POST,
+                new HttpEntity<>(request, headers),
+                DocumentoSinistroResponseDTO.class
         );
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -554,9 +638,13 @@ class SinistroControllerIT extends IntegrationTestBase {
         Sinistro sinistro = createDummySinistro("SIN-HISTORICO", Status.REGISTRADO);
         repository.salvar(sinistro);
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Usuario-Id", UUID.randomUUID().toString());
+        headers.set("X-Usuario-Papel", "ANALISTA");
+
         ResponseEntity<List<HistoricoSinistroResponseDTO>> response = restTemplate.exchange(
                 "/api/v1/sinistros/" + sinistro.getId() + "/historico",
-                HttpMethod.GET, null,
+                HttpMethod.GET, new HttpEntity<>(headers),
                 new ParameterizedTypeReference<List<HistoricoSinistroResponseDTO>>() {}
         );
 
