@@ -6,15 +6,20 @@ import com.insurtech.segurados.application.dto.SeguradoResponseDTO;
 import com.insurtech.segurados.application.dto.SeguradoUpdateDTO;
 import com.insurtech.segurados.domain.model.TipoPessoa;
 import com.insurtech.segurados.domain.model.Uf;
+import com.insurtech.segurados.infrastructure.client.AuthClient;
+import com.insurtech.segurados.infrastructure.client.dto.Papel;
+import com.insurtech.segurados.infrastructure.client.dto.UsuarioResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 class SeguradoControllerIT extends IntegrationTestBase {
 
@@ -24,11 +29,28 @@ class SeguradoControllerIT extends IntegrationTestBase {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockitoBean
+    private AuthClient authClient;
+
+    private void mockUsuarioValido(UUID usuarioId) {
+        when(authClient.buscarPorId(usuarioId)).thenReturn(new UsuarioResponseDTO(
+                usuarioId,
+                "Nome Usuario",
+                "email@usuario.com",
+                Papel.SEGURADO,
+                true
+        ));
+    }
+
     // ─── POST /segurados ─────────────────────────────────────────────────────
 
     @Test
     void deveCadastrarSegurado_comoGestor_retornar201() {
+        UUID usuarioId = UUID.randomUUID();
+        mockUsuarioValido(usuarioId);
+
         SeguradoRequestDTO dto = new SeguradoRequestDTO(
+                usuarioId,
                 TipoPessoa.PF, "João Silva", "12345678901",
                 "joao@email.com", "11912345678",
                 LocalDate.of(1990, 5, 15),
@@ -49,7 +71,11 @@ class SeguradoControllerIT extends IntegrationTestBase {
 
     @Test
     void deveCadastrarSegurado_comoAdmin_retornar201() {
+        UUID usuarioId = UUID.randomUUID();
+        mockUsuarioValido(usuarioId);
+
         SeguradoRequestDTO dto = new SeguradoRequestDTO(
+                usuarioId,
                 TipoPessoa.PF, "Maria Admin", "11122233344",
                 "maria@email.com", "11987654321",
                 LocalDate.of(1985, 3, 10),
@@ -70,7 +96,10 @@ class SeguradoControllerIT extends IntegrationTestBase {
 
     @Test
     void deveRetornar401_quandoCadastrarSeguradoSemAutenticacao() {
+        UUID usuarioId = UUID.randomUUID();
+
         SeguradoRequestDTO dto = new SeguradoRequestDTO(
+                usuarioId,
                 TipoPessoa.PF, "João Silva", "99988877766",
                 "joao3@email.com", "11912345678",
                 LocalDate.of(1990, 5, 15),
@@ -86,7 +115,10 @@ class SeguradoControllerIT extends IntegrationTestBase {
 
     @Test
     void deveRetornar403_quandoCadastrarSeguradoComPapelAnalista() {
+        UUID usuarioId = UUID.randomUUID();
+
         SeguradoRequestDTO dto = new SeguradoRequestDTO(
+                usuarioId,
                 TipoPessoa.PF, "João Silva", "55544433322",
                 "joao2@email.com", "11912345678",
                 LocalDate.of(1990, 5, 15),
@@ -107,7 +139,11 @@ class SeguradoControllerIT extends IntegrationTestBase {
 
     @Test
     void deveRetornar409_quandoCpfCnpjDuplicado() {
+        UUID usuarioId = UUID.randomUUID();
+        mockUsuarioValido(usuarioId);
+
         SeguradoRequestDTO dto = new SeguradoRequestDTO(
+                usuarioId,
                 TipoPessoa.PF, "João Silva", "10000000001",
                 "joao.dup@email.com", "11912345678",
                 LocalDate.of(1990, 5, 15),
@@ -132,6 +168,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     @Test
     void deveRetornar400_quandoPayloadInvalido() {
         SeguradoRequestDTO dto = new SeguradoRequestDTO(
+                UUID.randomUUID(),
                 TipoPessoa.PF, "João Silva", "20000000002",
                 "joao.inv@email.com", null,
                 null, // ← data de nascimento nula para PF
@@ -171,7 +208,11 @@ class SeguradoControllerIT extends IntegrationTestBase {
     @Test
     void deveAtualizarSegurado_comoGestor_retornar200() {
         // Primeiro cadastra como GESTOR
+        UUID usuarioId = UUID.randomUUID();
+        mockUsuarioValido(usuarioId);
+
         SeguradoRequestDTO createDto = new SeguradoRequestDTO(
+                usuarioId,
                 TipoPessoa.PF, "Carlos Original", "30000000003",
                 "carlos@email.com", "11911110000",
                 LocalDate.of(1980, 1, 1),

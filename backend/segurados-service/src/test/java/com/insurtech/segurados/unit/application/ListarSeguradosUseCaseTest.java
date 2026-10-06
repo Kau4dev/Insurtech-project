@@ -73,16 +73,8 @@ class ListarSeguradosUseCaseTest {
                 Arrays.asList(segurado1, segurado2), pageable, 2
         );
 
-        SeguradoResponseDTO dto1 = new SeguradoResponseDTO(
-                segurado1.getId(), TipoPessoa.PF, "João Silva",
-                "12345678901", "joao@email.com", "11912345678",
-                LocalDate.of(1990, 5, 15), null, null, null, null, null, null
-        );
-        SeguradoResponseDTO dto2 = new SeguradoResponseDTO(
-                segurado2.getId(), TipoPessoa.PF, "Maria Santos",
-                "98765432101", "maria@email.com", "11987654321",
-                LocalDate.of(1992, 8, 20), null, null, null, null, null, null
-        );
+        SeguradoResponseDTO dto1 = criarResponseDTO(segurado1.getId(), "João Silva");
+        SeguradoResponseDTO dto2 = criarResponseDTO(segurado2.getId(), "Maria Santos");
 
         when(repository.listar(null, pageable)).thenReturn(pageSegurados);
         when(mapper.toResponse(segurado1)).thenReturn(dto1);
@@ -117,11 +109,7 @@ class ListarSeguradosUseCaseTest {
                 Collections.singletonList(segurado), pageable, 1
         );
 
-        SeguradoResponseDTO dto = new SeguradoResponseDTO(
-                segurado.getId(), TipoPessoa.PF, "João Silva",
-                "12345678901", "joao@email.com", "11912345678",
-                LocalDate.of(1990, 5, 15), null, null, null, null, null, null
-        );
+        SeguradoResponseDTO dto = criarResponseDTO(segurado.getId(), "João Silva");
 
         when(repository.listar(nome, pageable)).thenReturn(pageSegurados);
         when(mapper.toResponse(segurado)).thenReturn(dto);
@@ -161,20 +149,13 @@ class ListarSeguradosUseCaseTest {
         setUserContext(UUID.randomUUID().toString(), "ADMIN");
         Pageable pageablePrimeira = PageRequest.of(0, 5);
 
-        Segurado segurado1 = new Segurado();
-        segurado1.setId(UUID.randomUUID());
-        segurado1.setNomeRazaoSocial("Segurado 1");
-        segurado1.setTipoPessoa(TipoPessoa.PF);
+        Segurado segurado1 = criarSegurado(UUID.randomUUID(), "Segurado 1");
 
         Page<Segurado> pageSegurados = new PageImpl<>(
                 Collections.singletonList(segurado1), pageablePrimeira, 15
         );
 
-        SeguradoResponseDTO dto1 = new SeguradoResponseDTO(
-                segurado1.getId(), TipoPessoa.PF, "Segurado 1",
-                "12345678901", "seg1@email.com", "11912345678",
-                LocalDate.of(1990, 5, 15), null, null, null, null, null, null
-        );
+        SeguradoResponseDTO dto1 = criarResponseDTO(segurado1.getId(), "Segurado 1");
 
         when(repository.listar(null, pageablePrimeira)).thenReturn(pageSegurados);
         when(mapper.toResponse(segurado1)).thenReturn(dto1);
@@ -196,20 +177,13 @@ class ListarSeguradosUseCaseTest {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
         Pageable pageable = PageRequest.of(2, 5);
 
-        Segurado segurado = new Segurado();
-        segurado.setId(UUID.randomUUID());
-        segurado.setNomeRazaoSocial("Segurado Final");
-        segurado.setTipoPessoa(TipoPessoa.PF);
+        Segurado segurado = criarSegurado(UUID.randomUUID(), "Segurado Final");
 
         Page<Segurado> pageSegurados = new PageImpl<>(
                 Collections.singletonList(segurado), pageable, 15
         );
 
-        SeguradoResponseDTO dto = new SeguradoResponseDTO(
-                segurado.getId(), TipoPessoa.PF, "Segurado Final",
-                "12345678901", "final@email.com", "11912345678",
-                LocalDate.of(1990, 5, 15), null, null, null, null, null, null
-        );
+        SeguradoResponseDTO dto = criarResponseDTO(segurado.getId(), "Segurado Final");
 
         when(repository.listar(null, pageable)).thenReturn(pageSegurados);
         when(mapper.toResponse(segurado)).thenReturn(dto);
@@ -241,5 +215,21 @@ class ListarSeguradosUseCaseTest {
 
         assertThrows(AcessoNegadoException.class, () -> useCase.executar(null, pageable));
         verifyNoInteractions(repository, mapper);
+    }
+
+    private Segurado criarSegurado(UUID id, String nome) {
+        Segurado segurado = new Segurado();
+        segurado.setId(id);
+        segurado.setNomeRazaoSocial(nome);
+        segurado.setTipoPessoa(TipoPessoa.PF);
+        return segurado;
+    }
+
+    private SeguradoResponseDTO criarResponseDTO(UUID id, String nome) {
+        return new SeguradoResponseDTO(
+                id, UUID.randomUUID(), TipoPessoa.PF, nome,
+                "12345678901", "email@email.com", "11912345678",
+                LocalDate.of(1990, 5, 15), null, null, null, null, null, null
+        );
     }
 }

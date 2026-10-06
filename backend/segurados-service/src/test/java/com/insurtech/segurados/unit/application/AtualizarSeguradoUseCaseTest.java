@@ -69,7 +69,7 @@ class AtualizarSeguradoUseCaseTest {
         );
 
         SeguradoResponseDTO responseDTO = new SeguradoResponseDTO(
-                id, TipoPessoa.PF, "Nome Atualizado", "12345678901",
+                id, UUID.randomUUID(), TipoPessoa.PF, "Nome Atualizado", "12345678901",
                 "email@exemplo.com", "11912345678", LocalDate.of(1990, 5, 15),
                 "Rua A, 123", "Cidade", Uf.AC, "01001000",
                 Instant.now(), Instant.now().minus(1, DAYS)
