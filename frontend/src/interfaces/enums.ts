@@ -53,7 +53,7 @@ export type TipoCobertura =
   | "RESPONSABILIDADE_CIVIL"
   | "OUTROS";
 
-export type PapelUsuario = "ADMIN" | "ANALISTA" | "GESTOR";
+export type PapelUsuario = "SEGURADO" | "ADMIN" | "ANALISTA" | "GESTOR";
 
 export type Uf =
   | "AC"
