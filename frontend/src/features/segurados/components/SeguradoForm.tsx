@@ -68,6 +68,7 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
         seguradoInicial?.enderecoCep,
       );
       return {
+        usuarioId: seguradoInicial?.usuarioId || "",
         tipoPessoa: seguradoInicial?.tipoPessoa || "PF",
         nomeRazaoSocial: seguradoInicial?.nomeRazaoSocial || "",
         cpfCnpj: seguradoInicial
@@ -104,6 +105,7 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
         seguradoInicial.enderecoCep,
       );
       reset({
+        usuarioId: seguradoInicial.usuarioId || "",
         tipoPessoa: seguradoInicial.tipoPessoa || "PF",
         nomeRazaoSocial: seguradoInicial.nomeRazaoSocial || "",
         cpfCnpj: maskCpfCnpj(
@@ -189,6 +191,7 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
       await onSubmit(updatePayload);
     } else {
       const createPayload: SeguradoRequest = {
+        usuarioId: data.usuarioId,
         tipoPessoa: data.tipoPessoa as "PF" | "PJ",
         nomeRazaoSocial: data.nomeRazaoSocial.trim(),
         cpfCnpj: apenasNumeros(data.cpfCnpj),
