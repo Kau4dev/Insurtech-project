@@ -13,6 +13,11 @@ export const seguradoApi = {
     return response.data;
   },
 
+  buscarMeuSegurado: async (): Promise<Segurado> => {
+    const response = await axiosClient.get<Segurado>("/segurados/me");
+    return response.data;
+  },
+
   buscarPorId: async (id: string): Promise<Segurado> => {
     const response = await axiosClient.get<Segurado>(`/segurados/${id}`);
     return response.data;

@@ -23,6 +23,7 @@ describe("seguradoApi", () => {
 
   it("deve cadastrar segurado enviando POST /segurados", async () => {
     const mockRequest: SeguradoRequest = {
+      usuarioId: "user-1",
       nomeRazaoSocial: "João Silva",
       cpfCnpj: "12345678901",
       tipoPessoa: "PF",
@@ -52,12 +53,31 @@ describe("seguradoApi", () => {
     expect(result).toEqual(mockSegurado);
   });
 
+  it("deve buscar segurado logado via GET /segurados/me", async () => {
+    const mockSegurado: Segurado = {
+      id: "seg-1",
+      usuarioId: "user-1",
+      nomeRazaoSocial: "João Silva",
+      cpfCnpj: "12345678901",
+      tipoPessoa: "PF",
+      email: "joao@example.com",
+      telefone: "11999998888",
+    };
+    vi.mocked(axiosClient.get).mockResolvedValueOnce({ data: mockSegurado });
+
+    const result = await seguradoApi.buscarMeuSegurado();
+
+    expect(axiosClient.get).toHaveBeenCalledWith("/segurados/me");
+    expect(result).toEqual(mockSegurado);
+  });
+
   it("deve listar segurados com paginação via GET /segurados", async () => {
     const mockFiltros = { nome: "Silva", page: 0, size: 10 };
     const mockPaginado: RespostaPaginada<Segurado> = {
       content: [
         {
           id: "seg-1",
+          usuarioId: "user-1",
           nomeRazaoSocial: "João Silva",
           cpfCnpj: "12345678901",
           tipoPessoa: "PF",
