@@ -45,6 +45,17 @@ InsurTech: insurance claims/underwriting (P&C) platform, event-driven microservi
     - `buscarEValidarPropriedadeSegurado(seguradoId, mensagem)`: for entity lookups/mutations, fetches `SeguradoResponseDTO` and verifies ownership if the acting role is `SEGURADO`.
     - `validarExistenciaSegurado(seguradoId)`: verifies segurado existence, mapping Feign 404 to `SeguradoNaoEncontradoException`.
 - **Anti-IDOR protection**: Any operation accessible by `SEGURADO` MUST validate that the target resource's `seguradoId` links to `usuarioId == ctx.getUsuarioId()`.
+- **B2B User Provisioning & Password Generation Pattern**:
+  - `auth-service` exposes `POST /api/v1/auth/usuarios` to register users with role enforcement (`ADMIN`/`GESTOR` only).
+  - **RBAC Hierárquico**:
+    - `ADMIN` is root, unique, seeded via DB migration (`V1__create_usuarios.sql`); creating `ADMIN` via API is strictly forbidden.
+    - `ADMIN` and `GESTOR` can create: `GESTOR`, `ANALISTA`, and `SEGURADO`.
+    - `ANALISTA` and `SEGURADO` cannot create any users.
+  - **Password Policy by Role**:
+    - For `SEGURADO`: `senha` in request is ignored/null; passwords generated automatically MUST use `java.security.SecureRandom` (CSPRNG) with high entropy (12+ characters, upper, lower, digits, symbols), shuffled via Fisher-Yates. Never use `java.util.Random`.
+    - For `GESTOR`/`ANALISTA`: `senha` is provided in request by administrative staff (minimum 8 chars).
+  - The plaintext generated password is exposed *strictly once* in the creation response (`UsuarioCriadoResponseDTO`) for administrative dispatch and NEVER logged or stored unhashed (BCrypt strength 12 in `auth_db`).
+  - `segurados-service` orchestrates user creation via OpenFeign `AuthClient.cadastrarUsuario` during customer creation when `usuarioId` is omitted, linking the generated UUID automatically without manual frontend UUID inputs.
 - For authz tests/IT, set `X-Usuario-Id` and `X-Usuario-Papel` (or mock `SinistroSecurityValidator` in UseCase unit tests; test the validator itself in `SinistroSecurityValidatorTest`).
 
 ## Kafka notes
