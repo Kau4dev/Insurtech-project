@@ -48,7 +48,7 @@ class BuscarUsuarioUseCaseTest {
         usuario.setPapel(Papel.ANALISTA);
         usuario.setAtivo(true);
 
-        UsuarioResponseDTO responseDTO = new UsuarioResponseDTO(userId, "João Silva", "joao@email.com", Papel.ANALISTA);
+        UsuarioResponseDTO responseDTO = new UsuarioResponseDTO(userId, "João Silva", "joao@email.com", Papel.ANALISTA, true);
 
         when(jwtService.isTokenValido(token)).thenReturn(true);
         when(jwtService.extrairUsuarioId(token)).thenReturn(userId);
@@ -111,7 +111,7 @@ class BuscarUsuarioUseCaseTest {
         usuario.setPapel(Papel.ANALISTA);
         usuario.setAtivo(true);
 
-        UsuarioResponseDTO responseDTO = new UsuarioResponseDTO(userId, "João Silva", "joao@email.com", Papel.ANALISTA);
+        UsuarioResponseDTO responseDTO = new UsuarioResponseDTO(userId, "João Silva", "joao@email.com", Papel.ANALISTA, true);
 
         when(repository.buscarPorId(userId)).thenReturn(Optional.of(usuario));
         when(mapper.toResponse(usuario)).thenReturn(responseDTO);
@@ -123,6 +123,7 @@ class BuscarUsuarioUseCaseTest {
         assertEquals("João Silva", response.nome());
         assertEquals("joao@email.com", response.email());
         assertEquals(Papel.ANALISTA, response.papel());
+        assertTrue(response.ativo());
 
         verify(repository, times(1)).buscarPorId(userId);
         verify(mapper, times(1)).toResponse(usuario);
@@ -140,5 +141,38 @@ class BuscarUsuarioUseCaseTest {
         verify(repository, times(1)).buscarPorId(userId);
         verifyNoInteractions(mapper);
         verifyNoInteractions(jwtService);
+    }
+
+    @Test
+    void deveListarTodosUsuarios_semFiltro() {
+        Usuario usuario = new Usuario();
+        usuario.setId(UUID.randomUUID());
+        UsuarioResponseDTO dto = new UsuarioResponseDTO(usuario.getId(), "Teste", "teste@email.com", Papel.ANALISTA, true);
+
+        when(repository.listarTodos(null)).thenReturn(java.util.List.of(usuario));
+        when(mapper.toResponse(usuario)).thenReturn(dto);
+
+        java.util.List<UsuarioResponseDTO> resultado = buscarUsuarioUseCase.listarTodos();
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(repository).listarTodos(null);
+    }
+
+    @Test
+    void deveListarUsuarios_comFiltroAtivo() {
+        Usuario usuario = new Usuario();
+        usuario.setId(UUID.randomUUID());
+        usuario.setAtivo(true);
+        UsuarioResponseDTO dto = new UsuarioResponseDTO(usuario.getId(), "Teste Ativo", "ativo@email.com", Papel.GESTOR, true);
+
+        when(repository.listarTodos(true)).thenReturn(java.util.List.of(usuario));
+        when(mapper.toResponse(usuario)).thenReturn(dto);
+
+        java.util.List<UsuarioResponseDTO> resultado = buscarUsuarioUseCase.listarTodos(true);
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(repository).listarTodos(true);
     }
 }
