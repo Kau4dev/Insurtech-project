@@ -11,6 +11,10 @@ public interface UsuarioRepository {
     Usuario salvar(Usuario usuario);
     Optional<Usuario> buscarPorEmail(String email);
     Optional<Usuario> buscarPorId(UUID id);
-    List<Usuario> listarTodos();
+    List<Usuario> listarTodos(Boolean ativo);
+
+    default List<Usuario> listarTodos() {
+        return listarTodos(null);
+    }
 
 }

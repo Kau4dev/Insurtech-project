@@ -21,7 +21,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
 
 
     @Override
-    public Usuario salvar (Usuario usuario) {
+    public Usuario salvar(Usuario usuario) {
         UsuarioJpaEntity entidade = mapper.toEntity(usuario);
         UsuarioJpaEntity salvo = usuarioJpaRepository.save(entidade);
         return mapper.toDomain(salvo);
@@ -38,7 +38,10 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
     }
 
     @Override
-    public List<Usuario> listarTodos() {
+    public List<Usuario> listarTodos(Boolean ativo) {
+        if (ativo != null) {
+            return usuarioJpaRepository.findByAtivo(ativo).stream().map(mapper::toDomain).toList();
+        }
         return usuarioJpaRepository.findAll().stream().map(mapper::toDomain).toList();
     }
 }

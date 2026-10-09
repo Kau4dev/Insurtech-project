@@ -8,6 +8,7 @@ public record UsuarioResponseDTO(
         UUID id,
         String nome,
         String email,
-        Papel papel
+        Papel papel,
+        Boolean ativo
 ) {
 }
