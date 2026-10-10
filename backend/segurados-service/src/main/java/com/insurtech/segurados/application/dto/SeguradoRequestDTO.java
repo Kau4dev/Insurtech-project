@@ -15,7 +15,6 @@ import java.util.UUID;
 
 public record SeguradoRequestDTO(
 
-        @NotNull(message = "ID do usuário é obrigatório")
         UUID usuarioId,
 
         @NotNull(message = "Tipo de pessoa é obrigatório")

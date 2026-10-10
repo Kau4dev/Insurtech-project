@@ -6,6 +6,7 @@ import com.insurtech.segurados.domain.model.Segurado;
 import com.insurtech.segurados.infrastructure.persistence.SeguradoJpaEntity;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
@@ -17,5 +18,9 @@ public interface SeguradoMapper {
 
     Segurado toDomain(SeguradoJpaEntity entity);
 
+    @Mapping(target = "senhaTemporaria", source = "senhaTemporaria")
+    SeguradoResponseDTO toResponse(Segurado segurado, String senhaTemporaria);
+
+    @Mapping(target = "senhaTemporaria", ignore = true)
     SeguradoResponseDTO toResponse(Segurado segurado);
 }
