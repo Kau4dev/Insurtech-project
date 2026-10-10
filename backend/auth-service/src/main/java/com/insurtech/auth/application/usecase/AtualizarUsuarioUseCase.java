@@ -30,6 +30,7 @@ public class AtualizarUsuarioUseCase {
         }
 
         usuario.setAtivo(true);
+        usuario.setUpdatedAt(java.time.Instant.now());
         Usuario salvo = repository.salvar(usuario);
         return mapper.toResponse(salvo);
     }

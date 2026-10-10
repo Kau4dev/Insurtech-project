@@ -33,6 +33,7 @@ public class DeletarUsuarioUseCase {
         }
 
         usuario.setAtivo(false);
+        usuario.setUpdatedAt(java.time.Instant.now());
         repository.salvar(usuario);
     }
 }
