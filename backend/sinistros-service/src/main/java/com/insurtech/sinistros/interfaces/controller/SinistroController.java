@@ -24,25 +24,25 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/v1/sinistros")
+@RequestMapping("/api/v1/sinistros")
 @RequiredArgsConstructor
 public class SinistroController implements SinistroControllerDocs {
 
-    private final CadastrarSinistroUseCase cadastrarSinistroUseCase;
-    private final BuscarPorIdSinistroUseCase buscarPorIdSinistroUseCase;
-    private final ListarSinistrosUseCase listarSinistrosUseCase;
-    private final AtribuirAnalistaUseCase atribuirAnalistaUseCase;
-    private final AguardarDocumentosUseCase aguardarDocumentosUseCase;
-    private final AprovarSinistroUseCase aprovarSinistroUseCase;
-    private final RejeitarSinistroUseCase rejeitarSinistroUseCase;
-    private final AdicionarDocumentoUseCase adicionarDocumentoUseCase;
-    private final MostrarHistoricoStatusUseCase mostrarHistoricoStatusUseCase;
-    private final MostrarMetricasUseCase mostrarMetricasUseCase;
+    private final CadastrarSinistroUseCase cadastrarSinistro;
+    private final BuscarPorIdSinistroUseCase buscarPorIdSinistro;
+    private final ListarSinistrosUseCase listarSinistros;
+    private final AtribuirAnalistaUseCase atribuirAnalista;
+    private final AguardarDocumentosUseCase aguardarDocumentos;
+    private final AprovarSinistroUseCase aprovarSinistro;
+    private final RejeitarSinistroUseCase rejeitarSinistro;
+    private final AdicionarDocumentoUseCase adicionarDocumento;
+    private final MostrarHistoricoStatusUseCase mostrarHistoricoStatus;
+    private final MostrarMetricasUseCase mostrarMetricas;
 
     @Override
     @PostMapping
     public ResponseEntity<SinistroResponseDTO> registrarSinistro(@RequestBody @Valid SinistroRequestDTO dto) {
-        SinistroResponseDTO sinistro = cadastrarSinistroUseCase.executar(dto);
+        SinistroResponseDTO sinistro = cadastrarSinistro.executar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(sinistro);
     }
 
@@ -58,13 +58,13 @@ public class SinistroController implements SinistroControllerDocs {
             @RequestParam(required = false) LocalDate dataInicio,
             @RequestParam(required = false) LocalDate dataFim,
             @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(listarSinistrosUseCase.executar(numeroSinistro, apoliceId, seguradoId, analistaId, status, tipoSinistro, dataInicio, dataFim, pageable));
+        return ResponseEntity.ok(listarSinistros.executar(numeroSinistro, apoliceId, seguradoId, analistaId, status, tipoSinistro, dataInicio, dataFim, pageable));
     }
 
     @Override
     @GetMapping("/{id}")
     public ResponseEntity<SinistroDetalhadoResponseDTO> buscarPorId(@PathVariable UUID id) {
-        SinistroDetalhadoResponseDTO sinistro = buscarPorIdSinistroUseCase.executar(id);
+        SinistroDetalhadoResponseDTO sinistro = buscarPorIdSinistro.executar(id);
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
 
@@ -73,17 +73,16 @@ public class SinistroController implements SinistroControllerDocs {
     public ResponseEntity<SinistroResponseDTO> atribuirAnalista(
             @PathVariable UUID id,
             @RequestParam UUID analistaId) {
-        SinistroResponseDTO sinistro = atribuirAnalistaUseCase.executar(id, analistaId);
+        SinistroResponseDTO sinistro = atribuirAnalista.executar(id, analistaId);
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
 
     @Override
     @PatchMapping("/{id}/aguardar-documentos")
     public ResponseEntity<SinistroResponseDTO> aguardarDocumentos(@PathVariable UUID id) {
-        SinistroResponseDTO sinistro = aguardarDocumentosUseCase.executar(id);
+        SinistroResponseDTO sinistro = aguardarDocumentos.executar(id);
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
-
 
     @Override
     @CacheEvict(value = "dashboardMetricas", allEntries = true)
@@ -91,7 +90,7 @@ public class SinistroController implements SinistroControllerDocs {
     public ResponseEntity<SinistroResponseDTO> aprovar(
             @PathVariable UUID id,
             @RequestBody @Valid AprovarSinistroRequestDTO dto) {
-        SinistroResponseDTO sinistro = aprovarSinistroUseCase.executar(id, dto);
+        SinistroResponseDTO sinistro = aprovarSinistro.executar(id, dto);
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
 
@@ -101,7 +100,7 @@ public class SinistroController implements SinistroControllerDocs {
     public ResponseEntity<SinistroResponseDTO> rejeitar(
             @PathVariable UUID id,
             @RequestBody @Valid RejeitarSinistroRequestDTO dto) {
-        SinistroResponseDTO sinistro = rejeitarSinistroUseCase.executar(id, dto);
+        SinistroResponseDTO sinistro = rejeitarSinistro.executar(id, dto);
         return ResponseEntity.status(HttpStatus.OK).body(sinistro);
     }
 
@@ -110,22 +109,21 @@ public class SinistroController implements SinistroControllerDocs {
     public ResponseEntity<DocumentoSinistroResponseDTO> adicionarDocumento(
             @PathVariable UUID id,
             @RequestBody @Valid AdicionarDocumentoRequestDTO dto) {
-        DocumentoSinistroResponseDTO documento = adicionarDocumentoUseCase.executar(id, dto);
+        DocumentoSinistroResponseDTO documento = adicionarDocumento.executar(id, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(documento);
     }
 
     @Override
     @GetMapping("/{id}/historico")
     public ResponseEntity<List<HistoricoSinistroResponseDTO>> mostrarHistorico(@PathVariable UUID id) {
-        List<HistoricoSinistroResponseDTO> historico = mostrarHistoricoStatusUseCase.executar(id);
+        List<HistoricoSinistroResponseDTO> historico = mostrarHistoricoStatus.executar(id);
         return ResponseEntity.status(HttpStatus.OK).body(historico);
     }
 
     @Override
     @GetMapping("/dashboard/resumo")
     public ResponseEntity<DashboardResponseDTO> mostrarMetricas() {
-        DashboardResponseDTO metricas = mostrarMetricasUseCase.executar();
+        DashboardResponseDTO metricas = mostrarMetricas.executar();
         return ResponseEntity.status(HttpStatus.OK).body(metricas);
     }
-
 }
