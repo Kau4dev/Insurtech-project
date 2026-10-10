@@ -55,6 +55,7 @@ class AtualizarUsuarioUseCaseTest {
 
         assertNotNull(resultado);
         assertTrue(inativo.getAtivo());
+        assertNotNull(inativo.getUpdatedAt());
         verify(securityValidator).validarPapeisComMensagem(anyString(), eq("ADMIN"), eq("GESTOR"));
         verify(repository).salvar(inativo);
     }

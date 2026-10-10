@@ -46,6 +46,7 @@ class DeletarUsuarioUseCaseTest {
         useCase.executar(id);
 
         assertFalse(ativo.getAtivo());
+        assertNotNull(ativo.getUpdatedAt());
         verify(securityValidator).validarPapeisComMensagem(anyString(), eq("ADMIN"), eq("GESTOR"));
         verify(repository).salvar(ativo);
     }
