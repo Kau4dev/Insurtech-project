@@ -8,7 +8,9 @@ import com.insurtech.segurados.domain.model.Segurado;
 import com.insurtech.segurados.domain.model.TipoPessoa;
 import com.insurtech.segurados.domain.repository.SeguradoRepository;
 import com.insurtech.segurados.infrastructure.client.AuthClient;
+import com.insurtech.segurados.infrastructure.client.dto.CadastrarUsuarioRequestDTO;
 import com.insurtech.segurados.infrastructure.client.dto.Papel;
+import com.insurtech.segurados.infrastructure.client.dto.UsuarioCriadoResponseDTO;
 import com.insurtech.segurados.infrastructure.client.dto.UsuarioResponseDTO;
 import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
 import com.insurtech.segurados.infrastructure.security.UserContext;
@@ -90,7 +92,7 @@ class CadastrarSeguradoUseCaseTest {
         when(repository.buscarPorCpfCnpj("12345678901")).thenReturn(Optional.empty());
         when(mapper.toDomain(dto)).thenReturn(segurado);
         when(repository.salvar(any())).thenReturn(segurado);
-        when(mapper.toResponse(segurado)).thenReturn(responseDTO);
+        when(mapper.toResponse(segurado, null)).thenReturn(responseDTO);
 
         SeguradoResponseDTO resultado = useCase.executar(dto);
 
@@ -99,6 +101,48 @@ class CadastrarSeguradoUseCaseTest {
         verify(client, times(1)).buscarPorId(usuarioId);
         verify(repository, times(1)).buscarPorUsuarioId(usuarioId);
         verify(repository, times(1)).salvar(any());
+    }
+
+    @Test
+    void deveProvisionarUsuarioAutomaticamente_quandoUsuarioIdNulo_comSucesso() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
+        SeguradoRequestDTO dto = criarDtoPadrao(null, "12345678901");
+        UUID novoUsuarioId = UUID.randomUUID();
+        String senhaGerada = "Abc@12345678";
+
+        UsuarioCriadoResponseDTO usuarioCriado = new UsuarioCriadoResponseDTO(
+                novoUsuarioId, "João Silva", "joao@email.com", Papel.SEGURADO, true, senhaGerada, java.time.Instant.now()
+        );
+
+        Segurado segurado = new Segurado();
+        SeguradoResponseDTO responseDTO = new SeguradoResponseDTO(
+                UUID.randomUUID(), novoUsuarioId, TipoPessoa.PF, "João Silva",
+                "12345678901", "joao@email.com", "11912345678",
+                LocalDate.of(1990, 5, 15), null, null, null, null, null, null, senhaGerada
+        );
+
+        when(repository.buscarPorCpfCnpj("12345678901")).thenReturn(Optional.empty());
+        when(client.cadastrarUsuario(any(CadastrarUsuarioRequestDTO.class))).thenReturn(usuarioCriado);
+        when(repository.buscarPorUsuarioId(novoUsuarioId)).thenReturn(Optional.empty());
+        when(mapper.toDomain(dto)).thenReturn(segurado);
+        when(repository.salvar(any())).thenReturn(segurado);
+        when(mapper.toResponse(segurado, senhaGerada)).thenReturn(responseDTO);
+
+        SeguradoResponseDTO resultado = useCase.executar(dto);
+
+        assertNotNull(resultado);
+        assertEquals(novoUsuarioId, resultado.usuarioId());
+        assertEquals(senhaGerada, resultado.senhaTemporaria());
+        verify(client, times(1)).cadastrarUsuario(argThat(req ->
+                req.nome().equals("João Silva") &&
+                req.email().equals("joao@email.com") &&
+                req.senha() == null &&
+                req.papel() == Papel.SEGURADO
+        ));
+        verify(client, never()).buscarPorId(any());
+        verify(repository, times(1)).buscarPorUsuarioId(novoUsuarioId);
+        verify(repository, times(1)).salvar(argThat(s -> novoUsuarioId.equals(s.getUsuarioId())));
     }
 
     @Test
@@ -116,7 +160,7 @@ class CadastrarSeguradoUseCaseTest {
         when(repository.buscarPorCpfCnpj("98765432100")).thenReturn(Optional.empty());
         when(mapper.toDomain(dto)).thenReturn(segurado);
         when(repository.salvar(any())).thenReturn(segurado);
-        when(mapper.toResponse(segurado)).thenReturn(mock(SeguradoResponseDTO.class));
+        when(mapper.toResponse(segurado, null)).thenReturn(mock(SeguradoResponseDTO.class));
 
         assertDoesNotThrow(() -> useCase.executar(dto));
         verify(repository, times(1)).salvar(any());
@@ -217,12 +261,10 @@ class CadastrarSeguradoUseCaseTest {
         UUID usuarioId = UUID.randomUUID();
         SeguradoRequestDTO dto = criarDtoPadrao(usuarioId, "12345678901");
 
-        UsuarioResponseDTO usuarioAuth = new UsuarioResponseDTO(usuarioId, "João", "joao@email.com", Papel.SEGURADO, true);
-        when(client.buscarPorId(usuarioId)).thenReturn(usuarioAuth);
-        when(repository.buscarPorUsuarioId(usuarioId)).thenReturn(Optional.empty());
         when(repository.buscarPorCpfCnpj("12345678901")).thenReturn(Optional.of(new Segurado()));
 
         assertThrows(CpfCnpjJaCadastradoException.class, () -> useCase.executar(dto));
         verify(repository, never()).salvar(any());
+        verifyNoInteractions(client);
     }
 }
