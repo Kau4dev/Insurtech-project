@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Button, Modal, Pagination } from "../components/ui";
 import { useAuth } from "../context/useAuth";
 import {
+  CredenciaisModal,
   SeguradoDetailDrawer,
   SeguradoFilters,
   SeguradoForm,
@@ -22,6 +23,12 @@ export const SeguradosListPage: React.FC = () => {
   const { usuario } = useAuth();
   const podeCadastrar =
     usuario?.papel === "GESTOR" || usuario?.papel === "ADMIN";
+
+  const [credenciaisCriadas, setCredenciaisCriadas] = useState<{
+    email: string;
+    senhaTemporaria: string;
+    nomeRazaoSocial: string;
+  } | null>(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const nome = searchParams.get("busca") || "";
@@ -110,10 +117,20 @@ export const SeguradosListPage: React.FC = () => {
           id: seguradoEmEdicao.id,
           dto: dto as SeguradoUpdateRequest,
         });
+        handleFecharModal();
       } else {
-        await criarMutation.mutateAsync(dto as SeguradoRequest);
+        const novoSegurado = await criarMutation.mutateAsync(
+          dto as SeguradoRequest,
+        );
+        handleFecharModal();
+        if (novoSegurado.senhaTemporaria) {
+          setCredenciaisCriadas({
+            email: novoSegurado.email,
+            senhaTemporaria: novoSegurado.senhaTemporaria,
+            nomeRazaoSocial: novoSegurado.nomeRazaoSocial,
+          });
+        }
       }
-      handleFecharModal();
     } catch (err: unknown) {
       console.error("Erro ao salvar segurado:", err);
       setFormError(
@@ -184,6 +201,16 @@ export const SeguradosListPage: React.FC = () => {
             </span>
           </div>
         </div>
+      )}
+      
+      {credenciaisCriadas && (
+        <CredenciaisModal
+          isOpen={Boolean(credenciaisCriadas)}
+          onClose={() => setCredenciaisCriadas(null)}
+          email={credenciaisCriadas.email}
+          senhaTemporaria={credenciaisCriadas.senhaTemporaria}
+          nomeRazaoSocial={credenciaisCriadas.nomeRazaoSocial}
+        />
       )}
 
       {/* Modal Reutilizável com Formulário */}
