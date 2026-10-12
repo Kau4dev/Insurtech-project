@@ -8,6 +8,7 @@ import com.insurtech.auth.domain.repository.UsuarioRepository;
 import com.insurtech.auth.infrastructure.mapper.UsuarioMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ public class AtualizarUsuarioUseCase {
     private final UsuarioMapper mapper;
     private final UsuarioSecurityValidator securityValidator;
 
+    @Transactional
     public UsuarioResponseDTO executar(UUID usuarioId) {
         securityValidator.validarPapeisComMensagem("Apenas administradores e gestores podem ativar usuários.", "ADMIN", "GESTOR");
 

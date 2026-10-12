@@ -8,6 +8,7 @@ import com.insurtech.auth.domain.model.Usuario;
 import com.insurtech.auth.domain.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ public class DeletarUsuarioUseCase {
     private final UsuarioRepository repository;
     private final UsuarioSecurityValidator securityValidator;
 
+    @Transactional
     public void executar(UUID usuarioId) {
         securityValidator.validarPapeisComMensagem("Apenas administradores e gestores podem inativar usuários.", "ADMIN", "GESTOR");
 
