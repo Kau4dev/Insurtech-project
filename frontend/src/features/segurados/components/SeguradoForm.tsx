@@ -191,7 +191,7 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
       await onSubmit(updatePayload);
     } else {
       const createPayload: SeguradoRequest = {
-        usuarioId: data.usuarioId,
+        usuarioId: data.usuarioId?.trim() ? data.usuarioId.trim() : undefined,
         tipoPessoa: data.tipoPessoa as "PF" | "PJ",
         nomeRazaoSocial: data.nomeRazaoSocial.trim(),
         cpfCnpj: apenasNumeros(data.cpfCnpj),

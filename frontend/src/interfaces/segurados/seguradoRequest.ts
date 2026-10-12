@@ -1,7 +1,7 @@
 import type { TipoPessoa } from "../enums";
 
 export interface SeguradoRequest {
-    usuarioId: string;
+    usuarioId?: string;
     tipoPessoa: TipoPessoa;
     nomeRazaoSocial: string;
     cpfCnpj: string;
