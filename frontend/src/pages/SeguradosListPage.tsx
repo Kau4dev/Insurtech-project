@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Button, Modal, Pagination } from "../components/ui";
+import { Button, Modal, Pagination, ToastNotification } from "../components/ui";
 import { useAuth } from "../context/useAuth";
 import {
   CredenciaisModal,
@@ -28,6 +28,13 @@ export const SeguradosListPage: React.FC = () => {
     email: string;
     senhaTemporaria: string;
     nomeRazaoSocial: string;
+  } | null>(null);
+
+  const [toastInfo, setToastInfo] = useState<{
+    isOpen: boolean;
+    title: string;
+    message?: string;
+    variant: "success" | "info" | "warning" | "error";
   } | null>(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -118,6 +125,12 @@ export const SeguradosListPage: React.FC = () => {
           dto: dto as SeguradoUpdateRequest,
         });
         handleFecharModal();
+        setToastInfo({
+          isOpen: true,
+          title: "Segurado atualizado com sucesso!",
+          message: "As informações cadastrais foram salvas.",
+          variant: "success",
+        });
       } else {
         const novoSegurado = await criarMutation.mutateAsync(
           dto as SeguradoRequest,
@@ -128,6 +141,19 @@ export const SeguradosListPage: React.FC = () => {
             email: novoSegurado.email,
             senhaTemporaria: novoSegurado.senhaTemporaria,
             nomeRazaoSocial: novoSegurado.nomeRazaoSocial,
+          });
+          setToastInfo({
+            isOpen: true,
+            title: "Acesso Criado com Sucesso!",
+            message: `Credenciais geradas para ${novoSegurado.email}. Visualize na janela de confirmação.`,
+            variant: "success",
+          });
+        } else {
+          setToastInfo({
+            isOpen: true,
+            title: "Segurado cadastrado com sucesso!",
+            message: `${novoSegurado.nomeRazaoSocial} foi incluído no sistema.`,
+            variant: "success",
           });
         }
       }
@@ -280,6 +306,17 @@ export const SeguradosListPage: React.FC = () => {
         isOpen={Boolean(seguradoParaDetalhes)}
         onClose={handleFecharDetalhes}
       />
+
+      {toastInfo && (
+        <ToastNotification
+          isOpen={toastInfo.isOpen}
+          title={toastInfo.title}
+          message={toastInfo.message}
+          variant={toastInfo.variant}
+          onClose={() => setToastInfo(null)}
+          durationMs={7000}
+        />
+      )}
     </div>
   );
 };
