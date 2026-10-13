@@ -20,10 +20,15 @@ axiosClient.interceptors.response.use(
       localStorage.removeItem("token");
       if (
         typeof window !== "undefined" &&
-        window.location.pathname !== "/login"
+        !window.location.pathname.includes("/login")
       ) {
-        window.location.href = "/login";
+        if (window.location.pathname.startsWith("/portal")) {
+          window.location.href = "/portal/login";
+        } else {
+          window.location.href = "/login";
+        }
       }
+
     }
     return Promise.reject(error);
   },
