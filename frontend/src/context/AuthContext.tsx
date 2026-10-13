@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [logout]);
 
-  const login = async (dto: AuthRequest) => {
+  const login = async (dto: AuthRequest): Promise<Usuario> => {
     setIsLoading(true);
     try {
       const response = await authApi.login(dto);
@@ -57,6 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const user = await authApi.validarToken();
       setUsuario(user);
+      return user;
     } catch (error) {
       logout();
       throw error;

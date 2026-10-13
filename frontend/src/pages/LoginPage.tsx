@@ -56,7 +56,7 @@ const QUICK_ACCESS = [
 ];
 
 export const LoginPage: React.FC = () => {
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, usuario } = useAuth();
   const navigate = useNavigate();
   const [erroAPI, setErroAPI] = useState<string | null>(null);
   const [isloading, setIsLoading] = useState(false);
@@ -82,8 +82,14 @@ export const LoginPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (isAuthenticated) navigate("/dashboard", { replace: true });
-  }, [isAuthenticated, navigate]);
+    if (isAuthenticated) {
+      if (usuario?.papel === "SEGURADO") {
+        navigate("/portal", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [isAuthenticated, usuario, navigate]);
 
   const preencherCredencial = (email: string) => {
     setValue("email", email, { shouldValidate: true });
@@ -95,8 +101,12 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
     setErroAPI(null);
     try {
-      await login({ email: data.email, senha: data.senha });
-      navigate("/dashboard");
+      const user = await login({ email: data.email, senha: data.senha });
+      if (user.papel === "SEGURADO") {
+        navigate("/portal", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && !err.response) {
         setErroAPI(
@@ -194,6 +204,31 @@ export const LoginPage: React.FC = () => {
       >
         {isloading ? "Carregando..." : "Entrar na plataforma →"}
       </button>
+
+      {/* Redirecionamento para o Portal do Segurado */}
+      <div className="mt-5 pt-4.5 border-t border-(--border)">
+        <div className="p-3.5 rounded-xl bg-(--surface-2)/60 border border-(--border) hover:border-(--accent) transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold tracking-wider uppercase font-mono text-(--accent-ink)">
+              É segurado da InsurTech?
+            </span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-(--accent-soft) text-(--accent-ink) font-semibold font-mono">
+              Área do Cliente
+            </span>
+          </div>
+          <p className="text-[12px] text-(--muted) mt-1.5 leading-snug">
+            Consulte suas apólices, acione coberturas e acompanhe seus sinistros em tempo real.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate("/portal/login")}
+            className="mt-2.5 w-full py-1.5 px-3 rounded-lg bg-(--surface) border border-(--border) hover:border-(--accent) text-(--fg) hover:text-(--accent-ink) text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <span>Acessar Portal do Segurado</span>
+            <span>→</span>
+          </button>
+        </div>
+      </div>
     </>
   );
 
