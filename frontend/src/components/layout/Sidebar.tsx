@@ -175,28 +175,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
             Plataforma
           </div>
 
-          <NavItem
-            disabled
-            label="Usuários e papéis"
-            title="Módulo de usuários e papéis previsto para a fase 4"
-            icon={
-              <svg
-                //className="text-(--accent-ink) "
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-              >
-                <circle cx="12" cy="8" r="3.5" />
-                <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
-              </svg>
-            }
-            onClick={() => {
-              alert(
-                "Módulo de usuários e papéis previsto para a fase 4 (auth-service).",
-              );
-            }}
-          />
+          {usuario?.papel === "ADMIN" || usuario?.papel === "GESTOR" ? (
+            <NavItem
+              to="/usuarios"
+              label="Usuários e papéis"
+              icon={
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                >
+                  <circle cx="12" cy="8" r="3.5" />
+                  <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
+                </svg>
+              }
+              onClick={onClose}
+            />
+          ) : (
+            <NavItem
+              disabled
+              label="Usuários e papéis"
+              title="Apenas administradores e gestores possuem acesso ao módulo de usuários"
+              icon={
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                >
+                  <circle cx="12" cy="8" r="3.5" />
+                  <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
+                </svg>
+              }
+            />
+          )}
         </nav>
 
         {/* Rodapé / Usuário & Ação de Logout */}
