@@ -19,18 +19,20 @@ export const CredenciaisModal: React.FC<CredenciaisModalProps> = ({
   const [copiado, setCopiado] = useState(false);
 
   const handleCopiar = async () => {
-    const texto = `Olá ${nomeRazaoSocial},\n\nSeu acesso ao Portal do Segurado InsurTech foi criado!\n\nEmail: ${email}\nSenha: ${senhaTemporaria}\n\nAcesse em: ${window.location.origin}/login`;
+    const texto = `Olá ${nomeRazaoSocial},\n\nSeu acesso ao Portal do Segurado InsurTech foi criado!\n\nEmail: ${email}\nSenha: ${senhaTemporaria}\n\nAcesse em: ${window.location.origin}/portal/login`;
     await navigator.clipboard.writeText(texto);
     setCopiado(true);
     setTimeout(() => setCopiado(false), 3000);
+
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Acesso Criado com Sucesso!"
+      title="Acesso Criado com Sucesso! 🎉"
       description="O segurado foi provisionado no sistema. Copie as credenciais abaixo para repassar ao cliente."
+      maxWidthClass="max-w-md"
     >
       <div className="space-y-4">
         <div className="p-4 rounded-lg bg-(--surface-2) border border-(--border) space-y-3">
