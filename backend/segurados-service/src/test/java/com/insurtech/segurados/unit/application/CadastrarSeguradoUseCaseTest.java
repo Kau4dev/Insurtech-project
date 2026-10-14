@@ -146,6 +146,45 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    void deveLancarExcecao_quandoEmailJaCadastradoNoAuth() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
+        SeguradoRequestDTO dto = criarDtoPadrao(null, "12345678901");
+        Request request = Request.create(Request.HttpMethod.POST, "url", Collections.emptyMap(), null, null, null);
+        FeignException.Conflict feignConflict = new FeignException.Conflict("Conflict", request, null, null);
+
+        when(repository.buscarPorCpfCnpj("12345678901")).thenReturn(Optional.empty());
+        when(client.cadastrarUsuario(any(CadastrarUsuarioRequestDTO.class))).thenThrow(feignConflict);
+
+        UsuarioJaCadastradoException ex = assertThrows(
+                UsuarioJaCadastradoException.class,
+                () -> useCase.executar(dto)
+        );
+
+        assertTrue(ex.getMessage().contains("Email já cadastrado"));
+        verify(repository, never()).salvar(any());
+    }
+
+    @Test
+    void deveLancarExcecao_quandoAuthClientFalharComErroGenerico() {
+        setUserContext(UUID.randomUUID().toString(), "GESTOR");
+
+        SeguradoRequestDTO dto = criarDtoPadrao(null, "12345678901");
+        Request request = Request.create(Request.HttpMethod.POST, "url", Collections.emptyMap(), null, null, null);
+        FeignException.InternalServerError feign500 = new FeignException.InternalServerError("Error", request, null, null);
+
+        when(repository.buscarPorCpfCnpj("12345678901")).thenReturn(Optional.empty());
+        when(client.cadastrarUsuario(any(CadastrarUsuarioRequestDTO.class))).thenThrow(feign500);
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> useCase.executar(dto)
+        );
+
+        verify(repository, never()).salvar(any());
+    }
+
+    @Test
     void deveCadastrarSegurado_comSucesso_comoAdmin() {
         setUserContext(UUID.randomUUID().toString(), "ADMIN");
 
