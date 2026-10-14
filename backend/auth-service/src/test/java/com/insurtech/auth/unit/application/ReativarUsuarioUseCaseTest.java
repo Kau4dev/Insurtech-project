@@ -1,7 +1,7 @@
 package com.insurtech.auth.unit.application;
 
 import com.insurtech.auth.application.dto.UsuarioResponseDTO;
-import com.insurtech.auth.application.usecase.AtualizarUsuarioUseCase;
+import com.insurtech.auth.application.usecase.ReativarUsuarioUseCase;
 import com.insurtech.auth.application.validator.UsuarioSecurityValidator;
 import com.insurtech.auth.domain.exception.UsuarioNaoEncontradoException;
 import com.insurtech.auth.domain.model.Papel;
@@ -23,7 +23,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AtualizarUsuarioUseCaseTest {
+class ReativarUsuarioUseCaseTest {
 
     @Mock
     private UsuarioRepository repository;
@@ -35,7 +35,7 @@ class AtualizarUsuarioUseCaseTest {
     private UsuarioSecurityValidator securityValidator;
 
     @InjectMocks
-    private AtualizarUsuarioUseCase useCase;
+    private ReativarUsuarioUseCase useCase;
 
     @Test
     void deveAtivarUsuarioComSucesso() {
@@ -82,3 +82,4 @@ class AtualizarUsuarioUseCaseTest {
         verify(repository, never()).salvar(any());
     }
 }
+

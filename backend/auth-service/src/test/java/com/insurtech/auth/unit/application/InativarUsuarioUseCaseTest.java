@@ -1,6 +1,6 @@
 package com.insurtech.auth.unit.application;
 
-import com.insurtech.auth.application.usecase.DeletarUsuarioUseCase;
+import com.insurtech.auth.application.usecase.InativarUsuarioUseCase;
 import com.insurtech.auth.application.validator.UsuarioSecurityValidator;
 import com.insurtech.auth.domain.exception.AcessoNegadoException;
 import com.insurtech.auth.domain.exception.UsuarioNaoEncontradoException;
@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DeletarUsuarioUseCaseTest {
+class InativarUsuarioUseCaseTest {
 
     @Mock
     private UsuarioRepository repository;
@@ -31,7 +31,7 @@ class DeletarUsuarioUseCaseTest {
     private UsuarioSecurityValidator securityValidator;
 
     @InjectMocks
-    private DeletarUsuarioUseCase useCase;
+    private InativarUsuarioUseCase useCase;
 
     @Test
     void deveInativarUsuarioComSucesso() {
@@ -88,3 +88,4 @@ class DeletarUsuarioUseCaseTest {
         verify(repository, never()).salvar(any());
     }
 }
+
