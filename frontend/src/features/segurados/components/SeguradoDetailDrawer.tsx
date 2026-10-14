@@ -9,7 +9,14 @@ import {
   TableContainer,
   TableHeader,
   TabsNav,
+  ToastNotification,
 } from "../../../components/ui";
+import { useAuth } from "../../../context/useAuth";
+import {
+  useInativarUsuario,
+  useReativarUsuario,
+  useUsuarioPorId,
+} from "../../auth/hooks/useUsuarios";
 import type { Segurado } from "../../../interfaces/segurados/segurado";
 import { apiParaEndereco } from "../../../interfaces/segurados/enderecoMapper";
 import {
@@ -20,6 +27,7 @@ import {
   getPessoaTipoBadgeVariant,
   getSinistroStatusBadgeVariant,
 } from "../../../utils/enumUtils";
+import { extrairMensagemErro } from "../../../utils/errorUtils";
 import {
   formatarCep,
   formatarCpfCnpj,
@@ -35,7 +43,6 @@ export interface SeguradoDetailDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
 
 type Aba = "detalhes" | "apolices" | "sinistros";
 
@@ -61,7 +68,18 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
   onClose,
 }) => {
   const navigate = useNavigate();
+  const { usuario: usuarioLogado } = useAuth();
+  const podeGerenciarAcesso =
+    usuarioLogado?.papel === "ADMIN" || usuarioLogado?.papel === "GESTOR";
+
   const [abaAtiva, setAbaAtiva] = useState<Aba>("detalhes");
+  const [confirmarInativarAberto, setConfirmarInativarAberto] = useState(false);
+  const [toastInfo, setToastInfo] = useState<{
+    isOpen: boolean;
+    title: string;
+    message?: string;
+    variant: "success" | "info" | "warning" | "error";
+  } | null>(null);
 
   const seguradoId = segurado?.id;
 
@@ -72,6 +90,15 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
   const { data: sinistrosData, isLoading: loadingSinistros } = useSinistros(
     seguradoId ? { seguradoId } : undefined,
   );
+
+  const {
+    data: usuarioPortal,
+    isLoading: loadingUsuarioPortal,
+    refetch: refetchUsuario,
+  } = useUsuarioPorId(segurado?.usuarioId);
+
+  const inativarMutation = useInativarUsuario();
+  const reativarMutation = useReativarUsuario();
 
   if (!segurado) return null;
 
@@ -96,11 +123,55 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
       segurado.enderecoLogradouro,
   );
 
+  const handleInativarAcessoPortal = async () => {
+    if (!segurado.usuarioId) return;
+    try {
+      await inativarMutation.mutateAsync(segurado.usuarioId);
+      await refetchUsuario();
+      setConfirmarInativarAberto(false);
+      setToastInfo({
+        isOpen: true,
+        title: "Acesso inativado",
+        message: `O acesso de ${segurado.nomeRazaoSocial} ao Portal do Segurado foi suspenso.`,
+        variant: "warning",
+      });
+    } catch (err) {
+      setToastInfo({
+        isOpen: true,
+        title: "Erro ao inativar acesso",
+        message: extrairMensagemErro(err),
+        variant: "error",
+      });
+    }
+  };
+
+  const handleReativarAcessoPortal = async () => {
+    if (!segurado.usuarioId) return;
+    try {
+      await reativarMutation.mutateAsync(segurado.usuarioId);
+      await refetchUsuario();
+      setToastInfo({
+        isOpen: true,
+        title: "Acesso reativado",
+        message: `O acesso de ${segurado.nomeRazaoSocial} ao Portal do Segurado foi restaurado.`,
+        variant: "success",
+      });
+    } catch (err) {
+      setToastInfo({
+        isOpen: true,
+        title: "Erro ao reativar acesso",
+        message: extrairMensagemErro(err),
+        variant: "error",
+      });
+    }
+  };
+
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={segurado.nomeRazaoSocial}
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={segurado.nomeRazaoSocial}
       description={`Cadastrado como ${formatarTipoPessoa(segurado.tipoPessoa)}`}
       maxWidthClass="max-w-4xl"
     >
@@ -121,6 +192,125 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
             <div className="flex items-center justify-between p-3 rounded-lg bg-(--surface-2)/60 border border-(--border) text-xs">
               <span className="text-(--muted)">ID do Segurado no Sistema:</span>
               <CopyableId id={segurado.id} truncate />
+            </div>
+
+            {/* Acesso e Credenciais do Portal do Segurado */}
+            <div className="bg-(--surface-2)/40 p-4 sm:p-5 rounded-lg border border-(--border) space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-(--muted) uppercase tracking-wider font-mono flex items-center gap-1.5">
+                      <svg
+                        className="w-3.5 h-3.5 text-(--accent-ink)"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      </svg>
+                      Acesso ao Portal do Segurado
+                    </span>
+                    {segurado.usuarioId ? (
+                      loadingUsuarioPortal ? (
+                        <span className="text-xs text-(--muted)">
+                          Verificando status...
+                        </span>
+                      ) : (
+                        <Badge
+                          variant={
+                            usuarioPortal?.ativo !== false
+                              ? "success"
+                              : "danger"
+                          }
+                        >
+                          {usuarioPortal?.ativo !== false
+                            ? "Acesso Ativo"
+                            : "Acesso Inativo"}
+                        </Badge>
+                      )
+                    ) : (
+                      <Badge variant="neutral">Sem Login Vinculado</Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-(--muted) mt-1">
+                    {segurado.usuarioId
+                      ? "Credenciais do cliente para consulta de apólices e acionamento de sinistros online."
+                      : "Este segurado ainda não possui um login cadastrado no Portal do Segurado."}
+                  </p>
+                </div>
+
+                {/* Ações de Gestão de Acesso */}
+                {segurado.usuarioId &&
+                  podeGerenciarAcesso &&
+                  !loadingUsuarioPortal && (
+                    <div className="shrink-0">
+                      {usuarioPortal?.ativo !== false ? (
+                        <button
+                          type="button"
+                          disabled={inativarMutation.isPending}
+                          onClick={() => setConfirmarInativarAberto(true)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 bg-red-500/5 hover:bg-red-500/10 active:bg-red-500/15 border border-red-500/20 hover:border-red-500/30 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+                          title="Suspender acesso do segurado ao portal"
+                        >
+                          <svg
+                            className="w-3.5 h-3.5 text-red-500 shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                          </svg>
+                          <span>Inativar Acesso ao Portal</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={reativarMutation.isPending}
+                          onClick={handleReativarAcessoPortal}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-(--accent-ink) bg-(--accent-soft)/40 hover:bg-(--accent-soft) active:bg-(--accent-soft)/80 border border-(--accent)/30 hover:border-(--accent) transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+                          title="Restaurar acesso do segurado ao portal"
+                        >
+                          <svg
+                            className="w-3.5 h-3.5 text-(--accent-ink) shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                          </svg>
+                          <span>Reativar Acesso ao Portal</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+              </div>
+
+              {segurado.usuarioId && (
+                <div className="flex flex-wrap items-center gap-4 pt-2.5 border-t border-(--border)/60 text-xs">
+                  <div>
+                    <span className="text-(--muted) mr-1.5">
+                      Login de Acesso:
+                    </span>
+                    <span className="font-mono font-medium text-(--fg)">
+                      {usuarioPortal?.email || segurado.email}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-(--muted) mr-1.5">ID da Conta:</span>
+                    <span className="font-mono text-(--muted)">
+                      {segurado.usuarioId}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Dados Cadastrais e Contato */}
@@ -355,5 +545,88 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
         </div>
       </div>
     </Modal>
+
+    {/* Modal de confirmação de inativação do acesso do segurado */}
+    {confirmarInativarAberto && (
+      <Modal
+        isOpen={true}
+        onClose={() => setConfirmarInativarAberto(false)}
+        title="Inativar Acesso ao Portal do Segurado"
+        description="A suspensão do acesso bloqueará imediatamente logins do cliente no Portal do Segurado."
+        maxWidthClass="max-w-md"
+      >
+        <div className="space-y-4">
+          <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/20 text-xs text-(--fg) space-y-2.5">
+            <div className="flex items-center gap-2 font-semibold text-red-600 dark:text-red-400">
+              <svg
+                className="w-4 h-4 shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <span>Confirmação de suspensão</span>
+            </div>
+            <p className="text-(--muted) leading-relaxed">
+              Deseja realmente inativar o acesso de{" "}
+              <strong className="text-(--fg)">
+                {segurado.nomeRazaoSocial}
+              </strong>
+              ? O segurado não conseguirá mais consultar apólices ou abrir sinistros online.
+            </p>
+            <div className="p-2.5 rounded bg-(--surface) border border-(--border) text-[11px] font-mono text-(--muted) space-y-1">
+              <div>
+                E-mail:{" "}
+                <span className="text-(--fg) font-semibold">
+                  {usuarioPortal?.email || segurado.email}
+                </span>
+              </div>
+              <div>
+                CPF/CNPJ:{" "}
+                <span className="text-(--fg) font-semibold">
+                  {formatarCpfCnpj(segurado.cpfCnpj, segurado.tipoPessoa)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2.5 pt-2 border-t border-(--border)">
+            <Button
+              variant="secondary"
+              onClick={() => setConfirmarInativarAberto(false)}
+              disabled={inativarMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleInativarAcessoPortal}
+              disabled={inativarMutation.isPending}
+            >
+              {inativarMutation.isPending
+                ? "Inativando..."
+                : "Confirmar Inativação"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    )}
+
+    {toastInfo && (
+      <ToastNotification
+        isOpen={toastInfo.isOpen}
+        title={toastInfo.title}
+        message={toastInfo.message}
+        variant={toastInfo.variant}
+        onClose={() => setToastInfo(null)}
+      />
+    )}
+  </>
   );
 };
