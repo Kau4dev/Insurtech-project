@@ -5,6 +5,7 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  Modal,
   SearchInput,
   TableContainer,
   TableHeader,
@@ -24,6 +25,19 @@ import type { PapelUsuario } from "../interfaces/enums";
 import { extrairMensagemErro } from "../utils/errorUtils";
 import { formatarData } from "../utils/formatters";
 
+const OPCOES_PAPEL = [
+  { id: "TODOS", label: "Todos" },
+  { id: "ADMIN", label: "Admin" },
+  { id: "GESTOR", label: "Gestor" },
+  { id: "ANALISTA", label: "Analista" },
+] as const;
+
+const OPCOES_STATUS = [
+  { id: "TODOS", label: "Todos" },
+  { id: "ATIVOS", label: "Ativos" },
+  { id: "INATIVOS", label: "Inativos" },
+] as const;
+
 export const UsuariosListPage: React.FC = () => {
   const { usuario: usuarioLogado } = useAuth();
   const { data: usuarios, isLoading, isError, refetch } = useUsuarios();
@@ -38,6 +52,13 @@ export const UsuariosListPage: React.FC = () => {
   );
 
   const [modalCriarAberto, setModalCriarAberto] = useState(false);
+  const [usuarioParaInativar, setUsuarioParaInativar] = useState<{
+    id: string;
+    nome: string;
+    email: string;
+    papel: string;
+  } | null>(null);
+
   const [credenciaisCriadas, setCredenciaisCriadas] = useState<{
     nome: string;
     email: string;
@@ -58,6 +79,9 @@ export const UsuariosListPage: React.FC = () => {
   const usuariosFiltrados = useMemo(() => {
     if (!usuarios) return [];
     return usuarios.filter((u) => {
+      // Esta tela gerencia apenas colaboradores internos; segurados pertencem ao módulo de clientes
+      if (u.papel === "SEGURADO") return false;
+
       // Filtro de busca
       const termo = busca.toLowerCase().trim();
       const bateTermo =
@@ -97,20 +121,16 @@ export const UsuariosListPage: React.FC = () => {
     });
   };
 
-  const handleInativar = async (id: string, nome: string) => {
-    if (
-      !window.confirm(
-        `Deseja realmente inativar o acesso de ${nome}? O usuário não conseguirá mais efetuar login.`,
-      )
-    ) {
-      return;
-    }
+  const handleConfirmarInativacao = async () => {
+    if (!usuarioParaInativar) return;
+    const { id, nome } = usuarioParaInativar;
     try {
       await inativarMutation.mutateAsync(id);
+      setUsuarioParaInativar(null);
       setToastInfo({
         isOpen: true,
-        title: "Usuário inativado",
-        message: `O acesso de ${nome} foi suspenso.`,
+        title: "Acesso inativado",
+        message: `O acesso corporativo de ${nome} foi suspenso.`,
         variant: "warning",
       });
     } catch (err) {
@@ -196,9 +216,9 @@ export const UsuariosListPage: React.FC = () => {
         )}
       </div>
 
-      {/* Barra de Filtros e Busca */}
-      <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between bg-(--surface) p-4 rounded-(--radius) border border-(--border)">
-        <div className="w-full md:w-80">
+      {/* Barra de Filtros e Busca Redesenhada */}
+      <div className="bg-(--surface) p-3.5 sm:p-4 rounded-(--radius) border border-(--border) shadow-xs flex flex-col xl:flex-row xl:items-center justify-between gap-3.5">
+        <div className="w-full xl:max-w-sm">
           <SearchInput
             placeholder="Buscar por nome ou e-mail..."
             value={busca}
@@ -206,48 +226,75 @@ export const UsuariosListPage: React.FC = () => {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Filtro de Papel */}
-          <div className="flex items-center gap-1 text-xs">
-            <span className="text-(--muted) mr-1 font-medium">Papel:</span>
-            {(["TODOS", "ADMIN", "GESTOR", "ANALISTA", "SEGURADO"] as const).map(
-              (p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setFiltroPapel(p)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                    filtroPapel === p
-                      ? "bg-(--accent-soft) text-(--accent-ink) font-semibold"
-                      : "text-(--muted) hover:bg-(--surface-2) hover:text-(--fg)"
-                  }`}
-                >
-                  {p === "TODOS" ? "Todos" : p}
-                </button>
-              ),
-            )}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+          {/* Segmented Control - Papel */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-(--muted)">
+              Papel:
+            </span>
+            <div className="inline-flex p-0.5 rounded-lg bg-(--surface-2) border border-(--border)">
+              {OPCOES_PAPEL.map(({ id, label }) => {
+                const ativo = filtroPapel === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setFiltroPapel(id)}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                      ativo
+                        ? "bg-(--surface) text-(--fg) font-semibold shadow-xs border border-(--border-strong)/50"
+                        : "text-(--muted) hover:text-(--fg) hover:bg-(--surface)/50"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="h-4 w-px bg-(--border) hidden sm:block mx-1" />
+          <div className="h-4 w-px bg-(--border) hidden sm:block" />
 
-          {/* Filtro de Status */}
-          <div className="flex items-center gap-1 text-xs">
-            <span className="text-(--muted) mr-1 font-medium">Status:</span>
-            {(["TODOS", "ATIVOS", "INATIVOS"] as const).map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setFiltroStatus(s)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                  filtroStatus === s
-                    ? "bg-(--accent-soft) text-(--accent-ink) font-semibold"
-                    : "text-(--muted) hover:bg-(--surface-2) hover:text-(--fg)"
-                }`}
-              >
-                {s === "TODOS" ? "Todos" : s === "ATIVOS" ? "Ativos" : "Inativos"}
-              </button>
-            ))}
+          {/* Segmented Control - Status */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-(--muted)">
+              Status:
+            </span>
+            <div className="inline-flex p-0.5 rounded-lg bg-(--surface-2) border border-(--border)">
+              {OPCOES_STATUS.map(({ id, label }) => {
+                const ativo = filtroStatus === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setFiltroStatus(id)}
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                      ativo
+                        ? "bg-(--surface) text-(--fg) font-semibold shadow-xs border border-(--border-strong)/50"
+                        : "text-(--muted) hover:text-(--fg) hover:bg-(--surface)/50"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {/* Limpar filtros */}
+          {(busca || filtroPapel !== "TODOS" || filtroStatus !== "TODOS") && (
+            <button
+              type="button"
+              onClick={() => {
+                setBusca("");
+                setFiltroPapel("TODOS");
+                setFiltroStatus("TODOS");
+              }}
+              className="text-xs text-(--muted) hover:text-(--accent-ink) font-medium underline underline-offset-2 transition-colors cursor-pointer ml-auto sm:ml-0"
+            >
+              Limpar filtros
+            </button>
+          )}
         </div>
       </div>
 
@@ -284,12 +331,12 @@ export const UsuariosListPage: React.FC = () => {
         <TableContainer>
           <TableHeader
             columns={[
-              { label: "Usuário" },
-              { label: "E-mail" },
-              { label: "Papel de Acesso" },
-              { label: "Status" },
-              { label: "Cadastrado em" },
-              { label: "Ações", align: "right" },
+              { label: "Usuário", align: "center" },
+              { label: "E-mail", align: "center" },
+              { label: "Papel de Acesso", align: "left" },
+              { label: "Status", align: "center" },
+              { label: "Cadastrado em", align: "left" },
+              { label: "Ações", align: "center" },
             ]}
           />
           <tbody>
@@ -347,31 +394,65 @@ export const UsuariosListPage: React.FC = () => {
 
                   {/* Data de Cadastro */}
                   <td className="px-6 py-4 whitespace-nowrap text-xs text-(--muted)">
-                    {u.createdAt ? formatarData(u.createdAt) : "—"}
+                    {u.createdAt ? formatarData(u.createdAt) : ""}
                   </td>
 
                   {/* Ações */}
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     {podeModificarStatus ? (
                       ativo ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-500/10"
-                          disabled={inativarMutation.isPending}
-                          onClick={() => handleInativar(u.id, u.nome)}
+                        <button
+                          type="button"
+                          disabled={
+                            inativarMutation.isPending &&
+                            usuarioParaInativar?.id === u.id
+                          }
+                          onClick={() =>
+                            setUsuarioParaInativar({
+                              id: u.id,
+                              nome: u.nome,
+                              email: u.email,
+                              papel: u.papel,
+                            })
+                          }
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 bg-red-500/5 hover:bg-red-500/10 active:bg-red-500/15 border border-red-500/20 hover:border-red-500/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs"
+                          title={`Inativar acesso de ${u.nome}`}
                         >
-                          Inativar
-                        </Button>
+                          <svg
+                            className="w-3.5 h-3.5 text-red-500 shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                          </svg>
+                          <span>Inativar</span>
+                        </button>
                       ) : (
-                        <Button
-                          variant="secondary"
-                          size="sm"
+                        <button
+                          type="button"
                           disabled={reativarMutation.isPending}
                           onClick={() => handleReativar(u.id, u.nome)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-(--accent-ink) bg-(--accent-soft)/40 hover:bg-(--accent-soft) active:bg-(--accent-soft)/80 border border-(--accent)/30 hover:border-(--accent) transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs"
+                          title={`Reativar acesso de ${u.nome}`}
                         >
-                          Reativar
-                        </Button>
+                          <svg
+                            className="w-3.5 h-3.5 text-(--accent-ink) shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                          </svg>
+                          <span>Reativar</span>
+                        </button>
                       )
                     ) : (
                       <span className="text-xs text-(--faint)">—</span>
@@ -390,6 +471,78 @@ export const UsuariosListPage: React.FC = () => {
         onClose={() => setModalCriarAberto(false)}
         onSuccess={handleSucessoCriacao}
       />
+
+      {/* Modal de confirmação de inativação */}
+      {usuarioParaInativar && (
+        <Modal
+          isOpen={true}
+          onClose={() => setUsuarioParaInativar(null)}
+          title="Inativar Acesso do Colaborador"
+          description="A suspensão do acesso bloqueará imediatamente logins e operações desta conta."
+          maxWidthClass="max-w-md"
+        >
+          <div className="space-y-4">
+            <div className="p-4 rounded-lg bg-red-500/5 border border-red-500/20 text-xs text-(--fg) space-y-2.5">
+              <div className="flex items-center gap-2 font-semibold text-red-600 dark:text-red-400">
+                <svg
+                  className="w-4 h-4 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <span>Confirmação de suspensão</span>
+              </div>
+              <p className="text-(--muted) leading-relaxed">
+                Tem certeza que deseja inativar o acesso de{" "}
+                <strong className="text-(--fg)">
+                  {usuarioParaInativar.nome}
+                </strong>
+                ? O colaborador não conseguirá mais efetuar login.
+              </p>
+              <div className="p-2.5 rounded bg-(--surface) border border-(--border) text-[11px] font-mono text-(--muted) space-y-1">
+                <div>
+                  E-mail:{" "}
+                  <span className="text-(--fg) font-semibold">
+                    {usuarioParaInativar.email}
+                  </span>
+                </div>
+                <div>
+                  Papel:{" "}
+                  <span className="text-(--fg) font-semibold">
+                    {usuarioParaInativar.papel}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-(--border)">
+              <Button
+                variant="secondary"
+                onClick={() => setUsuarioParaInativar(null)}
+                disabled={inativarMutation.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleConfirmarInativacao}
+                disabled={inativarMutation.isPending}
+              >
+                {inativarMutation.isPending
+                  ? "Inativando..."
+                  : "Confirmar Inativação"}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Modal de confirmação com credenciais geradas */}
       {credenciaisCriadas && (
