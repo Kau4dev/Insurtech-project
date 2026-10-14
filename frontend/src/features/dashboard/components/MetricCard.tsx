@@ -22,13 +22,13 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   isLoading = false,
 }) => {
   return (
-    <div className="bg-(--surface) border border-(--border) rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-(--accent)/40 transition-colors">
+    <div className="bg-(--surface) border border-(--border) rounded-(--radius) p-5 shadow-xs flex flex-col justify-between hover:border-(--accent)/40 transition-colors">
       {/* Top row: Title and Icon */}
       <div className="flex items-start justify-between gap-2">
         <span className="text-[13px] font-medium text-(--muted) tracking-tight">
           {title}
         </span>
-        <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-(--accent-soft) text-(--accent-ink) flex items-center justify-center shrink-0">
           {icon}
         </div>
       </div>
@@ -38,20 +38,20 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         {isLoading ? (
           <div className="h-8 w-24 bg-(--surface-2) animate-pulse rounded-md" />
         ) : (
-          <div className="text-[28px] font-bold text-(--fg) tracking-tight leading-none">
+          <div className="text-2xl sm:text-[28px] font-bold text-(--fg) tracking-tight leading-none num">
             {value}
           </div>
         )}
       </div>
 
       {/* Bottom row: Trend or badge + Subtitle */}
-      <div className="flex items-center gap-1.5 text-[12px] min-h-[20px]">
+      <div className="flex items-center gap-1.5 text-[12px] min-h-5">
         {trendBadge && (
           <span
             className={`font-semibold px-1.5 py-0.5 rounded text-[11px] ${
               trendVariant === "info"
-                ? "bg-sky-50 text-sky-700"
-                : "bg-emerald-50 text-emerald-700"
+                ? "bg-(--info-soft) text-(--info)"
+                : "bg-(--accent-soft) text-(--accent-ink)"
             }`}
           >
             {trendBadge}
@@ -62,9 +62,9 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           <span
             className={`font-semibold text-[12px] ${
               trendVariant === "positive"
-                ? "text-emerald-600"
+                ? "text-(--accent-ink)"
                 : trendVariant === "info"
-                ? "text-sky-600"
+                ? "text-(--info)"
                 : "text-(--muted)"
             }`}
           >

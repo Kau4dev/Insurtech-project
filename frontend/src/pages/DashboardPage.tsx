@@ -79,7 +79,7 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* 1. Cabeçalho da Página */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -96,6 +96,7 @@ export const DashboardPage: React.FC = () => {
 
         <Button
           variant="primary"
+          className="w-full sm:w-auto"
           onClick={() => setModalAberto(true)}
           icon={
             <svg

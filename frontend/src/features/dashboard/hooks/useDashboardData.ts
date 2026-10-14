@@ -3,17 +3,22 @@ import { useMemo } from "react";
 import { apolicesApi } from "../../../api/apolicesApi";
 import { seguradoApi } from "../../../api/seguradosApi";
 import { sinistrosApi } from "../../../api/sinistrosApi";
+import { useAuth } from "../../../context/useAuth";
 import type { StatusSinistro } from "../../../interfaces/enums";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
 
 export function useDashboardData() {
+  const { usuario } = useAuth();
+  const podeAcessarResumo = usuario?.papel === "GESTOR" || usuario?.papel === "ADMIN";
 
-  // 1. Resumo oficial do backend (ou cálculo automático caso sem permissão)
+  // 1. Resumo oficial do backend (ou cálculo automático caso sem permissão, como ANALISTA)
   const resumoQuery = useQuery({
     queryKey: ["sinistros", "dashboard-resumo"],
     queryFn: sinistrosApi.obterDashboard,
+    enabled: podeAcessarResumo,
     staleTime: 1000 * 60 * 3, // Os dados são considerados "frescos" por 3 minutos (ou até haver mutação em sinistros)
     refetchOnWindowFocus: false, // Não recarrega só por trocar de aba no navegador
+    retry: false,
   });
 
   // 2. Lista completa de sinistros para cálculos analíticos em tempo real

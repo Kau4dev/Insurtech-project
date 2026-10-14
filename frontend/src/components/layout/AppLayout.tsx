@@ -7,7 +7,7 @@ export const AppLayout: React.FC = () => {
   const [mobileMenuAberto, setMobileMenuAberto] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-dvh min-h-dvh overflow-hidden bg-(--bg)">
       <Sidebar
         isOpen={mobileMenuAberto}
         onClose={() => setMobileMenuAberto(false)}

@@ -55,7 +55,7 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
   };
 
   return (
-    <div className="border border-(--border) bg-(--surface) rounded-2xl p-5 shadow-xs flex flex-col h-full overflow-hidden">
+    <div className="border border-(--border) bg-(--surface) rounded-(--radius) p-5 shadow-xs flex flex-col h-full overflow-hidden">
       {/* Cabeçalho do Card no Topo */}
       <div className="flex items-center justify-between mb-3 shrink-0">
         <div className="flex items-baseline gap-2">
@@ -75,7 +75,7 @@ export const WorkQueueTable: React.FC<WorkQueueTableProps> = ({
       </div>
 
       {/* Tabela alinhada no Topo, logo abaixo do cabeçalho */}
-      <div className="overflow-x-auto -mx-5 flex-1">
+      <div className="overflow-x-auto touch-pan-x [-webkit-overflow-scrolling:touch] -mx-5 flex-1">
         <table className="w-full text-left border-collapse table-fixed min-w-140">
           <colgroup>
             <col className="w-[23%]" />

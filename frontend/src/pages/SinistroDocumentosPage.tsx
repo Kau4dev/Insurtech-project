@@ -128,13 +128,13 @@ export const SinistroDocumentosPage: React.FC = () => {
   const documentos = sinistro.documentos || [];
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-6xl mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-6xl mx-auto">
       {/* Navegação de Volta */}
       <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => navigate("/sinistros")}
-          className="text-xs text-(--accent-ink) hover:underline flex items-center gap-1 cursor-pointer font-medium"
+          className="min-h-[36px] text-xs text-(--accent-ink) hover:underline flex items-center gap-1 cursor-pointer font-medium"
         >
           <svg
             className="w-4 h-4"
@@ -158,7 +158,7 @@ export const SinistroDocumentosPage: React.FC = () => {
       </div>
 
       {/* Cabeçalho do Sinistro */}
-      <div className="p-5 rounded-xl bg-(--surface-2)/60 border border-(--border) space-y-4">
+      <div className="p-5 rounded-(--radius) bg-(--surface-2)/60 border border-(--border) space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
@@ -254,7 +254,7 @@ export const SinistroDocumentosPage: React.FC = () => {
       )}
 
       {sinistro.status === "AGUARDANDO_DOCUMENTOS" && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 space-y-1 text-xs">
+        <div className="p-4 rounded-(--radius) bg-amber-500/10 border border-amber-500/30 text-amber-800 space-y-1 text-xs">
           <div className="font-semibold flex items-center gap-1.5 text-sm">
             <svg
               className="w-4 h-4 text-amber-600"
