@@ -20,7 +20,12 @@ public class Notificacao {
     private String titulo;
     private String mensagem;
     private TipoNotificacao tipo;
+    private boolean lida = false;
     private Instant criadoEm;
+
+    public void marcarComoLida() {
+        this.lida = true;
+    }
 
     public void validar() {
         if (seguradoId == null) {
