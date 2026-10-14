@@ -50,13 +50,19 @@ public class CadastrarSeguradoUseCase {
 
 
         if (usuarioIdFinal == null) {
-
-            UsuarioCriadoResponseDTO novoUsuario = client.cadastrarUsuario(new CadastrarUsuarioRequestDTO(
-                    dto.nomeRazaoSocial(),
-                    dto.email(),
-                    null,
-                    Papel.SEGURADO
-            ));
+            UsuarioCriadoResponseDTO novoUsuario;
+            try {
+                novoUsuario = client.cadastrarUsuario(new CadastrarUsuarioRequestDTO(
+                        dto.nomeRazaoSocial(),
+                        dto.email(),
+                        null,
+                        Papel.SEGURADO
+                ));
+            } catch (FeignException.Conflict e) {
+                throw new UsuarioJaCadastradoException("Email já cadastrado no sistema de autenticação: " + dto.email());
+            } catch (FeignException e) {
+                throw new IllegalStateException("Falha ao comunicar com o serviço de autenticação: " + e.getMessage(), e);
+            }
             usuarioIdFinal = novoUsuario.id();
             senhaTemporaria = novoUsuario.senhaTemporaria();
         } else {
