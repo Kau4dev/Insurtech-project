@@ -5,7 +5,12 @@ import com.insurtech.liquidacao.application.usecase.ProcessarLiquidacaoUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -15,6 +20,11 @@ public class SinistroAprovadoConsumer {
 
     private final ProcessarLiquidacaoUseCase useCase;
 
+    @RetryableTopic(
+            attempts = "3",
+            backoff = @Backoff(delay = 1000, multiplier = 2.0),
+            autoCreateTopics = "true"
+    )
     @KafkaListener(
             topics = "sinistro.aprovado",
             groupId = "${spring.kafka.consumer.group-id}",
@@ -30,5 +40,15 @@ public class SinistroAprovadoConsumer {
                 record.offset();
 
         useCase.executar(record.value(), eventoIdOrigem);
+    }
+
+    @DltHandler
+    public void processarMensagemDlt(
+            ConsumerRecord<String, SinistroAprovadoEventDTO> record,
+            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+            @Header(KafkaHeaders.EXCEPTION_MESSAGE) String erro
+    ) {
+        log.error("[DEAD LETTER TOPIC - LIQUIDACAO] Falha fatal ao processar liquidacao apos retentativas. Topico: {} | Erro: {} | Payload: {}",
+                topic, erro, record.value());
     }
 }
