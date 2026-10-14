@@ -1,11 +1,11 @@
 package com.insurtech.auth.application.usecase;
 
+import com.insurtech.auth.application.dto.UsuarioResponseDTO;
 import com.insurtech.auth.application.validator.UsuarioSecurityValidator;
-import com.insurtech.auth.domain.exception.AcessoNegadoException;
 import com.insurtech.auth.domain.exception.UsuarioNaoEncontradoException;
-import com.insurtech.auth.domain.model.Papel;
 import com.insurtech.auth.domain.model.Usuario;
 import com.insurtech.auth.domain.repository.UsuarioRepository;
+import com.insurtech.auth.infrastructure.mapper.UsuarioMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,28 +14,27 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class DeletarUsuarioUseCase {
+public class ReativarUsuarioUseCase {
 
     private final UsuarioRepository repository;
+    private final UsuarioMapper mapper;
     private final UsuarioSecurityValidator securityValidator;
 
     @Transactional
-    public void executar(UUID usuarioId) {
-        securityValidator.validarPapeisComMensagem("Apenas administradores e gestores podem inativar usuários.", "ADMIN", "GESTOR");
+    public UsuarioResponseDTO executar(UUID usuarioId) {
+        securityValidator.validarPapeisComMensagem("Apenas administradores e gestores podem ativar usuários.", "ADMIN", "GESTOR");
 
         Usuario usuario = repository.buscarPorId(usuarioId)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com o ID: " + usuarioId));
 
-        if (usuario.getPapel() == Papel.ADMIN) {
-            throw new AcessoNegadoException("O usuário ADMIN não pode ser inativado.");
+        if (Boolean.TRUE.equals(usuario.getAtivo())) {
+            throw new IllegalStateException("Usuário já está ativo: " + usuarioId);
         }
 
-        if (Boolean.FALSE.equals(usuario.getAtivo())) {
-            throw new IllegalStateException("Usuário já está inativo: " + usuarioId);
-        }
-
-        usuario.setAtivo(false);
+        usuario.setAtivo(true);
         usuario.setUpdatedAt(java.time.Instant.now());
-        repository.salvar(usuario);
+        Usuario salvo = repository.salvar(usuario);
+        return mapper.toResponse(salvo);
     }
 }
+

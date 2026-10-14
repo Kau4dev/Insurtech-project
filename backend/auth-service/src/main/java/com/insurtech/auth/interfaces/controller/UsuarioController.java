@@ -3,10 +3,10 @@ package com.insurtech.auth.interfaces.controller;
 import com.insurtech.auth.application.dto.CadastrarUsuarioRequestDTO;
 import com.insurtech.auth.application.dto.UsuarioCriadoResponseDTO;
 import com.insurtech.auth.application.dto.UsuarioResponseDTO;
-import com.insurtech.auth.application.usecase.AtualizarUsuarioUseCase;
 import com.insurtech.auth.application.usecase.BuscarUsuarioUseCase;
 import com.insurtech.auth.application.usecase.CadastrarUsuarioUseCase;
-import com.insurtech.auth.application.usecase.DeletarUsuarioUseCase;
+import com.insurtech.auth.application.usecase.InativarUsuarioUseCase;
+import com.insurtech.auth.application.usecase.ReativarUsuarioUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,8 +23,8 @@ public class UsuarioController implements UsuarioControllerDocs {
 
     private final CadastrarUsuarioUseCase cadastrarUsuario;
     private final BuscarUsuarioUseCase buscarUsuario;
-    private final AtualizarUsuarioUseCase atualizarUsuario;
-    private final DeletarUsuarioUseCase deletarUsuario;
+    private final ReativarUsuarioUseCase reativarUsuario;
+    private final InativarUsuarioUseCase inativarUsuario;
 
     @Override
     @PostMapping
@@ -46,14 +46,14 @@ public class UsuarioController implements UsuarioControllerDocs {
 
     @Override
     @PatchMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> atualizarUsuario(@PathVariable UUID id) {
-        return ResponseEntity.ok(atualizarUsuario.executar(id));
+    public ResponseEntity<UsuarioResponseDTO> reativarUsuario(@PathVariable UUID id) {
+        return ResponseEntity.ok(reativarUsuario.executar(id));
     }
 
     @Override
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarUsuario(@PathVariable UUID id) {
-        deletarUsuario.executar(id);
+    public ResponseEntity<Void> inativarUsuario(@PathVariable UUID id) {
+        inativarUsuario.executar(id);
         return ResponseEntity.noContent().build();
     }
 }

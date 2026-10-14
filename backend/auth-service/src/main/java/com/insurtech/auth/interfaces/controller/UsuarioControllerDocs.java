@@ -53,25 +53,25 @@ public interface UsuarioControllerDocs {
             @Parameter(description = "Filtro opcional por status ativo (true ou false)", required = false) Boolean ativo
     );
 
-    @Operation(summary = "Atualizar usuário (ativar)", description = "Ativa um usuário que estava inativo no sistema.")
+    @Operation(summary = "Reativar usuário", description = "Reativa um usuário que estava inativo no sistema.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuário ativado com sucesso."),
+            @ApiResponse(responseCode = "200", description = "Usuário reativado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Usuário já está ativo ou requisição inválida",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = "Não autenticado",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "403", description = "Acesso negado. Apenas administradores e gestores podem ativar usuários",
+            @ApiResponse(responseCode = "403", description = "Acesso negado. Apenas administradores e gestores podem reativar usuários",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<UsuarioResponseDTO> atualizarUsuario(
+    ResponseEntity<UsuarioResponseDTO> reativarUsuario(
             @Parameter(description = "ID do usuário (UUID)", required = true) UUID id
     );
 
-    @Operation(summary = "Deletar usuário (inativar)", description = "Inativa um usuário do sistema (soft delete).")
+    @Operation(summary = "Inativar usuário", description = "Inativa um usuário do sistema (soft delete).")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Usuário inativado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Usuário já está inativo",
@@ -85,7 +85,7 @@ public interface UsuarioControllerDocs {
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<Void> deletarUsuario(
+    ResponseEntity<Void> inativarUsuario(
             @Parameter(description = "ID do usuário (UUID)", required = true) UUID id
     );
 }
