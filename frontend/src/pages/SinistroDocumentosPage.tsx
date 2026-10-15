@@ -73,7 +73,7 @@ export const SinistroDocumentosPage: React.FC = () => {
     try {
       await aguardarDocsMutation.mutateAsync(sinistro.id);
       setMensagemSucesso(
-        "Status do sinistro atualizado para AGUARDANDO_DOCUMENTOS.",
+        "Status do sinistro atualizado para AGUARDANDO DOCUMENTOS.",
       );
       refetch();
     } catch (err) {
@@ -134,7 +134,7 @@ export const SinistroDocumentosPage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate("/sinistros")}
-          className="min-h-[36px] text-xs text-(--accent-ink) hover:underline flex items-center gap-1 cursor-pointer font-medium"
+          className="min-h-9 text-xs text-(--accent-ink) hover:underline flex items-center gap-1 cursor-pointer font-medium"
         >
           <svg
             className="w-4 h-4"
