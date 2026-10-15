@@ -60,7 +60,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <RotaProtegida>
+      <RotaProtegida papeisPermitidos={["ADMIN", "GESTOR", "ANALISTA"]}>
         <AppLayout />
       </RotaProtegida>
     ),

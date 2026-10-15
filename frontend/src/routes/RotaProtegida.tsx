@@ -27,15 +27,34 @@ export const RotaProtegida: React.FC<RotaProtegidaProps> = ({
     );
   }
 
-  // Se não autenticado, redireciona para a tela de login preservando a rota desejada
+  const isPortalRoute =
+    location.pathname.startsWith("/portal") ||
+    location.pathname === "/login-segurado";
+
+  // Se não autenticado, redireciona para a tela de login correspondente preservando a rota desejada
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    const loginTarget = isPortalRoute ? "/portal/login" : "/login";
+    return <Navigate to={loginTarget} replace state={{ from: location }} />;
   }
 
   // Se houver restrição por papéis e o usuário não possuir o papel permitido
-  if (papeisPermitidos && papeisPermitidos.length > 0 && usuario?.papel) {
-    const temPermissao = papeisPermitidos.includes(usuario.papel);
+  if (papeisPermitidos && papeisPermitidos.length > 0) {
+    const temPermissao = usuario?.papel
+      ? papeisPermitidos.includes(usuario.papel)
+      : false;
+
     if (!temPermissao) {
+      // 1. Segurado tentando acessar área interna (Backoffice / Dashboard)
+      if (usuario?.papel === "SEGURADO") {
+        return <Navigate to="/portal" replace />;
+      }
+
+      // 2. Usuário interno (ADMIN, GESTOR, ANALISTA) tentando acessar rota do Portal do Segurado
+      if (isPortalRoute) {
+        return <Navigate to="/dashboard" replace />;
+      }
+
+      // 3. Usuário interno sem permissão para módulo específico (ex: ANALISTA em /usuarios)
       return (
         <div className="min-h-screen flex items-center justify-center bg-(--bg) p-6">
           <div
@@ -63,7 +82,7 @@ export const RotaProtegida: React.FC<RotaProtegidaProps> = ({
             <p className="text-sm text-(--muted) mb-6">
               Seu perfil de acesso (
               <span className="font-mono font-medium text-(--accent-ink)">
-                {usuario.papel}
+                {usuario?.papel || "DESCONHECIDO"}
               </span>
               ) não possui privilégios para visualizar este recurso.
             </p>
