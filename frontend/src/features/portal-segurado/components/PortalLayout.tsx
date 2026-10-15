@@ -155,9 +155,7 @@ export const PortalLayout: React.FC = () => {
 
                 </span>
                 
-                <span className="sm:hidden inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-(--accent-soft) text-(--accent-ink) border border-(--accent)/20">
-                  Segurado
-                </span>
+                
               </div>
             </Link>
 
@@ -189,26 +187,7 @@ export const PortalLayout: React.FC = () => {
           <div className="flex items-center gap-2 sm:gap-3">
 
             {/* CTA Compacto para Mobile Pequeno */}
-            <Link
-              to="/portal/sinistros/novo"
-              aria-label="Abrir novo sinistro"
-              className="sm:hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-(--accent) text-white hover:bg-(--accent-ink) active:scale-[0.98] transition-all shadow-2xs"
-            >
-              <svg
-                className="w-3.5 h-3.5 shrink-0"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 4.5v15m7.5-7.5h-15"
-                />
-              </svg>
-              <span>Sinistro</span>
-            </Link>
+           
 
             <div className="hidden sm:block h-5 w-px bg-(--border)" />
 
