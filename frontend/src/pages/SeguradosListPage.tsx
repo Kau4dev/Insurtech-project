@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Button, Modal, Pagination } from "../components/ui";
+import { Button, Modal, Pagination, ToastNotification } from "../components/ui";
 import { useAuth } from "../context/useAuth";
 import {
+  CredenciaisModal,
   SeguradoDetailDrawer,
   SeguradoFilters,
   SeguradoForm,
@@ -22,6 +23,19 @@ export const SeguradosListPage: React.FC = () => {
   const { usuario } = useAuth();
   const podeCadastrar =
     usuario?.papel === "GESTOR" || usuario?.papel === "ADMIN";
+
+  const [credenciaisCriadas, setCredenciaisCriadas] = useState<{
+    email: string;
+    senhaTemporaria: string;
+    nomeRazaoSocial: string;
+  } | null>(null);
+
+  const [toastInfo, setToastInfo] = useState<{
+    isOpen: boolean;
+    title: string;
+    message?: string;
+    variant: "success" | "info" | "warning" | "error";
+  } | null>(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const nome = searchParams.get("busca") || "";
@@ -110,10 +124,39 @@ export const SeguradosListPage: React.FC = () => {
           id: seguradoEmEdicao.id,
           dto: dto as SeguradoUpdateRequest,
         });
+        handleFecharModal();
+        setToastInfo({
+          isOpen: true,
+          title: "Segurado atualizado com sucesso!",
+          message: "As informações cadastrais foram salvas.",
+          variant: "success",
+        });
       } else {
-        await criarMutation.mutateAsync(dto as SeguradoRequest);
+        const novoSegurado = await criarMutation.mutateAsync(
+          dto as SeguradoRequest,
+        );
+        handleFecharModal();
+        if (novoSegurado.senhaTemporaria) {
+          setCredenciaisCriadas({
+            email: novoSegurado.email,
+            senhaTemporaria: novoSegurado.senhaTemporaria,
+            nomeRazaoSocial: novoSegurado.nomeRazaoSocial,
+          });
+          setToastInfo({
+            isOpen: true,
+            title: "Acesso Criado com Sucesso!",
+            message: `Credenciais geradas para ${novoSegurado.email}. Visualize na janela de confirmação.`,
+            variant: "success",
+          });
+        } else {
+          setToastInfo({
+            isOpen: true,
+            title: "Segurado cadastrado com sucesso!",
+            message: `${novoSegurado.nomeRazaoSocial} foi incluído no sistema.`,
+            variant: "success",
+          });
+        }
       }
-      handleFecharModal();
     } catch (err: unknown) {
       console.error("Erro ao salvar segurado:", err);
       setFormError(
@@ -131,7 +174,7 @@ export const SeguradosListPage: React.FC = () => {
   const totalElements = data?.totalElements || 0;
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Cabeçalho da Página */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -146,6 +189,7 @@ export const SeguradosListPage: React.FC = () => {
 
         <Button
           variant="primary"
+          className="w-full sm:w-auto"
           onClick={handleAbrirNovo}
           disabled={!podeCadastrar}
           title={
@@ -184,6 +228,16 @@ export const SeguradosListPage: React.FC = () => {
             </span>
           </div>
         </div>
+      )}
+      
+      {credenciaisCriadas && (
+        <CredenciaisModal
+          isOpen={Boolean(credenciaisCriadas)}
+          onClose={() => setCredenciaisCriadas(null)}
+          email={credenciaisCriadas.email}
+          senhaTemporaria={credenciaisCriadas.senhaTemporaria}
+          nomeRazaoSocial={credenciaisCriadas.nomeRazaoSocial}
+        />
       )}
 
       {/* Modal Reutilizável com Formulário */}
@@ -253,6 +307,17 @@ export const SeguradosListPage: React.FC = () => {
         isOpen={Boolean(seguradoParaDetalhes)}
         onClose={handleFecharDetalhes}
       />
+
+      {toastInfo && (
+        <ToastNotification
+          isOpen={toastInfo.isOpen}
+          title={toastInfo.title}
+          message={toastInfo.message}
+          variant={toastInfo.variant}
+          onClose={() => setToastInfo(null)}
+          durationMs={7000}
+        />
+      )}
     </div>
   );
 };

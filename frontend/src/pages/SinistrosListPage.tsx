@@ -235,7 +235,7 @@ export const SinistrosListPage: React.FC = () => {
   const totalElements = data?.totalElements || 0;
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Cabeçalho da Página */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -250,6 +250,7 @@ export const SinistrosListPage: React.FC = () => {
 
         <Button
           variant="primary"
+          className="w-full sm:w-auto"
           onClick={handleAbrirNovo}
           disabled={!podeCadastrarSinistro}
           title={

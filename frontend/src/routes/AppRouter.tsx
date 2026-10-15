@@ -1,11 +1,20 @@
 import { createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "../components/layout/AppLayout";
+import {
+  PortalLayout,
+  PortalDashboardPage,
+  PortalApolicesPage,
+  PortalNovoSinistroPage,
+  PortalSinistroDetailPage,
+  PortalLoginPage,
+} from "../features/portal-segurado";
 import { ApolicesListPage } from "../pages/ApolicesListPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { LoginPage } from "../pages/LoginPage";
 import { SeguradosListPage } from "../pages/SeguradosListPage";
 import { SinistroDocumentosPage } from "../pages/SinistroDocumentosPage";
 import { SinistrosListPage } from "../pages/SinistrosListPage";
+import { UsuariosListPage } from "../pages/UsuariosListPage";
 import { RotaProtegida } from "./RotaProtegida";
 
 export const router = createBrowserRouter([
@@ -14,8 +23,44 @@ export const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
+    path: "/portal/login",
+    element: <PortalLoginPage />,
+  },
+  {
+    path: "/login-segurado",
+    element: <PortalLoginPage />,
+  },
+
+  {
+    path: "/portal",
     element: (
-      <RotaProtegida>
+      <RotaProtegida papeisPermitidos={["SEGURADO"]}>
+        <PortalLayout />
+      </RotaProtegida>
+    ),
+    children: [
+      {
+        index: true,
+        element: <PortalDashboardPage />,
+      },
+      {
+        path: "apolices",
+        element: <PortalApolicesPage />,
+      },
+      {
+        path: "sinistros/novo",
+        element: <PortalNovoSinistroPage />,
+      },
+      {
+        path: "sinistros/:id",
+        element: <PortalSinistroDetailPage />,
+      },
+    ],
+  },
+  {
+    path: "/",
+    element: (
+      <RotaProtegida papeisPermitidos={["ADMIN", "GESTOR", "ANALISTA"]}>
         <AppLayout />
       </RotaProtegida>
     ),
@@ -43,6 +88,14 @@ export const router = createBrowserRouter([
       {
         path: "/sinistros/:id/documentos",
         element: <SinistroDocumentosPage />,
+      },
+      {
+        path: "/usuarios",
+        element: (
+          <RotaProtegida papeisPermitidos={["ADMIN", "GESTOR"]}>
+            <UsuariosListPage />
+          </RotaProtegida>
+        ),
       },
       {
         path: "*",

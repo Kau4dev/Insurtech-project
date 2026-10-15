@@ -1,20 +1,36 @@
 package com.insurtech.notificacao.unit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.insurtech.notificacao.application.usecase.NotificarPagamentoLiquidadoUseCase;
+import com.insurtech.notificacao.application.usecase.NotificarSinistroRegistradoUseCase;
+import com.insurtech.notificacao.application.usecase.NotificarSinistroRejeitadoUseCase;
 import com.insurtech.notificacao.infrastructure.messaging.NotificacaoConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class NotificacaoConsumerTest {
 
     private ObjectMapper objectMapper;
+
+    @Mock
+    private NotificarSinistroRegistradoUseCase notificarSinistroRegistradoUseCase;
+
+    @Mock
+    private NotificarSinistroRejeitadoUseCase notificarSinistroRejeitadoUseCase;
+
+    @Mock
+    private NotificarPagamentoLiquidadoUseCase notificarPagamentoLiquidadoUseCase;
+
     private NotificacaoConsumer consumer;
 
     @BeforeEach
@@ -22,7 +38,12 @@ class NotificacaoConsumerTest {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        consumer = new NotificacaoConsumer(objectMapper);
+        consumer = new NotificacaoConsumer(
+                objectMapper,
+                notificarSinistroRegistradoUseCase,
+                notificarSinistroRejeitadoUseCase,
+                notificarPagamentoLiquidadoUseCase
+        );
     }
 
     @Test
@@ -35,6 +56,7 @@ class NotificacaoConsumerTest {
         );
 
         assertDoesNotThrow(() -> consumer.consumirRegistrado(message));
+        verify(notificarSinistroRegistradoUseCase).executar(any());
     }
 
     @Test
@@ -47,6 +69,7 @@ class NotificacaoConsumerTest {
         );
 
         assertDoesNotThrow(() -> consumer.consumirRejeitado(message));
+        verify(notificarSinistroRejeitadoUseCase).executar(any());
     }
 
     @Test
@@ -59,26 +82,6 @@ class NotificacaoConsumerTest {
         );
 
         assertDoesNotThrow(() -> consumer.consumirLiquidacao(message));
-    }
-
-    @Test
-    void deveConsumirLiquidacaoComSucesso_quandoStatusFalhou() {
-        UUID sinistroId = UUID.randomUUID();
-        UUID seguradoId = UUID.randomUUID();
-        String message = String.format(
-                "{\"sinistroId\":\"%s\",\"seguradoId\":\"%s\",\"valorLiquidado\":15000.00,\"status\":\"FALHOU\"}",
-                sinistroId, seguradoId
-        );
-
-        assertDoesNotThrow(() -> consumer.consumirLiquidacao(message));
-    }
-
-    @Test
-    void deveTratarErroDeDesserializacao() {
-        String invalidMessage = "invalid json";
-
-        assertDoesNotThrow(() -> consumer.consumirRegistrado(invalidMessage));
-        assertDoesNotThrow(() -> consumer.consumirRejeitado(invalidMessage));
-        assertDoesNotThrow(() -> consumer.consumirLiquidacao(invalidMessage));
+        verify(notificarPagamentoLiquidadoUseCase).executar(any());
     }
 }

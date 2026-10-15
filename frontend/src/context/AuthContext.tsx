@@ -2,23 +2,29 @@ import React, { useState, useEffect, useCallback } from "react";
 import { authApi } from "../api/authApi";
 import type { AuthRequest } from "../interfaces/auth/authRequest";
 import type { Usuario } from "../interfaces/auth/usuario";
+import {
+  getStoredToken,
+  removeStoredToken,
+  setStoredToken,
+} from "../utils/tokenStorage";
 import { AuthContext } from "./authContextInstance";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
-  const [isLoading, setIsLoading] = useState<boolean>(() => !!localStorage.getItem("token"));
+  const [token, setToken] = useState<string | null>(() => getStoredToken());
+  const [isLoading, setIsLoading] = useState<boolean>(() => !!getStoredToken());
 
   const logout = useCallback(() => {
-    localStorage.removeItem("token");
+    removeStoredToken();
     setUsuario(null);
     setToken(null);
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    const tokenSalvo = localStorage.getItem("token");
+    const tokenSalvo = getStoredToken();
     if (!tokenSalvo) {
+      setIsLoading(false);
       return;
     }
 
@@ -48,15 +54,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [logout]);
 
-  const login = async (dto: AuthRequest) => {
+  const login = async (dto: AuthRequest): Promise<Usuario> => {
     setIsLoading(true);
     try {
       const response = await authApi.login(dto);
-      localStorage.setItem("token", response.token);
+      setStoredToken(response.token, response.papel);
       setToken(response.token);
 
       const user = await authApi.validarToken();
       setUsuario(user);
+      return user;
     } catch (error) {
       logout();
       throw error;

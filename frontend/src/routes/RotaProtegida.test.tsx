@@ -92,4 +92,85 @@ describe("RotaProtegida", () => {
 
     expect(screen.getByText("Área Permitida")).toBeInTheDocument();
   });
+
+  it("deve redirecionar para /portal/login se não autenticado em rota do portal", () => {
+    mockUseAuth.mockReturnValue({
+      isLoading: false,
+      isAuthenticated: false,
+      usuario: null,
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/portal/apolices"]}>
+        <Routes>
+          <Route
+            path="/portal/apolices"
+            element={
+              <RotaProtegida papeisPermitidos={["SEGURADO"]}>
+                <div>Apólices do Segurado</div>
+              </RotaProtegida>
+            }
+          />
+          <Route path="/portal/login" element={<div>Login do Portal</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Login do Portal")).toBeInTheDocument();
+    expect(screen.queryByText("Apólices do Segurado")).not.toBeInTheDocument();
+  });
+
+  it("deve redirecionar SEGURADO para /portal ao tentar acessar rota interna restrita", () => {
+    mockUseAuth.mockReturnValue({
+      isLoading: false,
+      isAuthenticated: true,
+      usuario: { id: "seg-1", nome: "Segurado", papel: "SEGURADO" },
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <Routes>
+          <Route
+            path="/dashboard"
+            element={
+              <RotaProtegida papeisPermitidos={["ADMIN", "GESTOR", "ANALISTA"]}>
+                <div>Dashboard Interno</div>
+              </RotaProtegida>
+            }
+          />
+          <Route path="/portal" element={<div>Portal do Segurado Home</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Portal do Segurado Home")).toBeInTheDocument();
+    expect(screen.queryByText("Dashboard Interno")).not.toBeInTheDocument();
+  });
+
+  it("deve redirecionar usuário interno para /dashboard ao tentar acessar /portal", () => {
+    mockUseAuth.mockReturnValue({
+      isLoading: false,
+      isAuthenticated: true,
+      usuario: { id: "adm-1", nome: "Admin", papel: "ADMIN" },
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/portal"]}>
+        <Routes>
+          <Route
+            path="/portal"
+            element={
+              <RotaProtegida papeisPermitidos={["SEGURADO"]}>
+                <div>Portal do Segurado</div>
+              </RotaProtegida>
+            }
+          />
+          <Route path="/dashboard" element={<div>Dashboard Administrativo</div>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("Dashboard Administrativo")).toBeInTheDocument();
+    expect(screen.queryByText("Portal do Segurado")).not.toBeInTheDocument();
+  });
 });

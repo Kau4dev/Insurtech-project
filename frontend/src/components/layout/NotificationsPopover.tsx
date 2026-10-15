@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { notificacoesApi, type NotificacaoResponse } from "../../api/notificacoesApi";
 
 export interface NotificacaoItem {
   id: string;
@@ -11,11 +12,60 @@ export interface NotificacaoItem {
   link?: string;
 }
 
+function mapearTipo(tipo: NotificacaoResponse["tipo"]): NotificacaoItem["tipo"] {
+  switch (tipo) {
+    case "PAGAMENTO_LIQUIDADO":
+      return "sucesso";
+    case "SINISTRO_REJEITADO":
+      return "alerta";
+    case "SINISTRO_REGISTRADO":
+    default:
+      return "info";
+  }
+}
+
+function formatarTempo(isoString: string): string {
+  try {
+    const data = new Date(isoString);
+    const diffMs = Date.now() - data.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return "Agora";
+    if (diffMin < 60) return `${diffMin}m atrás`;
+    const diffHoras = Math.floor(diffMin / 60);
+    if (diffHoras < 24) return `${diffHoras}h atrás`;
+    return data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
 export const NotificationsPopover: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [notificacoes, setNotificacoes] = useState<NotificacaoItem[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const carregarNotificacoes = async () => {
+    try {
+      const data = await notificacoesApi.listar();
+      const itens: NotificacaoItem[] = data.map((n) => ({
+        id: n.id,
+        titulo: n.titulo,
+        descricao: n.mensagem,
+        tipo: mapearTipo(n.tipo),
+        tempo: formatarTempo(n.criadoEm),
+        lida: n.lida,
+        link: "/sinistros",
+      }));
+      setNotificacoes(itens);
+    } catch {
+      // Falha silenciosa ou fallback
+    }
+  };
+
+  useEffect(() => {
+    carregarNotificacoes();
+  }, []);
 
   const naoLidasCount = notificacoes.filter((n) => !n.lida).length;
 
@@ -35,6 +85,7 @@ export const NotificationsPopover: React.FC = () => {
     };
 
     if (isOpen) {
+      carregarNotificacoes();
       document.addEventListener("mousedown", handleClickFora);
       document.addEventListener("keydown", handleKeyDown);
     }
@@ -44,14 +95,24 @@ export const NotificationsPopover: React.FC = () => {
     };
   }, [isOpen]);
 
-  const marcarComoLida = (id: string) => {
+  const marcarComoLida = async (id: string) => {
     setNotificacoes((prev) =>
       prev.map((n) => (n.id === id ? { ...n, lida: true } : n)),
     );
+    try {
+      await notificacoesApi.marcarComoLida(id);
+    } catch {
+      // ignore
+    }
   };
 
-  const marcarTodasComoLidas = () => {
+  const marcarTodasComoLidas = async () => {
     setNotificacoes((prev) => prev.map((n) => ({ ...n, lida: true })));
+    try {
+      await notificacoesApi.marcarTodasComoLidas();
+    } catch {
+      // ignore
+    }
   };
 
   const limparTodas = () => {

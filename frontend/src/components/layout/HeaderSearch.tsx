@@ -246,7 +246,7 @@ export const HeaderSearch: React.FC = () => {
   let currentIndexTracker = -1;
 
   return (
-    <div className="relative w-60 sm:w-72 lg:w-84" ref={containerRef}>
+    <div className="relative w-44 xs:w-56 sm:w-72 lg:w-84" ref={containerRef}>
       {/* Campo de Busca do Header */}
       <div className="relative flex items-center">
         <svg
@@ -269,7 +269,7 @@ export const HeaderSearch: React.FC = () => {
             if (termo.trim()) setIsOpen(true);
           }}
           onKeyDown={handleKeyDown}
-          className="w-full pl-9 pr-14 py-1.5 text-[13px] placeholder:text-(--muted) border border-(--border) rounded-lg bg-(--surface-2) focus:outline-none focus:border-(--accent) focus:ring-1 focus:ring-(--accent) transition-all text-(--fg)"
+          className="w-full pl-9 pr-14 py-1.5 text-[13px] placeholder:text-(--muted) border border-(--border) rounded-lg bg-(--surface-2) focus:outline-none focus:border-(--accent) focus:ring-1 focus:ring-(--accent) transition-all text-(--fg) truncate"
           placeholder="Buscar nº do sinistro, apólice ou CNPJ…"
           aria-expanded={isOpen}
           aria-haspopup="listbox"
@@ -329,7 +329,7 @@ export const HeaderSearch: React.FC = () => {
       {/* Popover / Dropdown de Resultados da Busca */}
       {isOpen && termo.trim().length > 0 && (
         <div
-          className="fixed left-4 right-4 sm:left-auto sm:right-0 sm:absolute top-16 sm:top-full sm:mt-2 sm:w-115 max-h-[calc(100vh-5.5rem)] sm:max-h-125 bg-(--surface) border border-(--border) rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in fade-in-50 zoom-in-95 duration-100"
+          className="fixed inset-x-2 sm:inset-x-auto sm:right-0 sm:absolute top-16 sm:top-full sm:mt-2 sm:w-115 max-h-[calc(100vh-5.5rem)] sm:max-h-125 bg-(--surface) border border-(--border) rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in fade-in-50 zoom-in-95 duration-100"
           style={{ boxShadow: "var(--shadow-2)" }}
         >
           {/* Cabeçalho do Popover */}

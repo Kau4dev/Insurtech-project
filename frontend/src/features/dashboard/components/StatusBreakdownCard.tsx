@@ -69,7 +69,7 @@ export const StatusBreakdownCard: React.FC<StatusBreakdownProps> = ({
   const total = Object.values(counts).reduce((acc, curr) => acc + curr, 0);
 
   return (
-    <div className="bg-(--surface) border border-(--border) rounded-2xl p-5 shadow-xs flex flex-col justify-between h-full">
+    <div className="bg-(--surface) border border-(--border) rounded-(--radius) p-5 shadow-xs flex flex-col justify-between h-full">
       {/* Cabeçalho */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[15px] font-semibold text-(--fg) tracking-tight">
@@ -77,7 +77,7 @@ export const StatusBreakdownCard: React.FC<StatusBreakdownProps> = ({
         </h2>
         <Link
           to="/sinistros"
-          className="text-[12px] font-medium text-emerald-700 hover:text-emerald-800 transition-colors"
+          className="text-[12px] font-medium text-(--accent-ink) hover:underline"
         >
           abrir lista
         </Link>

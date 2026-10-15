@@ -20,32 +20,58 @@ const loginSchema = z.object({
 
 type FormInputs = z.infer<typeof loginSchema>;
 
-const FEATURES = [
+const RECURSOS_CORPORATIVOS = [
   {
-    label: "Fila de trabalho",
-    desc: "Sinistros por prioridade, tempo e valor estimado.",
+    titulo: "Regulação ágil de sinistros",
+    descricao: "Triagem com histórico pericial completo, documentação e controle de SLA por prioridade.",
     icon: (
-      <>
-        <path d="M4 7h16v12H4z" />
-        <path d="M8 3v4M16 3v4" />
-        <path d="M8 12h8M8 15h5" />
-      </>
+      <svg
+        className="w-5 h-5 shrink-0 text-(--accent-ink)"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="1" />
+        <path d="m9 14 2 2 4-4" />
+      </svg>
     ),
   },
   {
-    label: "Aprovação com regras de domínio",
-    desc: "Valida apólice ativa e limite da cobertura na API.",
+    titulo: "Gestão integrada de apólices",
+    descricao: "Subscrição centralizada, validação de limites indenizatórios e controle unificado de segurados.",
     icon: (
-      <>
-        <path d="M12 3a9 9 0 1 0 9 9" />
-        <path d="M12 7v5l3 2" />
-      </>
+      <svg
+        className="w-5 h-5 shrink-0 text-(--accent-ink)"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <path d="M12 18v-4" />
+        <path d="M9 15h6" />
+      </svg>
     ),
   },
   {
-    label: "Pipeline de mensageria",
-    desc: "Aprovação → liquidação → notificação via Kafka.",
-    icon: <path d="M3 12h4l2-7 4 14 2-7h6" />,
+    titulo: "Liquidação e conformidade",
+    descricao: "Processamento de ordens financeiras com trilhas de auditoria, governança e alçadas de aprovação.",
+    icon: (
+      <svg
+        className="w-5 h-5 shrink-0 text-(--accent-ink)"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      >
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <line x1="2" y1="10" x2="22" y2="10" />
+        <path d="m7 15 2 2 4-4" />
+      </svg>
+    ),
   },
 ];
 
@@ -56,7 +82,7 @@ const QUICK_ACCESS = [
 ];
 
 export const LoginPage: React.FC = () => {
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, usuario } = useAuth();
   const navigate = useNavigate();
   const [erroAPI, setErroAPI] = useState<string | null>(null);
   const [isloading, setIsLoading] = useState(false);
@@ -82,8 +108,14 @@ export const LoginPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (isAuthenticated) navigate("/dashboard", { replace: true });
-  }, [isAuthenticated, navigate]);
+    if (isAuthenticated) {
+      if (usuario?.papel === "SEGURADO") {
+        navigate("/portal", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [isAuthenticated, usuario, navigate]);
 
   const preencherCredencial = (email: string) => {
     setValue("email", email, { shouldValidate: true });
@@ -95,8 +127,12 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
     setErroAPI(null);
     try {
-      await login({ email: data.email, senha: data.senha });
-      navigate("/dashboard");
+      const user = await login({ email: data.email.trim(), senha: data.senha.trim() });
+      if (user.papel === "SEGURADO") {
+        navigate("/portal", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && !err.response) {
         setErroAPI(
@@ -116,17 +152,20 @@ export const LoginPage: React.FC = () => {
   const formFields = (
     <>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="text-[12px] font-[620] text-(--muted)">
+        <label htmlFor="email" className="text-[13px] sm:text-[12px] font-[620] text-(--muted)">
           E-mail corporativo
         </label>
         <input
           type="email"
           id="email"
+          autoComplete="username"
+          inputMode="email"
+          spellCheck={false}
           {...register("email")}
-          className={`w-full h-10 px-3 border rounded-lg bg-(--surface) focus:outline-none focus:ring-2 focus:ring-(--accent-soft) focus:border-(--accent) transition-all ${
+          className={`w-full h-11 sm:h-10 px-3.5 sm:px-3 text-[15px] sm:text-sm border rounded-lg bg-(--surface) focus:outline-none focus:ring-2 focus:ring-(--accent-soft) focus:border-(--accent) transition-all ${
             errors.email ? "border-red-500" : "border-(--border-strong)"
           }`}
-          placeholder="analista@insurtech.com"
+          placeholder="colaborador@empresa.com.br"
         />
         {errors.email && (
           <span className="text-red-500 text-[12px] mt-1 block">
@@ -136,14 +175,15 @@ export const LoginPage: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-1.5 mt-4">
-        <label htmlFor="senha" className="text-[12px] font-[620] text-(--muted)">
+        <label htmlFor="senha" className="text-[13px] sm:text-[12px] font-[620] text-(--muted)">
           Senha
         </label>
         <input
           type="password"
           id="senha"
+          autoComplete="current-password"
           {...register("senha")}
-          className={`w-full h-10 px-3 border rounded-lg bg-(--surface) focus:outline-none focus:ring-2 focus:ring-(--accent-soft) focus:border-(--accent) transition-all ${
+          className={`w-full h-11 sm:h-10 px-3.5 sm:px-3 text-[15px] sm:text-sm border rounded-lg bg-(--surface) focus:outline-none focus:ring-2 focus:ring-(--accent-soft) focus:border-(--accent) transition-all ${
             errors.senha ? "border-red-500" : "border-(--border-strong)"
           }`}
           placeholder="••••••••"
@@ -171,7 +211,7 @@ export const LoginPage: React.FC = () => {
               key={label}
               type="button"
               onClick={() => preencherCredencial(email)}
-              className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-(--surface) border border-(--border) hover:border-(--accent) text-(--fg) hover:text-(--accent-ink) transition-colors cursor-pointer"
+              className="px-3 py-1.5 sm:px-2.5 sm:py-1 text-xs sm:text-[11px] font-medium rounded-md bg-(--surface) border border-(--border) hover:border-(--accent) text-(--fg) hover:text-(--accent-ink) active:bg-(--surface-2) transition-colors cursor-pointer min-h-9 sm:min-h-0"
             >
               {label}
             </button>
@@ -180,7 +220,7 @@ export const LoginPage: React.FC = () => {
       </div>
 
       {erroAPI && (
-        <div className="text-red-500 text-[12px] mt-3 p-2.5 bg-red-500/10 border border-red-500/20 rounded-lg">
+        <div role="alert" className="text-red-500 text-[12px] mt-3 p-2.5 bg-red-500/10 border border-red-500/20 rounded-lg">
           {erroAPI}
         </div>
       )}
@@ -188,128 +228,164 @@ export const LoginPage: React.FC = () => {
       <button
         type="submit"
         disabled={isloading}
-        className={`mt-5 w-full h-10 bg-(--accent) text-white font-semibold rounded-lg hover:brightness-105 active:brightness-95 focus:outline-none focus:ring-2 focus:ring-(--accent-soft) transition-all cursor-pointer flex items-center justify-center ${
+        className={`mt-4 sm:mt-5 w-full h-11 sm:h-10 bg-(--accent) text-white font-semibold rounded-lg hover:brightness-105 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-(--accent-soft) transition-all cursor-pointer flex items-center justify-center text-sm ${
           isloading ? "opacity-50 cursor-not-allowed" : ""
         }`}
       >
         {isloading ? "Carregando..." : "Entrar na plataforma →"}
       </button>
+
+      {/* Redirecionamento para o Portal do Segurado */}
+      <div className="mt-4 pt-3.5 border-t border-(--border)">
+        <div className="p-3 rounded-lg bg-(--surface-2)/60 border border-(--border) hover:border-(--accent) transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold tracking-wider uppercase font-mono text-(--accent-ink)">
+              É segurado da InsurTech?
+            </span>
+            <span className="text-[10px] px-1.5 py-0.5 text-(--accent-ink) font-semibold font-mono">
+              Área do Cliente
+            </span>
+          </div>
+          <p className="text-[11.5px] text-(--muted) mt-1 leading-snug">
+            Consulte apólices, acione coberturas e envie documentos.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate("/portal/login")}
+            className="mt-2 w-full py-1.5 px-3 rounded-lg bg-(--surface) border border-(--border) hover:border-(--accent) text-(--fg) hover:text-(--accent-ink) text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <span>Acessar Portal do Segurado</span>
+            <span>→</span>
+          </button>
+        </div>
+      </div>
     </>
   );
 
   return (
     <>
-      {/* ============================================================ */}
-      {/* MOBILE  (< lg)                                               */}
-      {/* Card centralizado — sem painel lateral                       */}
-      {/* ============================================================ */}
-      <div className="lg:hidden min-h-screen flex flex-col bg-(--bg)">
-        {/* Header com logo */}
-        <div className="flex flex-col items-center pt-12 pb-6 px-6">
-          <div className="w-16 h-16 rounded-2xl bg-(--accent-soft) flex items-center justify-center mb-4">
-            <Logo size="lg" />
-          </div>
-          <h1 className="text-[22px] font-bold tracking-tight text-(--fg)">
-            InsurTech
-          </h1>
-          <p className="text-[13px] text-(--muted) text-center mt-1">
-            Gestão de sinistros e apólices
-          </p>
-        </div>
-
-        {/* Card do formulário */}
-        <div className="flex-1 flex items-start justify-center px-5 pb-10">
-          <div className="w-full max-w-sm bg-(--surface) border border-(--border) rounded-2xl px-6 py-7 shadow-sm">
-            <div className="text-[11px] text-(--accent-ink) font-semibold tracking-widest uppercase font-mono mb-1">
-              Ambiente Interno
-            </div>
-            <div className="text-[20px] font-[650] tracking-tight text-(--fg)">
-              Acessar painel
-            </div>
-            <p className="text-[13px] text-(--muted) mt-1 mb-5">
-              Entre com as credenciais corporativas.
-            </p>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-0">
-              {formFields}
-            </form>
-          </div>
-        </div>
-
-        <p className="pb-8 text-center text-[11px] text-(--muted)">
-          InsurTech · Plataforma interna de sinistros
-        </p>
-      </div>
-
-      {/* ============================================================ */}
-      {/* DESKTOP  (≥ lg) — layout 2 colunas original                  */}
-      {/* ============================================================ */}
-      <div className="hidden lg:flex min-h-screen flex-row">
-        {/* Coluna esquerda */}
-        <div className="flex-1 flex flex-col justify-between py-11 px-12 bg-(--surface) border-r border-(--border)">
+      <div className="min-h-dvh lg:min-h-screen flex flex-col justify-between lg:justify-normal lg:flex-row bg-(--bg) px-4 py-5 sm:px-6 sm:py-7 lg:p-0">
+        {/* ============================================================ */}
+        {/* Lado Esquerdo (Desktop): Apresentação e Recursos             */}
+        {/* ============================================================ */}
+        <div className="hidden lg:flex flex-1 flex-col justify-between py-8 xl:py-11 px-8 xl:px-12 bg-(--surface) border-r border-(--border)">
           <div>
-            <div className="flex gap-2.5 items-center">
+            <div className="flex gap-3 items-center">
               <Logo size="lg" />
               <div>
-                <div className="text-base font-[650] text-(--fg)">InsurTech</div>
+                <div className="text-lg font-[650] text-(--fg)">InsurTech</div>
                 <div className="text-xs text-(--muted) tracking-[0.02em]">
-                  Gestão de sinistros e apólices
+                  Plataforma Corporativa
                 </div>
               </div>
             </div>
-            <h1 className="font-[650] text-[27px] tracking-tight leading-[1.18] mt-10">
-              Operações de sinistros
-              <br />
-              em um único fluxo.
-            </h1>
-            <p className="mt-3 max-w-107.5 text-(--muted) text-[14px] leading-relaxed">
-              Registro, análise, aprovação, liquidação e notificação integrados
-              com mensageria event-driven.
-            </p>
+
+            <div className="mt-6 xl:mt-8">
+              <span className="text-xs font-mono font-semibold tracking-wider uppercase text-(--accent-ink)">
+                Ambiente de Operações
+              </span>
+              <h1 className="font-[650] text-[24px] xl:text-[27px] tracking-tight leading-[1.22] mt-2 xl:mt-3 text-(--fg)">
+                Gestão integrada de apólices
+                <br />
+                e regulação de sinistros.
+              </h1>
+              <p className="mt-2 max-w-105 text-(--muted) text-[13px] xl:text-[14px] leading-relaxed">
+                Plataforma unificada para análise pericial, controle de coberturas,
+                liquidação financeira e governança de seguros.
+              </p>
+            </div>
+
+            <div className="mt-5 xl:mt-7 space-y-2.5 xl:space-y-3">
+              {RECURSOS_CORPORATIVOS.map((item) => (
+                <div
+                  key={item.titulo}
+                  className="flex gap-3 items-start p-2.5 xl:p-3 rounded-xl bg-(--surface-2)/40 border border-(--border)"
+                >
+                  <div className="p-1.5 rounded-lg bg-(--surface) border border-(--border)">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-[13px] font-[640] text-(--fg)">
+                      {item.titulo}
+                    </h3>
+                    <p className="text-[12px] text-(--muted) mt-0.5 leading-snug">
+                      {item.descricao}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="mt-10">
-            {FEATURES.map((f, i) => (
-              <div
-                key={f.label}
-                className={`flex gap-3.5 items-start py-3.5${
-                  i > 0 ? " border-t border-(--border)" : ""
-                }`}
-              >
-                <svg
-                  className="w-5 h-5 shrink-0 text-(--accent-ink) mt-px"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                >
-                  {f.icon}
-                </svg>
-                <div>
-                  <b className="block text-[13.5px] font-[640]">{f.label}</b>
-                  <span className="text-[12.5px] text-(--muted)">{f.desc}</span>
-                </div>
-              </div>
-            ))}
+          <div className="mt-6 pt-4 xl:mt-8 xl:pt-5 border-t border-(--border) flex items-center justify-between text-xs text-(--muted)">
+            <span>Suporte operacional e governança</span>
+            <span className="font-mono text-(--accent-ink)">helpdesk@insurtech.com.br</span>
           </div>
         </div>
 
-        {/* Coluna direita — formulário */}
-        <div className="flex-1 flex items-center justify-center py-11 px-12 bg-(--bg)">
-          <form
-            className="max-w-88 w-full my-auto"
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <div className="text-[11px] text-(--accent-ink) font-semibold tracking-widest uppercase font-mono">
-              Ambiente Interno
+        {/* ============================================================ */}
+        {/* Lado Direito (Desktop) / Conteúdo Principal (Mobile)         */}
+        {/* ============================================================ */}
+        <div className="flex-1 flex flex-col justify-between lg:justify-center items-center lg:py-8 lg:xl:py-11 lg:px-8 xl:px-12">
+          {/* Topo Centralizado Premium (Mobile) */}
+          <div className="lg:hidden flex flex-col items-center pt-1 pb-2 px-4 text-center">
+            {/* Logo container refinado de 52px com borda sutil e sombra suave */}
+            <div className="w-13 h-13 rounded-2xl bg-(--surface) border border-(--border-strong)/60 shadow-xs flex items-center justify-center p-1.5 mb-2.5">
+              <Logo size="md" />
             </div>
-            <div className="text-[22px] font-semibold tracking-[-0.02em] mt-2">
-              Acessar painel
-            </div>
-            <p className="text-[13px] text-(--muted) mt-1.5 mb-6">
-              Entre com as credenciais corporativas.
+
+            <span className="text-[11px] font-mono font-semibold tracking-wider uppercase text-(--accent-ink) mb-0.5">
+              Plataforma Corporativa
+            </span>
+            <h1 className="text-[23px] font-bold tracking-tight text-(--fg) leading-tight">
+              InsurTech
+            </h1>
+            <p className="text-[12.5px] text-(--muted) text-center mt-1 max-w-xs leading-normal">
+              Gestão integrada de sinistros e apólices
             </p>
-            {formFields}
-          </form>
+          </div>
+
+          {/* Card do formulário (Único no DOM) */}
+          <div className="w-full max-w-sm my-auto lg:my-0 py-2 sm:py-4 lg:py-0">
+            <div className="bg-(--surface) lg:bg-transparent border border-(--border) lg:border-0 rounded-xl px-5 py-5 sm:px-6 sm:py-6 lg:p-0 shadow-xs lg:shadow-none">
+              {/* Header do Card (Mobile) */}
+              <div className="lg:hidden mb-4 pb-3 border-b border-(--border)/60 flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-(--accent-ink) block">
+                    Ambiente Interno
+                  </span>
+                  <h2 className="text-[17px] font-[650] tracking-tight text-(--fg) mt-0.5">
+                    Acessar painel
+                  </h2>
+                </div>
+                <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-(--surface-2) text-(--muted) border border-(--border)">
+                  Operações
+                </span>
+              </div>
+
+              {/* Header do Card (Desktop) */}
+              <div className="hidden lg:block mb-5">
+                <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-(--accent-ink) block py-0.5 mb-2">
+                  Ambiente Interno
+                </span>
+                <h2 className="text-[21px] xl:text-[22px] font-semibold tracking-[-0.02em] text-(--fg)">
+                  Acessar painel
+                </h2>
+                <p className="text-[13px] text-(--muted) mt-1">
+                  Entre com as credenciais corporativas.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-0">
+                {formFields}
+              </form>
+            </div>
+          </div>
+
+          {/* Rodapé Mobile */}
+          <p className="lg:hidden pt-2 pb-3 text-center text-[11px] text-(--muted)">
+            InsurTech · Suporte operacional e governança
+          </p>
         </div>
       </div>
 

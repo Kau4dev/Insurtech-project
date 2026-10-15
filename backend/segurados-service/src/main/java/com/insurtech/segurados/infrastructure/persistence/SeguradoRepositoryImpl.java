@@ -44,6 +44,10 @@ public class SeguradoRepositoryImpl implements SeguradoRepository {
 
     @Override
     public Page<Segurado> listar(String nome, Pageable pageable) {
+        if (nome == null || nome.isBlank()) {
+            return jpaRepository.findAll(pageable)
+                    .map(mapper::toDomain);
+        }
         String termo = nome.trim();
         String apenasDigitos = termo.replaceAll("\\D", "");
         if (!apenasDigitos.isEmpty()) {

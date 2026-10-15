@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileMenu }) => {
     <header className="px-4 sticky top-0 z-30 flex items-center gap-4 h-15 bg-(--surface) border-b border-(--border)">
       <button
         onClick={onToggleMobileMenu}
-        className="p-2 -ml-1 rounded-lg text-(--fg) hover:bg-(--surface-2) transition-colors md:hidden"
+        className="min-w-[44px] min-h-[44px] p-2.5 -ml-1 rounded-lg text-(--fg) hover:bg-(--surface-2) transition-colors md:hidden inline-flex items-center justify-center cursor-pointer"
         aria-label="Abrir menu de navegação"
       >
         <svg

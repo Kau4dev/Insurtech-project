@@ -2,6 +2,7 @@ import type { TipoPessoa } from "../enums";
 
 export interface Segurado {
     id?: string;
+    usuarioId?: string;
     tipoPessoa: TipoPessoa;
     nomeRazaoSocial: string;
     cpfCnpj: string;
@@ -14,4 +15,5 @@ export interface Segurado {
     enderecoCep?: string;
     createdAt?: string;
     updatedAt?: string;
+    senhaTemporaria?: string;
 }

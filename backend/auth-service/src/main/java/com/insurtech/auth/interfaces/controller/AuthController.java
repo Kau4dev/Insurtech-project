@@ -1,19 +1,13 @@
 package com.insurtech.auth.interfaces.controller;
 
+import java.util.List;
 import java.util.UUID;
 
+import com.insurtech.auth.application.dto.*;
+import com.insurtech.auth.application.usecase.CadastrarUsuarioUseCase;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.insurtech.auth.application.dto.LoginRequestDTO;
-import com.insurtech.auth.application.dto.LoginResponseDTO;
-import com.insurtech.auth.application.dto.UsuarioResponseDTO;
 import com.insurtech.auth.application.usecase.BuscarUsuarioUseCase;
 import com.insurtech.auth.application.usecase.LoginUseCase;
 
@@ -25,31 +19,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController implements AuthControllerDocs {
 
-    private final LoginUseCase loginUseCase;
-    private final BuscarUsuarioUseCase buscarUsuarioUseCase;
+    private final LoginUseCase login;
+    private final BuscarUsuarioUseCase buscarUsuario;
 
     @Override
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO dto) {
-        return ResponseEntity.ok(loginUseCase.executar(dto));
+        return ResponseEntity.ok(login.executar(dto));
     }
 
     @Override
     @GetMapping("/validar")
     public ResponseEntity<UsuarioResponseDTO> validarToken(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
-        return ResponseEntity.ok(buscarUsuarioUseCase.executarPorToken(token));
+        return ResponseEntity.ok(buscarUsuario.executarPorToken(token));
     }
 
-    @Override
-    @GetMapping("/usuarios/{id}")
-    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(@PathVariable UUID id) {
-        return ResponseEntity.ok(buscarUsuarioUseCase.executarPorId(id));
-    }
-
-    @Override
-    @GetMapping("/usuarios")
-    public ResponseEntity<java.util.List<UsuarioResponseDTO>> listarUsuarios() {
-        return ResponseEntity.ok(buscarUsuarioUseCase.listarTodos());
-    }
 }

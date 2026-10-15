@@ -11,9 +11,9 @@ public enum Uf {
 
     @JsonCreator
     public static Uf from(String value) {
-        if (value == null) return null;
+        if (value == null || value.trim().isEmpty()) return null;
         try {
-            return Uf.valueOf(value.toUpperCase());
+            return Uf.valueOf(value.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
             throw new UfInvalidaException("UF inválida: " + value);
         }

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 285 88" fill="none">
+  <!-- InsurTech Official Horizontal Logo Lockup -->
+  <g transform="translate(4, 4) scale(0.1172) translate(-255.5, -170)">
+    <path d="M 510.5 170.0 L 767.5 295.0 L 767.5 507.0 L 698.5 447.0 L 697.0 342.5 L 511.0 251.5 L 324.5 344.0 L 324.5 498.0 L 508.0 320.5 L 632.5 434.0 L 581.0 485.5 L 511.0 412.5 L 287.0 646.5 L 267.5 607.0 L 255.5 558.0 L 255.5 295.0 L 510.5 170.0 Z M 510.5 463.0 L 557.5 510.0 L 512.0 560.5 L 465.5 513.0 L 510.5 463.0 Z" fill="#24624D" fill-rule="evenodd" />
+    <path d="M 658.5 459.0 L 766.5 554.0 L 754.5 608.0 L 727.5 661.0 L 681.5 720.0 L 600.0 794.5 L 511.0 852.5 L 460.0 821.5 L 390.0 767.5 L 339.5 718.0 L 307.5 677.0 L 440.0 538.5 L 512.0 611.5 L 658.5 459.0 Z M 661.5 552.0 L 691.5 579.0 L 675.5 614.0 L 656.5 644.0 L 594.0 712.5 L 513.0 772.5 L 458.0 736.5 L 399.5 683.0 L 443.0 637.5 L 512.0 701.5 L 661.5 552.0 Z" fill="#213F3A" fill-rule="evenodd" />
+    <path d="M 510.5 464.0 L 556.5 511.0 L 512.0 559.5 L 466.5 512.0 L 510.5 464.0 Z" fill="#D29B25" />
+  </g>
+  <text x=76 y=55 font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif" font-size="38" letter-spacing="-0.5px">
+    <tspan fill="#1E293B" font-weight="600">Insur</tspan><tspan fill="#24624D" font-weight="800">Tech</tspan>
+  </text>
+</svg>

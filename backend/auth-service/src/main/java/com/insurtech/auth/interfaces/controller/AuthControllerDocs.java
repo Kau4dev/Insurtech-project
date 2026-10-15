@@ -1,9 +1,6 @@
 package com.insurtech.auth.interfaces.controller;
 
-import com.insurtech.auth.application.dto.LoginRequestDTO;
-import com.insurtech.auth.application.dto.LoginResponseDTO;
-import com.insurtech.auth.application.dto.UsuarioResponseDTO;
-import com.insurtech.auth.application.dto.ErrorResponse;
+import com.insurtech.auth.application.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,9 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
-import java.util.UUID;
-
-@Tag(name = "Autenticação", description = "Endpoints para login de usuários e validação de tokens JWT")
+@Tag(name = "Autenticação", description = "Endpoints para cadastro, login de usuários e validação de tokens JWT")
 public interface AuthControllerDocs {
 
     @Operation(summary = "Realizar login", description = "Valida as credenciais (e-mail/senha) de um usuário e retorna o token JWT caso autenticado.")
@@ -47,20 +42,5 @@ public interface AuthControllerDocs {
     ResponseEntity<UsuarioResponseDTO> validarToken(
             @Parameter(description = "Token Bearer JWT enviado no cabeçalho Authorization", required = true) String authHeader);
 
-    @Operation(summary = "Buscar usuário por ID", description = "Retorna os dados de um usuário interno a partir do seu ID. Utilizado internamente pelos demais serviços (ex: sinistros-service) para validar a existência e o papel de um analista.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Usuário encontrado. Retorna os dados do usuário correspondente."),
-        @ApiResponse(responseCode = "404", description = "Usuário não encontrado", 
-                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "500", description = "Erro interno do servidor", 
-                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    ResponseEntity<UsuarioResponseDTO> buscarUsuarioPorId(
-            @Parameter(description = "ID do usuário (UUID)", required = true) UUID id);
 
-    @Operation(summary = "Listar todos os usuários", description = "Retorna a listagem de todos os usuários cadastrados no sistema para seleção de analistas/gestores.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Lista de usuários retornada com sucesso.")
-    })
-    ResponseEntity<java.util.List<UsuarioResponseDTO>> listarUsuarios();
 }

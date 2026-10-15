@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Button, FormErrorBanner, Modal, Select } from "../../../components/ui";
 import { useAuth } from "../../../context/useAuth";
 import type { Sinistro } from "../../../interfaces/sinistros/sinistro";
@@ -48,21 +48,25 @@ export const AtribuirAnalistaModal: React.FC<AtribuirAnalistaModalProps> = ({
   }, [analistas]);
 
   // Se for gestor/admin, inicia com o próprio ID ou analista atual do sinistro
+  const [prevSinistroId, setPrevSinistroId] = useState<string | null>(null);
+  const [prevIsOpen, setPrevIsOpen] = useState(false);
   const [analistaIdInput, setAnalistaIdInput] = useState<string>(() => {
     return sinistro?.analistaId || usuario?.id || "";
   });
   const [erroLocal, setErroLocal] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      setErroLocal(null);
-      if (isAnalista) {
-        setAnalistaIdInput(usuario?.id || "");
-      } else {
-        setAnalistaIdInput(sinistro?.analistaId || usuario?.id || "");
-      }
+  if (isOpen && (!prevIsOpen || sinistro?.id !== prevSinistroId)) {
+    setPrevIsOpen(true);
+    setPrevSinistroId(sinistro?.id || null);
+    setErroLocal(null);
+    if (isAnalista) {
+      setAnalistaIdInput(usuario?.id || "");
+    } else {
+      setAnalistaIdInput(sinistro?.analistaId || usuario?.id || "");
     }
-  }, [isOpen, sinistro?.analistaId, usuario?.id, isAnalista]);
+  } else if (!isOpen && prevIsOpen) {
+    setPrevIsOpen(false);
+  }
 
   if (!sinistro) return null;
 

@@ -113,16 +113,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 h-screen flex flex-col bg-(--surface) border-r border-(--border) pt-5 px-3.5 pb-4 select-none transition-transform duration-200 ease-in-out w-64 md:w-56 lg:w-64 md:shrink-0 ${
+        className={`fixed md:static inset-y-0 left-0 z-50 h-dvh min-h-dvh flex flex-col bg-(--surface) border-r border-(--border) pt-5 px-3.5 pb-4 select-none transition-transform duration-200 ease-in-out w-64 md:w-56 lg:w-64 md:shrink-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
         {/* Marca / Brand + Botão de fechar no mobile */}
         <div className="flex items-center justify-between px-2 pb-5">
-          <div className="flex gap-2.5 items-center">
+          <div className="flex gap-3 items-center">
             <Logo size="md" />
             <div>
-              <div className="text-[14.5px] font-[650] tracking-[0.01em] leading-[1.2] text-(--fg)">
+              <div className="text-[15px] font-[650] tracking-[0.01em] leading-[1.2] text-(--fg)">
                 InsurTech
               </div>
               <div className="text-[11.5px] text-(--faint) tracking-[0.02em]">
@@ -135,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-(--surface-2) text-(--muted) hover:text-(--fg) md:hidden transition-colors"
+            className="min-w-[44px] min-h-[44px] p-2 rounded-lg hover:bg-(--surface-2) text-(--muted) hover:text-(--fg) md:hidden inline-flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Fechar menu"
           >
             <svg
@@ -175,28 +175,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
             Plataforma
           </div>
 
-          <NavItem
-            disabled
-            label="Usuários e papéis"
-            title="Módulo de usuários e papéis previsto para a fase 4"
-            icon={
-              <svg
-                //className="text-(--accent-ink) "
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-              >
-                <circle cx="12" cy="8" r="3.5" />
-                <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
-              </svg>
-            }
-            onClick={() => {
-              alert(
-                "Módulo de usuários e papéis previsto para a fase 4 (auth-service).",
-              );
-            }}
-          />
+          {usuario?.papel === "ADMIN" || usuario?.papel === "GESTOR" ? (
+            <NavItem
+              to="/usuarios"
+              label="Usuários e papéis"
+              icon={
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                >
+                  <circle cx="12" cy="8" r="3.5" />
+                  <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
+                </svg>
+              }
+              onClick={onClose}
+            />
+          ) : (
+            <NavItem
+              disabled
+              label="Usuários e papéis"
+              title="Apenas administradores e gestores possuem acesso ao módulo de usuários"
+              icon={
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                >
+                  <circle cx="12" cy="8" r="3.5" />
+                  <path d="M5.5 20a6.5 6.5 0 0 1 13 0" />
+                </svg>
+              }
+            />
+          )}
         </nav>
 
         {/* Rodapé / Usuário & Ação de Logout */}

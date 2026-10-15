@@ -169,7 +169,7 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
   return (
     <div
       data-testid="monthly-barchart-card"
-      className="bg-(--surface) border border-(--border) rounded-2xl p-5 shadow-xs flex flex-col justify-between h-full"
+      className="bg-(--surface) border border-(--border) rounded-(--radius) p-5 shadow-xs flex flex-col justify-between h-full"
     >
       {/* Cabeçalho com Título, Informações do Período e Controles do Carrossel */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
@@ -185,7 +185,7 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
               {periodLabel}
             </span>
             {totalPeriodo > 0 ? (
-              <span className="text-[12px] font-medium text-emerald-600 dark:text-emerald-400">
+              <span className="text-[12px] font-medium text-(--accent-ink) num">
                 {totalPeriodo} {totalPeriodo === 1 ? "registro" : "registros"}
               </span>
             ) : (
@@ -195,7 +195,7 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
         </div>
 
         {/* Controles Dinâmicos do Carrossel (Meses e Anos) */}
-        <div className="flex items-center gap-1.5 self-end sm:self-auto">
+        <div className="flex items-center gap-1.5 flex-wrap self-start sm:self-auto">
           {/* Botão de Retorno Rápido ao Mês Atual */}
           {!isCurrentPeriod && (
             <button
@@ -334,24 +334,26 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
               data-testid={`bar-month-${item.monthIndex}`}
             >
               {/* Trilho de fundo com barra preenchida interna */}
-              <div className="w-full max-w-11 h-32.5 rounded-xl flex items-end justify-center p-1 transition-colors">
+              <div className="w-full max-w-11 h-32.5 rounded-lg flex items-end justify-center p-1 transition-colors">
                 <div
                   style={{ height: `${heightPercent}%` }}
-                  className={`relative w-full rounded-lg transition-all duration-200 ${
+                  className={`relative w-full rounded-md transition-all duration-200 ${
                     item.value === 0
-                      ? "bg-(--border-strong)/40"
+                      ? "bg-(--border)/60"
                       : isHovered
-                        ? "bg-emerald-600 shadow-sm"
-                        : "bg-[#6b7c96] dark:bg-slate-500"
+                        ? "bg-(--accent) shadow-xs"
+                        : item.isCurrentMonth
+                          ? "bg-(--accent-ink)"
+                          : "bg-(--border-strong)"
                   }`}
                 >
                   {/* Valor numérico real acompanhando a altura da barra */}
                   <span
-                    className={`absolute -top-5 left-1/2 -translate-x-1/2 text-[12px] font-medium whitespace-nowrap transition-all duration-150 ${
+                    className={`absolute -top-5 left-1/2 -translate-x-1/2 text-[12px] font-medium whitespace-nowrap transition-all duration-150 num ${
                       item.value > 0
                         ? isHovered
-                          ? "text-emerald-600 font-semibold -translate-y-0.5"
-                          : "text-slate-600 dark:text-slate-300 font-medium"
+                          ? "text-(--accent-ink) font-semibold -translate-y-0.5"
+                          : "text-(--fg) font-medium"
                         : "text-(--muted)"
                     }`}
                   >
@@ -365,10 +367,10 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
                 <span
                   className={`text-[12px] transition-colors duration-150 ${
                     isHovered
-                      ? "text-emerald-600 font-semibold"
+                      ? "text-(--accent-ink) font-semibold"
                       : item.isCurrentMonth
                         ? "text-(--fg) font-semibold"
-                        : "text-slate-500 dark:text-slate-400 font-medium"
+                        : "text-(--muted) font-medium"
                   }`}
                 >
                   {item.month}
@@ -376,7 +378,7 @@ export const MonthlyBarChartCard: React.FC<MonthlyBarChartCardProps> = ({
                 {item.isCurrentMonth && (
                   <span
                     title="Mês atual"
-                    className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-0.5"
+                    className="w-1.5 h-1.5 rounded-full bg-(--accent) mt-0.5"
                   />
                 )}
               </div>

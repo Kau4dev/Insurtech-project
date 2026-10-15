@@ -164,4 +164,20 @@ class JwtAuthFilterTest {
         assertEquals("user-789", mutatedExchange.getRequest().getHeaders().getFirst("X-Usuario-Id"));
         assertEquals("GESTOR", mutatedExchange.getRequest().getHeaders().getFirst("X-Usuario-Papel"));
     }
+
+    @Test
+    void devePermitirRequisicaoOptionsSemToken() {
+        // Arrange
+        when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
+        MockServerHttpRequest request = MockServerHttpRequest.method(org.springframework.http.HttpMethod.OPTIONS, "/api/v1/notificacoes")
+                .build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        // Act
+        Mono<Void> result = filter.filter(exchange, chain);
+
+        // Assert
+        StepVerifier.create(result).verifyComplete();
+        verify(chain).filter(exchange);
+    }
 }

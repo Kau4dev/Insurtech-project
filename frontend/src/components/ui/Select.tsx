@@ -16,6 +16,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, options, placeholder = "--", className = "", id, disabled, ...props }, ref) => {
     const selectId = id || (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
 
+    const hasEmptyOption = options.some((opt) =>
+      typeof opt === "string" ? opt === "" : opt.value === ""
+    );
+
     return (
       <div className="w-full">
         {label && (
@@ -39,7 +43,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           } ${className}`}
           {...props}
         >
-          {placeholder && <option value="">{placeholder}</option>}
+          {placeholder && !hasEmptyOption && <option value="">{placeholder}</option>}
           {options.map((opt) => {
             const val = typeof opt === "string" ? opt : opt.value;
             const lbl = typeof opt === "string" ? opt : opt.label;

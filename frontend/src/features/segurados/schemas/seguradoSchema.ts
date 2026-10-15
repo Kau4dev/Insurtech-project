@@ -3,6 +3,7 @@ import { UFS, type Uf } from "../../../interfaces/enums";
 
 export const seguradoSchema = z
   .object({
+    usuarioId: z.string().optional(),
     tipoPessoa: z.enum(["PF", "PJ"], {
       message: "Tipo de pessoa é obrigatório",
     }),

@@ -55,7 +55,7 @@ export const ApoliceFilters: React.FC<ApoliceFiltersProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col sm:flex-row items-center gap-2 rounded-(--radius)"
+      className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-(--radius)"
     >
       <div className="w-full sm:w-48">
         <Select
@@ -83,11 +83,23 @@ export const ApoliceFilters: React.FC<ApoliceFiltersProps> = ({
 
       <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
         {hasFilters && (
-          <Button variant="ghost" size="md" type="button" onClick={handleClear}>
+          <Button
+            variant="ghost"
+            size="md"
+            type="button"
+            onClick={handleClear}
+            className="flex-1 sm:flex-none"
+          >
             Limpar
           </Button>
         )}
-        <Button variant="primary" size="md" type="submit" isLoading={isLoading}>
+        <Button
+          variant="primary"
+          size="md"
+          type="submit"
+          isLoading={isLoading}
+          className="flex-1 sm:flex-none"
+        >
           Buscar
         </Button>
       </div>

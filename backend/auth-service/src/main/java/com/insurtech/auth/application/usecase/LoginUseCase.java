@@ -22,12 +22,15 @@ public class LoginUseCase {
     public LoginResponseDTO executar(LoginRequestDTO dto) {
 
 
-        Usuario usuario = repository.buscarPorEmail(dto.email())
+        String email = dto.email() != null ? dto.email().trim() : "";
+        String senha = dto.senha() != null ? dto.senha().trim() : "";
+
+        Usuario usuario = repository.buscarPorEmail(email)
                 .orElseThrow(() -> new EmailNaoEncontradoException("Email não encontrado"));
 
         usuario.validar();
 
-        if (!passwordEncoder.matches(dto.senha(), usuario.getSenhaHash())) {
+        if (!passwordEncoder.matches(senha, usuario.getSenhaHash())) {
             throw new SenhaIncorretaException("Senha incorreta");
         }
         String token = jwtService.gerarToken(usuario);

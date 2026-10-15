@@ -259,7 +259,7 @@ export const MicroserviceTimelineCard: React.FC<
   // Estado de carregamento inicial
   if (isLoading) {
     return (
-      <div className="bg-(--surface) border border-(--border) rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-6 h-full animate-pulse">
+      <div className="bg-(--surface) border border-(--border) rounded-(--radius) p-5 shadow-xs flex flex-col justify-between gap-6 h-full animate-pulse">
         <div className="space-y-2">
           <div className="h-4 w-32 bg-(--surface-2) rounded" />
           <div className="h-3 w-48 bg-(--surface-2) rounded" />
@@ -283,7 +283,7 @@ export const MicroserviceTimelineCard: React.FC<
   // Estado vazio quando não há sinistros para exibir
   if (!sinistroAtivo) {
     return (
-      <div className="bg-(--surface) border border-(--border) rounded-2xl p-6 shadow-xs flex flex-col items-center justify-center text-center h-full min-h-90">
+      <div className="bg-(--surface) border border-(--border) rounded-(--radius) p-6 shadow-xs flex flex-col items-center justify-center text-center h-full min-h-90">
         <div className="w-12 h-12 rounded-xl bg-(--surface-2) border border-(--border) flex items-center justify-center text-(--muted) mb-3">
           <svg
             className="w-6 h-6"
@@ -317,7 +317,7 @@ export const MicroserviceTimelineCard: React.FC<
   }
 
   return (
-    <div className="bg-(--surface) border border-(--border) rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-5 h-full">
+    <div className="bg-(--surface) border border-(--border) rounded-(--radius) p-5 shadow-xs flex flex-col justify-between gap-5 h-full">
       {/* 1. Cabeçalho com Título, Seletor e Status */}
       <div className="shrink-0 space-y-3">
         <div className="flex items-center justify-between gap-2">
@@ -346,7 +346,7 @@ export const MicroserviceTimelineCard: React.FC<
             <select
               value={sinistroAtivo.id}
               onChange={(e) => onSelecionarSinistro?.(e.target.value)}
-              className="text-[11.5px] font-medium text-(--fg) bg-(--surface-2) border border-(--border) rounded-lg px-2 py-1 truncate focus:outline-none focus:ring-1 focus:ring-(--accent) w-full"
+              className="text-[12px] font-medium text-(--fg) bg-(--surface-2) border border-(--border) rounded-lg px-2.5 py-1.5 min-h-9.5 truncate focus:outline-none focus:ring-1 focus:ring-(--accent) w-full cursor-pointer"
             >
               {sinistros.map((s) => (
                 <option key={s.id} value={s.id}>

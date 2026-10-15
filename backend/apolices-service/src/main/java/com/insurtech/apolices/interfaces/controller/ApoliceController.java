@@ -21,27 +21,26 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/v1/apolices")
+@RequestMapping("/api/v1/apolices")
 @RequiredArgsConstructor
 public class ApoliceController implements ApoliceControllerDocs {
 
-    private final CadastrarApoliceUseCase cadastrarApoliceUseCase;
-    private final BuscarPorIdApoliceUseCase buscarPorIdApoliceUseCase;
-    private final ListarApolicesUseCase listarApolicesUseCase;
-    private final AtualizarStatusApoliceUseCase atualizarStatusApoliceUseCase;
-
+    private final CadastrarApoliceUseCase cadastrarApolice;
+    private final BuscarPorIdApoliceUseCase buscarPorIdApolice;
+    private final ListarApolicesUseCase listarApolices;
+    private final AtualizarStatusApoliceUseCase atualizarStatusApolice;
 
     @Override
     @PostMapping
     public ResponseEntity<ApoliceResponseDTO> cadastrarApolice(@RequestBody @Valid ApoliceRequestDTO dto) {
-        ApoliceResponseDTO apolice = cadastrarApoliceUseCase.executar(dto);
+        ApoliceResponseDTO apolice = cadastrarApolice.executar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(apolice);
     }
 
     @Override
     @GetMapping("/{id}")
     public ResponseEntity<ApoliceResponseDTO> buscarPorId(@PathVariable UUID id) {
-        ApoliceResponseDTO apolice = buscarPorIdApoliceUseCase.executar(id);
+        ApoliceResponseDTO apolice = buscarPorIdApolice.executar(id);
         return ResponseEntity.status(HttpStatus.OK).body(apolice);
     }
 
@@ -53,7 +52,7 @@ public class ApoliceController implements ApoliceControllerDocs {
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) TipoSeguro tipoSeguro,
             @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(listarApolicesUseCase.executar(numeroApolice, idSegurado, status, tipoSeguro, pageable));
+        return ResponseEntity.ok(listarApolices.executar(numeroApolice, idSegurado, status, tipoSeguro, pageable));
     }
 
     @Override
@@ -61,8 +60,7 @@ public class ApoliceController implements ApoliceControllerDocs {
     public ResponseEntity<ApoliceResponseDTO> atualizarStatus(
             @PathVariable UUID id,
             @RequestBody @Valid AtualizarStatusApoliceDTO dto) throws StatusNaoSuportadoException {
-        ApoliceResponseDTO apolice = atualizarStatusApoliceUseCase.executar(id, dto);
+        ApoliceResponseDTO apolice = atualizarStatusApolice.executar(id, dto);
         return ResponseEntity.status(HttpStatus.OK).body(apolice);
     }
-
 }

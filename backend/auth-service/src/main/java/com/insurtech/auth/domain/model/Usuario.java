@@ -23,6 +23,7 @@ public class Usuario {
     private Papel papel;
     private Boolean ativo;
     private Instant createdAt;
+    private Instant updatedAt;
 
     public void validar() {
         if (nome == null || nome.isBlank()) {

@@ -5,9 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.insurtech.notificacao.application.dto.PagamentoLiquidadoEventDTO;
 import com.insurtech.notificacao.application.dto.SinistroRegistradoEventDTO;
 import com.insurtech.notificacao.application.dto.SinistroRejeitadoEventDTO;
+import com.insurtech.notificacao.application.usecase.NotificarPagamentoLiquidadoUseCase;
+import com.insurtech.notificacao.application.usecase.NotificarSinistroRegistradoUseCase;
+import com.insurtech.notificacao.application.usecase.NotificarSinistroRejeitadoUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -16,42 +25,53 @@ import org.springframework.stereotype.Component;
 public class NotificacaoConsumer {
 
     private final ObjectMapper objectMapper;
+    private final NotificarSinistroRegistradoUseCase notificarSinistroRegistradoUseCase;
+    private final NotificarSinistroRejeitadoUseCase notificarSinistroRejeitadoUseCase;
+    private final NotificarPagamentoLiquidadoUseCase notificarPagamentoLiquidadoUseCase;
 
+    @RetryableTopic(
+            attempts = "3",
+            backoff = @Backoff(delay = 1000, multiplier = 2.0),
+            autoCreateTopics = "true"
+    )
     @KafkaListener(topics = "sinistro.registrado")
-    public void consumirRegistrado(String message) {
-        try {
-            SinistroRegistradoEventDTO event = objectMapper.readValue(message, SinistroRegistradoEventDTO.class);
-            log.info("[NOTIFICAÇÃO] E-mail enviado para o Segurado (ID: {}). O sinistro número {} foi REGISTRADO com sucesso e já está em análise.", 
-                    event.seguradoId(), event.numeroSinistro());
-        } catch (JsonProcessingException e) {
-            log.error("Erro ao desserializar evento SinistroRegistrado: {}", message, e);
-        }
+    public void consumirRegistrado(String message) throws JsonProcessingException {
+        SinistroRegistradoEventDTO event = objectMapper.readValue(message, SinistroRegistradoEventDTO.class);
+        log.info("[KAFKA] Consumindo sinistro.registrado para seguradoId={}", event.seguradoId());
+        notificarSinistroRegistradoUseCase.executar(event);
     }
 
+    @RetryableTopic(
+            attempts = "3",
+            backoff = @Backoff(delay = 1000, multiplier = 2.0),
+            autoCreateTopics = "true"
+    )
     @KafkaListener(topics = "sinistro.rejeitado")
-    public void consumirRejeitado(String message) {
-        try {
-            SinistroRejeitadoEventDTO event = objectMapper.readValue(message, SinistroRejeitadoEventDTO.class);
-            log.info("[NOTIFICAÇÃO] E-mail enviado para o Segurado (ID: {}). O sinistro ID {} foi REJEITADO. Motivo da rejeição: {}", 
-                    event.seguradoId(), event.sinistroId(), event.motivoRejeicao());
-        } catch (JsonProcessingException e) {
-            log.error("Erro ao desserializar evento SinistroRejeitado: {}", message, e);
-        }
+    public void consumirRejeitado(String message) throws JsonProcessingException {
+        SinistroRejeitadoEventDTO event = objectMapper.readValue(message, SinistroRejeitadoEventDTO.class);
+        log.info("[KAFKA] Consumindo sinistro.rejeitado para seguradoId={}", event.seguradoId());
+        notificarSinistroRejeitadoUseCase.executar(event);
     }
 
+    @RetryableTopic(
+            attempts = "3",
+            backoff = @Backoff(delay = 1000, multiplier = 2.0),
+            autoCreateTopics = "true"
+    )
     @KafkaListener(topics = "pagamento.liquidado")
-    public void consumirLiquidacao(String message) {
-        try {
-            PagamentoLiquidadoEventDTO event = objectMapper.readValue(message, PagamentoLiquidadoEventDTO.class);
-            if ("PROCESSADO".equals(event.status())) {
-                log.info("[NOTIFICAÇÃO] E-mail enviado para o Segurado (ID: {}). O pagamento do seu sinistro ID {} no valor de R$ {} foi LIQUIDADO com sucesso.", 
-                        event.seguradoId(), event.sinistroId(), event.valorLiquidado());
-            } else {
-                log.warn("[NOTIFICAÇÃO] SMS de alerta enviado para o Segurado (ID: {}). Houve uma falha no processamento do pagamento do sinistro ID {}. Entraremos em contato em breve.", 
-                        event.seguradoId(), event.sinistroId());
-            }
-        } catch (JsonProcessingException e) {
-            log.error("Erro ao desserializar evento PagamentoLiquidado: {}", message, e);
-        }
+    public void consumirLiquidacao(String message) throws JsonProcessingException {
+        PagamentoLiquidadoEventDTO event = objectMapper.readValue(message, PagamentoLiquidadoEventDTO.class);
+        log.info("[KAFKA] Consumindo pagamento.liquidado para seguradoId={}", event.seguradoId());
+        notificarPagamentoLiquidadoUseCase.executar(event);
+    }
+
+    @DltHandler
+    public void processarMensagemDlt(
+            ConsumerRecord<String, String> record,
+            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+            @Header(KafkaHeaders.EXCEPTION_MESSAGE) String erro
+    ) {
+        log.error("[DEAD LETTER TOPIC - DLT] Mensagem falhou após todas as tentativas. Topico: {} | Erro: {} | Payload: {}",
+                topic, erro, record.value());
     }
 }

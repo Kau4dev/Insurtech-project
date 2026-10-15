@@ -21,6 +21,26 @@ public record SeguradoResponseDTO(
         Uf enderecoUf,
         String enderecoCep,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        String senhaTemporaria
 ) {
+    public SeguradoResponseDTO(
+            UUID id,
+            UUID usuarioId,
+            TipoPessoa tipoPessoa,
+            String nomeRazaoSocial,
+            String cpfCnpj,
+            String email,
+            String telefone,
+            LocalDate dataNascimento,
+            String enderecoLogradouro,
+            String enderecoCidade,
+            Uf enderecoUf,
+            String enderecoCep,
+            Instant createdAt,
+            Instant updatedAt
+    ) {
+        this(id, usuarioId, tipoPessoa, nomeRazaoSocial, cpfCnpj, email, telefone, dataNascimento,
+             enderecoLogradouro, enderecoCidade, enderecoUf, enderecoCep, createdAt, updatedAt, null);
+    }
 }

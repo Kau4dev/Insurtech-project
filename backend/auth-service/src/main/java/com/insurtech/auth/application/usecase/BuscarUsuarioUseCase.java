@@ -35,7 +35,11 @@ public class BuscarUsuarioUseCase {
         return mapper.toResponse(usuario);
     }
 
+    public List<UsuarioResponseDTO> listarTodos(Boolean ativo) {
+        return repository.listarTodos(ativo).stream().map(mapper::toResponse).toList();
+    }
+
     public List<UsuarioResponseDTO> listarTodos() {
-        return repository.listarTodos().stream().map(mapper::toResponse).toList();
+        return listarTodos(null);
     }
 }

@@ -45,7 +45,7 @@ export const TableContainer: React.FC<TableContainerProps> = ({
 
   return (
     <div className={containerClasses}>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto touch-pan-x [-webkit-overflow-scrolling:touch]">
         <table className="w-full text-left text-sm border-collapse">
           {children}
         </table>
