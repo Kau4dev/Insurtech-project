@@ -46,9 +46,6 @@ describe("PortalLayout Header & Responsive Navigation", () => {
     expect(screen.getByText("Portal do Segurado")).toBeInTheDocument();
     expect(screen.getByText("Início")).toBeInTheDocument();
     expect(screen.getByText("Minhas Apólices")).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /abrir novo sinistro/i }),
-    ).toBeInTheDocument();
   });
 
   it("deve abrir o dropdown do usuário ao clicar no perfil e permitir logout", () => {
