@@ -25,21 +25,32 @@ public class PagamentoLiquidadoConsumer {
     )
     @Transactional
     public void consumir(ConsumerRecord<String, PagamentoLiquidadoEvent> record) {
-        PagamentoLiquidadoEvent event = record.value();
-        log.info("Evento PagamentoLiquidado recebido no sinistros-service para sinistroId={}", event.sinistroId());
+        org.apache.kafka.common.header.Header header = record.headers().lastHeader("X-Correlation-Id");
+        String correlationId = (header != null)
+                ? new String(header.value(), java.nio.charset.StandardCharsets.UTF_8)
+                : java.util.UUID.randomUUID().toString();
 
-        if ("PROCESSADO".equals(event.status())) {
-            repository.buscarPorId(event.sinistroId()).ifPresentOrElse(
-                    sinistro -> {
-                        sinistro.marcarComoPago();
-                        repository.salvar(sinistro);
-                        cacheInvalidator.invalidar();
-                        log.info("Status do sinistro {} atualizado com sucesso para PAGO.", sinistro.getId());
-                    },
-                    () -> log.error("Sinistro não encontrado para o ID: {}", event.sinistroId())
-            );
-        } else {
-            log.warn("Pagamento falhou para o sinistro ID: {}. Nenhuma ação de status executada.", event.sinistroId());
+        org.slf4j.MDC.put("correlationId", correlationId);
+
+        try {
+            PagamentoLiquidadoEvent event = record.value();
+            log.info("Evento PagamentoLiquidado recebido no sinistros-service para sinistroId={}", event.sinistroId());
+
+            if ("PROCESSADO".equals(event.status())) {
+                repository.buscarPorId(event.sinistroId()).ifPresentOrElse(
+                        sinistro -> {
+                            sinistro.marcarComoPago();
+                            repository.salvar(sinistro);
+                            cacheInvalidator.invalidar();
+                            log.info("Status do sinistro {} atualizado com sucesso para PAGO.", sinistro.getId());
+                        },
+                        () -> log.error("Sinistro não encontrado para o ID: {}", event.sinistroId())
+                );
+            } else {
+                log.warn("Pagamento falhou para o sinistro ID: {}. Nenhuma ação de status executada.", event.sinistroId());
+            }
+        } finally {
+            org.slf4j.MDC.clear();
         }
     }
 }
