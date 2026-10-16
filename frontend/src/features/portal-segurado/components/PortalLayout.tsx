@@ -2,12 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/useAuth";
 import { Logo } from "../../../components/ui";
+import { NotificationsPopover } from "../../../components/layout/NotificationsPopover";
+import { useMeuPerfilSegurado } from "../hooks/useMeuPerfilSegurado";
 
 export const PortalLayout: React.FC = () => {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
+
+  const { data: segurado } = useMeuPerfilSegurado();
   const [menuMobileAberto, setMenuMobileAberto] = useState(false);
   const [menuUsuarioAberto, setMenuUsuarioAberto] = useState(false);
   const menuUsuarioRef = useRef<HTMLDivElement>(null);
@@ -185,7 +189,8 @@ export const PortalLayout: React.FC = () => {
 
           {/* Lado Direito: Ações Rápidas, Perfil do Usuário e Menu Mobile */}
           <div className="flex items-center gap-2 sm:gap-3">
-
+            
+            <NotificationsPopover portalMode seguradoId={segurado?.id} />
             {/* CTA Compacto para Mobile Pequeno */}
            
 

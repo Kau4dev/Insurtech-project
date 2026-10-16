@@ -12,12 +12,20 @@ export interface NotificacaoItem {
   link?: string;
 }
 
+interface NotificationsPopoverProps {
+  portalMode?: boolean; // Se true, links apontam para /portal/...
+  seguradoId?: string;  // Se informado, filtra notificações deste segurado
+}
+
 function mapearTipo(tipo: NotificacaoResponse["tipo"]): NotificacaoItem["tipo"] {
   switch (tipo) {
     case "PAGAMENTO_LIQUIDADO":
       return "sucesso";
     case "SINISTRO_REJEITADO":
       return "alerta";
+    case "DOCUMENTO_SOLICITADO":
+      return "aviso";
+    case "DOCUMENTO_RECEBIDO":
     case "SINISTRO_REGISTRADO":
     default:
       return "info";
@@ -39,15 +47,21 @@ function formatarTempo(isoString: string): string {
   }
 }
 
-export const NotificationsPopover: React.FC = () => {
+export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
+    portalMode = false,
+    seguradoId,
+ }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [notificacoes, setNotificacoes] = useState<NotificacaoItem[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const carregarNotificacoes = async () => {
+    if (portalMode && !seguradoId) {
+      return;
+    }
     try {
-      const data = await notificacoesApi.listar();
+      const data = await notificacoesApi.listar(seguradoId);
       const itens: NotificacaoItem[] = data.map((n) => ({
         id: n.id,
         titulo: n.titulo,
@@ -55,7 +69,8 @@ export const NotificationsPopover: React.FC = () => {
         tipo: mapearTipo(n.tipo),
         tempo: formatarTempo(n.criadoEm),
         lida: n.lida,
-        link: "/sinistros",
+        // No portal leva para /portal, no backoffice leva para /sinistros
+        link: portalMode ? `/portal` : `/sinistros`,
       }));
       setNotificacoes(itens);
     } catch {
@@ -65,7 +80,7 @@ export const NotificationsPopover: React.FC = () => {
 
   useEffect(() => {
     carregarNotificacoes();
-  }, []);
+  }, [seguradoId, portalMode]);
 
   const naoLidasCount = notificacoes.filter((n) => !n.lida).length;
 
@@ -93,7 +108,7 @@ export const NotificationsPopover: React.FC = () => {
       document.removeEventListener("mousedown", handleClickFora);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, seguradoId, portalMode]);
 
   const marcarComoLida = async (id: string) => {
     setNotificacoes((prev) =>
@@ -109,7 +124,7 @@ export const NotificationsPopover: React.FC = () => {
   const marcarTodasComoLidas = async () => {
     setNotificacoes((prev) => prev.map((n) => ({ ...n, lida: true })));
     try {
-      await notificacoesApi.marcarTodasComoLidas();
+      await notificacoesApi.marcarTodasComoLidas(seguradoId);
     } catch {
       // ignore
     }

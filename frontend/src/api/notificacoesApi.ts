@@ -2,10 +2,11 @@ import { axiosClient } from "./axiosClient";
 
 export interface NotificacaoResponse {
   id: string;
-  seguradoId: string;
+  seguradoId?: string;
+  sinistroId?: string;
   titulo: string;
   mensagem: string;
-  tipo: "SINISTRO_REGISTRADO" | "SINISTRO_REJEITADO" | "PAGAMENTO_LIQUIDADO";
+  tipo: "SINISTRO_REGISTRADO" | "SINISTRO_REJEITADO" | "PAGAMENTO_LIQUIDADO" | "DOCUMENTO_SOLICITADO" | "DOCUMENTO_RECEBIDO";
   lida: boolean;
   criadoEm: string;
 }
