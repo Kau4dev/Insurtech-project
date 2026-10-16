@@ -2,7 +2,9 @@ package com.insurtech.sinistros.application.usecase;
 
 import com.insurtech.sinistros.application.dto.request.AdicionarDocumentoRequestDTO;
 import com.insurtech.sinistros.application.dto.response.DocumentoSinistroResponseDTO;
+import com.insurtech.sinistros.application.port.EventPublisherPort;
 import com.insurtech.sinistros.application.validator.SinistroSecurityValidator;
+import com.insurtech.sinistros.domain.event.SinistroDocumentoAdicionadoEvent;
 import com.insurtech.sinistros.domain.exception.SinistroNaoEncontradoException;
 import com.insurtech.sinistros.domain.model.DocumentoSinistro;
 import com.insurtech.sinistros.domain.model.Sinistro;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Transactional
@@ -23,6 +26,7 @@ public class AdicionarDocumentoUseCase {
     private final SinistroRepository repository;
     private final SinistroMapper mapper;
     private final SinistroSecurityValidator securityValidator;
+    private final EventPublisherPort eventPublisher;
 
     public DocumentoSinistroResponseDTO executar(UUID id, AdicionarDocumentoRequestDTO dto) {
         UserContext ctx = securityValidator.validarAutenticacao();
@@ -44,6 +48,14 @@ public class AdicionarDocumentoUseCase {
         sinistro.adicionarDocumento(documento, UUID.fromString(ctx.getUsuarioId()));
         repository.salvar(sinistro);
 
+        eventPublisher.publicarDocumentoAdicionado(new SinistroDocumentoAdicionadoEvent(
+                sinistro.getId(),
+                sinistro.getSeguradoId(),
+                sinistro.getNumeroSinistro(),
+                documento.getNomeArquivo(),
+                documento.getTipoDocumento(),
+                Instant.now()
+        ));
         return mapper.toResponse(documento);
     }
 }
