@@ -15,6 +15,7 @@ import com.insurtech.sinistros.domain.model.TipoDocumento;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
 import com.insurtech.sinistros.infrastructure.security.UserContext;
+import com.insurtech.sinistros.application.port.EventPublisherPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,6 +40,9 @@ class AdicionarDocumentoUseCaseTest {
 
     @Mock
     private SinistroSecurityValidator securityValidator;
+
+    @Mock
+    private EventPublisherPort eventPublisher;
 
     @InjectMocks
     private AdicionarDocumentoUseCase useCase;
@@ -82,6 +86,7 @@ class AdicionarDocumentoUseCaseTest {
         verify(securityValidator, times(1)).validarAutenticacao();
         verify(securityValidator, times(1)).validarPropriedadeSegurado(sinistro.getSeguradoId(), "Acesso negado. Você só pode adicionar documentos aos seus próprios sinistros.");
         verify(repository, times(1)).salvar(sinistro);
+        verify(eventPublisher, times(1)).publicarDocumentoAdicionado(any());
     }
 
     @Test
@@ -115,6 +120,7 @@ class AdicionarDocumentoUseCaseTest {
         assertEquals(Status.EM_ANALISE, sinistro.getStatus()); // transição automática
         verify(securityValidator, times(1)).validarPropriedadeSegurado(eq(seguradoId), anyString());
         verify(repository, times(1)).salvar(sinistro);
+        verify(eventPublisher, times(1)).publicarDocumentoAdicionado(any());
     }
 
     @Test

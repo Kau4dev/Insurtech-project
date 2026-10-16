@@ -26,6 +26,16 @@ vi.mock("../../../context/useAuth", () => ({
   }),
 }));
 
+vi.mock("../hooks/useMeuPerfilSegurado", () => ({
+  useMeuPerfilSegurado: () => ({
+    data: {
+      id: "segurado-1",
+      nome: "João Segurado",
+    },
+    isLoading: false,
+  }),
+}));
+
 function renderLayout(initialEntries = ["/portal"]) {
   return render(
     <MemoryRouter initialEntries={initialEntries}>

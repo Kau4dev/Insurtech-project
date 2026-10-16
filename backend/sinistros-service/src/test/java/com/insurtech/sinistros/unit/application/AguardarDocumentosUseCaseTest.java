@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import com.insurtech.sinistros.application.port.EventPublisherPort;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +36,9 @@ class AguardarDocumentosUseCaseTest {
 
     @Mock
     private SinistroSecurityValidator securityValidator;
+
+    @Mock
+    private EventPublisherPort eventPublisher;
 
     @InjectMocks
     private AguardarDocumentosUseCase useCase;
@@ -64,6 +68,7 @@ class AguardarDocumentosUseCaseTest {
         verify(repository, times(1)).buscarPorId(sinistroId);
         verify(repository, times(1)).salvar(sinistro);
         verify(mapper, times(1)).toResponse(sinistro);
+        verify(eventPublisher, times(1)).publicarDocumentoSolicitado(any());
     }
 
     @Test
