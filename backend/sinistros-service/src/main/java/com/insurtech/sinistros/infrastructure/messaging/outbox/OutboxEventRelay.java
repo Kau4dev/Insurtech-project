@@ -34,6 +34,7 @@ public class OutboxEventRelay {
     public void processarEventosPendentes() {
         List<OutboxEventJpaEntity> pendentes = outboxRepository.findEventosPendentes(PageRequest.of(0, BATCH_SIZE));
 
+
         if (pendentes.isEmpty()) {
             return;
         }
@@ -62,6 +63,8 @@ public class OutboxEventRelay {
                 if (evento.getCorrelationId() != null && !evento.getCorrelationId().isBlank()) {
                     record.headers().add("X-Correlation-Id", evento.getCorrelationId().getBytes(StandardCharsets.UTF_8));
                 }
+
+                record.headers().add("X-Event-Id", evento.getId().toString().getBytes(StandardCharsets.UTF_8));
 
                 kafkaTemplate.send(record)
                         .whenComplete((result, ex) -> {
