@@ -31,21 +31,24 @@ public class SinistroAprovadoConsumer {
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void consumir(ConsumerRecord<String, SinistroAprovadoEventDTO> record) {
-        org.apache.kafka.common.header.Header header = record.headers().lastHeader("X-Correlation-Id");
-        String correlationId = (header != null)
-                ? new String(header.value(), java.nio.charset.StandardCharsets.UTF_8)
-                : java.util.UUID.randomUUID().toString();
 
+        org.apache.kafka.common.header.Header corrHeader = record.headers().lastHeader("X-Correlation-Id");
+        String correlationId = (corrHeader != null)
+                ? new String(corrHeader.value(), java.nio.charset.StandardCharsets.UTF_8)
+                : java.util.UUID.randomUUID().toString();
         org.slf4j.MDC.put("correlationId", correlationId);
 
         try {
-            log.info("[KAFKA-CONSUME] Processando liquidacao para sinistroId={}", record.value().sinistroId());
 
-            String eventoIdOrigem = record.topic() + "-" +
-                    record.partition() + "-" +
-                    record.offset();
+            org.apache.kafka.common.header.Header eventHeader = record.headers().lastHeader("X-Event-Id");
+            String messageId = (eventHeader != null)
+                    ? new String(eventHeader.value(), java.nio.charset.StandardCharsets.UTF_8)
+                    : record.value().sinistroId().toString(); // Fallback de negócio
 
-            useCase.executar(record.value(), eventoIdOrigem);
+            log.info("[KAFKA-CONSUME] Consumindo sinistro.aprovado: sinistroId={} | messageId={}",
+                    record.value().sinistroId(), messageId);
+
+            useCase.executar(record.value(), messageId);
         } finally {
             org.slf4j.MDC.clear();
         }
