@@ -12,6 +12,7 @@ import com.insurtech.auth.domain.model.Usuario;
 import com.insurtech.auth.domain.repository.UsuarioRepository;
 import com.insurtech.auth.domain.service.GeradorSenhaService;
 import com.insurtech.auth.infrastructure.mapper.UsuarioMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -50,6 +51,7 @@ class CadastrarUsuarioUseCaseTest {
     private CadastrarUsuarioUseCase useCase;
 
     @Test
+    @DisplayName("Deve cadastrar segurado com senha gerada automaticamente")
     void deveCadastrarSeguradoComSenhaGeradaAutomaticamente() {
         CadastrarUsuarioRequestDTO dto = new CadastrarUsuarioRequestDTO(
                 "João Silva",
@@ -87,6 +89,7 @@ class CadastrarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve cadastrar gestor com senha fornecida")
     void deveCadastrarGestorComSenhaFornecida() {
         CadastrarUsuarioRequestDTO dto = new CadastrarUsuarioRequestDTO(
                 "Carlos Gestor",
@@ -121,6 +124,7 @@ class CadastrarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar AcessoNegadoException ao tentar criar usuário com papel ADMIN")
     void deveLancarExcecaoQuandoTentarCriarUsuarioAdmin() {
         CadastrarUsuarioRequestDTO dto = new CadastrarUsuarioRequestDTO(
                 "Novo Admin",
@@ -134,6 +138,7 @@ class CadastrarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar EmailJaCadastradoException quando e-mail já estiver cadastrado")
     void deveLancarExcecaoQuandoEmailJaCadastrado() {
         CadastrarUsuarioRequestDTO dto = new CadastrarUsuarioRequestDTO(
                 "Maria",
@@ -150,6 +155,7 @@ class CadastrarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar SenhaInvalidaException quando senha for inválida para gestor ou analista")
     void deveLancarExcecaoQuandoSenhaInvalidaParaGestorOuAnalista() {
         CadastrarUsuarioRequestDTO dto = new CadastrarUsuarioRequestDTO(
                 "Carlos",

@@ -15,6 +15,7 @@ import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
 import com.insurtech.apolices.infrastructure.security.UserContext;
 import com.insurtech.apolices.infrastructure.security.UserContextHolder;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -57,6 +58,7 @@ class AtualizarStatusApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve atualizar status da apólice para cancelada com sucesso como gestor")
     void deveAtualizarStatusParaCancelada_comSucesso_comoGestor() throws StatusNaoSuportadoException {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -85,6 +87,7 @@ class AtualizarStatusApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve atualizar status da apólice para suspensa com sucesso como admin")
     void deveAtualizarStatusParaSuspensa_comSucesso_comoAdmin() throws StatusNaoSuportadoException {
         setUserContext(UUID.randomUUID().toString(), "ADMIN");
 
@@ -113,6 +116,7 @@ class AtualizarStatusApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve reativar apólice atualizando status para ativa com sucesso")
     void deveAtualizarStatusParaAtiva_comSucesso() throws StatusNaoSuportadoException {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -141,6 +145,7 @@ class AtualizarStatusApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao tentar atualizar status sem autenticação")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID apoliceId = UUID.randomUUID();
         AtualizarStatusApoliceDTO dto = new AtualizarStatusApoliceDTO(Status.CANCELADA);
@@ -150,6 +155,7 @@ class AtualizarStatusApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado ao tentar atualizar status com papel de analista")
     void deveLancarExcecao_quandoPapelAnalista() {
         setUserContext(UUID.randomUUID().toString(), "ANALISTA");
 
@@ -161,6 +167,7 @@ class AtualizarStatusApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado ao tentar atualizar status com papel de segurado")
     void deveLancarExcecao_quandoPapelSegurado() {
         setUserContext(UUID.randomUUID().toString(), "SEGURADO");
 
@@ -172,6 +179,7 @@ class AtualizarStatusApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando a apólice não for encontrada para atualização de status")
     void deveLancarExcecao_quandoApoliceNaoEncontrada() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -185,6 +193,7 @@ class AtualizarStatusApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o status informado para atualização não for suportado")
     void deveLancarExcecao_quandoStatusNaoSuportado() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 

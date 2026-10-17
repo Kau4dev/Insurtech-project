@@ -5,6 +5,7 @@ import com.insurtech.notificacao.application.usecase.BuscarNotificacoesUseCase;
 import com.insurtech.notificacao.domain.model.Notificacao;
 import com.insurtech.notificacao.domain.model.TipoNotificacao;
 import com.insurtech.notificacao.domain.repository.NotificacaoRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,6 +29,7 @@ class BuscarNotificacoesUseCaseTest {
     private BuscarNotificacoesUseCase useCase;
 
     @Test
+    @DisplayName("Deve listar notificações filtrando por ID do segurado")
     void deveListarNotificacoesPorSeguradoId() {
         UUID seguradoId = UUID.randomUUID();
         Notificacao notif = new Notificacao();
@@ -49,6 +51,7 @@ class BuscarNotificacoesUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar todas as notificações quando o ID do segurado for nulo")
     void deveListarTodasQuandoSeguradoIdNull() {
         Notificacao notif = new Notificacao();
         notif.setId(UUID.randomUUID());

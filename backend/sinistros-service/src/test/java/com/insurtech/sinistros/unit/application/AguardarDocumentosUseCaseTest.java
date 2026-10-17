@@ -11,6 +11,7 @@ import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -44,6 +45,7 @@ class AguardarDocumentosUseCaseTest {
     private AguardarDocumentosUseCase useCase;
 
     @Test
+    @DisplayName("Deve alterar status do sinistro para aguardando documentos com sucesso como analista")
     void deveAguardarDocumentos_comSucesso_comoAnalista() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
@@ -72,6 +74,7 @@ class AguardarDocumentosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado ao aguardar documentos")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID sinistroId = UUID.randomUUID();
         doThrow(new UsuarioNaoAutenticadoException("Usuário não autenticado"))
@@ -82,6 +85,7 @@ class AguardarDocumentosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o papel do usuário não for permitido ao aguardar documentos")
     void deveLancarExcecao_quandoPapelNaoPermitido() {
         UUID sinistroId = UUID.randomUUID();
         doThrow(new AcessoNegadoException("Acesso negado."))
@@ -92,6 +96,7 @@ class AguardarDocumentosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o sinistro não for encontrado ao aguardar documentos")
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
         UUID sinistroId = UUID.randomUUID();
 
@@ -106,6 +111,7 @@ class AguardarDocumentosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o status do sinistro não permitir transição para aguardando documentos")
     void deveLancarExcecao_quandoStatusInvalido() {
         UUID sinistroId = UUID.randomUUID();
 

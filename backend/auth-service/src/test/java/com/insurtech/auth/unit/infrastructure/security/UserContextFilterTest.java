@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,6 +50,7 @@ class UserContextFilterTest {
     }
 
     @Test
+    @DisplayName("Deve extrair Correlation-Id e popular MDC e UserContext quando headers estiverem presentes")
     void deveExtrairCorrelationIdEPopularMdcQuandoHeaderPresente() throws ServletException, IOException {
         String correlationId = "custom-trace-123";
         when(request.getHeader("X-Correlation-Id")).thenReturn(correlationId);
@@ -73,6 +75,7 @@ class UserContextFilterTest {
     }
 
     @Test
+    @DisplayName("Deve gerar novo Correlation-Id quando o header X-Correlation-Id estiver ausente")
     void deveGerarNovoCorrelationIdQuandoHeaderAusente() throws ServletException, IOException {
         when(request.getHeader("X-Correlation-Id")).thenReturn(null);
 

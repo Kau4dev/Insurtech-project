@@ -14,6 +14,7 @@ import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -58,6 +59,7 @@ class SinistroSecurityValidatorTest {
     }
 
     @Test
+    @DisplayName("Deve validar autenticação com sucesso quando contexto possui usuário")
     void deveValidarAutenticacao_comSucesso() {
         setUserContext("user-1", "ANALISTA");
 
@@ -69,11 +71,13 @@ class SinistroSecurityValidatorTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado no contexto")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         assertThrows(UsuarioNaoAutenticadoException.class, () -> validator.validarAutenticacao());
     }
 
     @Test
+    @DisplayName("Deve validar papéis permitidos com sucesso")
     void deveValidarPapeis_comSucesso() {
         setUserContext("user-1", "GESTOR");
 
@@ -84,6 +88,7 @@ class SinistroSecurityValidatorTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção com mensagem customizada quando o papel não for permitido")
     void deveLancarExcecao_quandoPapelNaoPermitido() {
         setUserContext("user-1", "SEGURADO");
 
@@ -93,6 +98,7 @@ class SinistroSecurityValidatorTest {
     }
 
     @Test
+    @DisplayName("Deve retornar nulo sem chamar o cliente de segurado quando o usuário não for do papel SEGURADO")
     void deveValidarPropriedadeSegurado_quandoNaoForSegurado_retornaNullSemChamarClient() {
         setUserContext("user-1", "ANALISTA");
         UUID seguradoId = UUID.randomUUID();
@@ -104,6 +110,7 @@ class SinistroSecurityValidatorTest {
     }
 
     @Test
+    @DisplayName("Deve retornar segurado com sucesso quando o usuário for o proprietário do registro")
     void deveValidarPropriedadeSegurado_quandoSeguradoDono_retornaSegurado() {
         UUID usuarioId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -120,6 +127,7 @@ class SinistroSecurityValidatorTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando segurado tentar acessar registro pertencente a outro usuário")
     void deveLancarExcecao_quandoSeguradoTentaAcessarRegistroDeOutro() {
         UUID usuarioId = UUID.randomUUID();
         UUID outroUsuarioId = UUID.randomUUID();
@@ -135,6 +143,7 @@ class SinistroSecurityValidatorTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o ID do segurado for nulo ao validar propriedade")
     void deveLancarExcecao_quandoSeguradoIdNuloAoValidarPropriedadeSegurado() {
         setUserContext(UUID.randomUUID().toString(), "SEGURADO");
 
@@ -144,6 +153,7 @@ class SinistroSecurityValidatorTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o segurado não for encontrado no cliente Feign")
     void deveLancarExcecao_quandoSeguradoNaoEncontradoNoClient() {
         UUID usuarioId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -157,6 +167,7 @@ class SinistroSecurityValidatorTest {
     }
 
     @Test
+    @DisplayName("Deve buscar dados do segurado com sucesso quando o perfil for analista")
     void deveBuscarEValidarPropriedadeSegurado_quandoAnalista_retornaSegurado() {
         setUserContext(UUID.randomUUID().toString(), "ANALISTA");
         UUID seguradoId = UUID.randomUUID();
@@ -171,6 +182,7 @@ class SinistroSecurityValidatorTest {
     }
 
     @Test
+    @DisplayName("Deve validar existência do segurado com sucesso")
     void deveValidarExistenciaSegurado_comSucesso() {
         UUID seguradoId = UUID.randomUUID();
         SeguradoResponseDTO segurado = criarSeguradoDTO(seguradoId, UUID.randomUUID());

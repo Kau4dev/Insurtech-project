@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.insurtech.sinistros.infrastructure.client.dto.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 
@@ -20,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CacheConfigTest {
 
     @Test
+    @DisplayName("Deve serializar e desserializar SeguradoResponseDTO com campos Instant no Redis")
     void deveSerializarEDesserializarSeguradoResponseDTOComInstant() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -61,6 +63,7 @@ class CacheConfigTest {
     }
 
     @Test
+    @DisplayName("Deve serializar e desserializar ApoliceResponseDTO com campos Instant e LocalDate no Redis")
     void deveSerializarEDesserializarApoliceResponseDTOComInstantELocalDate() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());

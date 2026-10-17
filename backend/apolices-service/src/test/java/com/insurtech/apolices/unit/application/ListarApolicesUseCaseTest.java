@@ -12,6 +12,7 @@ import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
 import com.insurtech.apolices.infrastructure.client.SeguradoClient;
 import feign.FeignException;
 import feign.Request;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -50,6 +51,7 @@ class ListarApolicesUseCaseTest {
     private ListarApolicesUseCase useCase;
 
     @Test
+    @DisplayName("Deve listar apólices com sucesso aplicando filtro de segurado")
     void deveListarApolices_comSucesso() {
         UUID seguradoId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
@@ -87,6 +89,7 @@ class ListarApolicesUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar apólices com sucesso sem filtro de segurado")
     void deveListarApolices_semFiltroSegurado_comSucesso() {
         Pageable pageable = PageRequest.of(0, 10);
         UUID seguradoId = UUID.randomUUID();
@@ -123,6 +126,7 @@ class ListarApolicesUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o segurado informado no filtro não for encontrado")
     void deveLancarExcecao_quandoSeguradoNaoEncontrado_aoListar() {
         UUID seguradoId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);

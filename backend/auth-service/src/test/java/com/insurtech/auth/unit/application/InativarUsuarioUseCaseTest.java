@@ -7,6 +7,7 @@ import com.insurtech.auth.domain.exception.UsuarioNaoEncontradoException;
 import com.insurtech.auth.domain.model.Papel;
 import com.insurtech.auth.domain.model.Usuario;
 import com.insurtech.auth.domain.repository.UsuarioRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,6 +35,7 @@ class InativarUsuarioUseCaseTest {
     private InativarUsuarioUseCase useCase;
 
     @Test
+    @DisplayName("Deve inativar usuário com sucesso")
     void deveInativarUsuarioComSucesso() {
         UUID id = UUID.randomUUID();
         Usuario ativo = new Usuario();
@@ -52,6 +54,7 @@ class InativarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar AcessoNegadoException ao tentar inativar usuário com papel ADMIN")
     void deveLancarExcecaoAoTentarInativarUsuarioAdmin() {
         UUID id = UUID.randomUUID();
         Usuario admin = new Usuario();
@@ -66,6 +69,7 @@ class InativarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar IllegalStateException quando o usuário já estiver inativo")
     void deveLancarExcecaoQuandoUsuarioJaEstiverInativo() {
         UUID id = UUID.randomUUID();
         Usuario inativo = new Usuario();
@@ -80,6 +84,7 @@ class InativarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar UsuarioNaoEncontradoException quando usuário não for encontrado")
     void deveLancarExcecaoQuandoUsuarioNaoEncontrado() {
         UUID id = UUID.randomUUID();
         when(repository.buscarPorId(id)).thenReturn(Optional.empty());

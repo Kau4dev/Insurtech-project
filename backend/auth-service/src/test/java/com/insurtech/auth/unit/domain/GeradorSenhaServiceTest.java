@@ -1,6 +1,7 @@
 package com.insurtech.auth.unit.domain;
 
 import com.insurtech.auth.domain.service.GeradorSenhaService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -13,6 +14,7 @@ class GeradorSenhaServiceTest {
     private final GeradorSenhaService service = new GeradorSenhaService();
 
     @Test
+    @DisplayName("Deve gerar senha segura com 12 caracteres contendo maiúsculas, minúsculas, números e símbolos")
     void deveGerarSenhaComDozeCaracteresEntropicos() {
         String senha = service.gerarSenhaSegura();
 
@@ -24,6 +26,7 @@ class GeradorSenhaServiceTest {
     }
 
     @Test
+    @DisplayName("Deve gerar senhas distintas com alta entropia em chamadas sucessivas")
     void deveGerarSenhasDiferentesEmChamadasSucessivas() {
         Set<String> geradas = new HashSet<>();
         for (int i = 0; i < 100; i++) {

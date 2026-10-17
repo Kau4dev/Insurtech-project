@@ -8,6 +8,7 @@ import com.insurtech.apolices.domain.model.Status;
 import com.insurtech.apolices.domain.model.TipoSeguro;
 import com.insurtech.apolices.domain.repository.ApoliceRepository;
 import com.insurtech.apolices.infrastructure.mapper.ApoliceMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,6 +40,7 @@ class BuscarPorIdApoliceUseCaseTest {
     private BuscarPorIdApoliceUseCase useCase;
 
     @Test
+    @DisplayName("Deve buscar apólice por ID com sucesso")
     void deveBuscarApolicePorId_comSucesso() {
         UUID apoliceId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -72,6 +74,7 @@ class BuscarPorIdApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando a apólice não for encontrada por ID")
     void deveLancarExcecao_quandoApoliceNaoEncontrada() {
         UUID apoliceId = UUID.randomUUID();
 

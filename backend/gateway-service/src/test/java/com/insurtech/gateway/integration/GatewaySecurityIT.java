@@ -3,6 +3,7 @@ package com.insurtech.gateway.integration;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,6 +49,7 @@ class GatewaySecurityIT {
     }
 
     @Test
+    @DisplayName("Deve permitir acesso com HTTP 200 à rota pública do actuator sem token")
     void devePermitirAcessoARotaPublicaSemToken() {
         webTestClient.get()
                 .uri("/actuator/health")
@@ -56,6 +58,7 @@ class GatewaySecurityIT {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 401 ao acessar rota protegida de sinistros sem token")
     void deveRetornar401QuandoAcessarRotaProtegidaSemToken() {
         webTestClient.get()
                 .uri("/api/v1/sinistros")
@@ -64,6 +67,7 @@ class GatewaySecurityIT {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 401 ao acessar rota protegida com token inválido")
     void deveRetornar401QuandoAcessarRotaProtegidaComTokenInvalido() {
         webTestClient.get()
                 .uri("/api/v1/sinistros")
@@ -73,6 +77,7 @@ class GatewaySecurityIT {
     }
 
     @Test
+    @DisplayName("Deve propagar headers de autenticação para o serviço downstream quando o token for válido")
     void devePropagarHeadersQuandoTokenForValido() {
         String tokenValido = gerarToken("user-456", "GESTOR", 60000L);
 

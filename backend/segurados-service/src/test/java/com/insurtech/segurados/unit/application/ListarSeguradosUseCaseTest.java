@@ -12,6 +12,7 @@ import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
 import com.insurtech.segurados.infrastructure.security.UserContext;
 import com.insurtech.segurados.infrastructure.security.UserContextHolder;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -55,6 +56,7 @@ class ListarSeguradosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar todos os segurados paginados sem filtro com sucesso")
     void deveListarTodosSegurados_semFiltro_comSucesso() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
         Pageable pageable = PageRequest.of(0, 10);
@@ -95,6 +97,7 @@ class ListarSeguradosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar segurados filtrando por nome com sucesso")
     void deveListarSegurados_comFiltroNome_comSucesso() {
         setUserContext(UUID.randomUUID().toString(), "ANALISTA");
         Pageable pageable = PageRequest.of(0, 10);
@@ -124,6 +127,7 @@ class ListarSeguradosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve retornar lista vazia quando não existirem segurados cadastrados")
     void deveRetornarListaVazia_quandoNaoExistemSegurados() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
         Pageable pageable = PageRequest.of(0, 10);
@@ -145,6 +149,7 @@ class ListarSeguradosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar segurados com paginação navegando na primeira página")
     void deveListarSegurados_comPaginacao_multiplasPaginas() {
         setUserContext(UUID.randomUUID().toString(), "ADMIN");
         Pageable pageablePrimeira = PageRequest.of(0, 5);
@@ -173,6 +178,7 @@ class ListarSeguradosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar segurados navegando na última página com last igual a true")
     void deveListarSegurados_ultimaPagina() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
         Pageable pageable = PageRequest.of(2, 5);
@@ -201,6 +207,7 @@ class ListarSeguradosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao tentar listar segurados sem usuário autenticado")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -209,6 +216,7 @@ class ListarSeguradosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado ao tentar listar segurados com papel SEGURADO")
     void deveLancarExcecao_quandoPapelSegurado() {
         setUserContext(UUID.randomUUID().toString(), "SEGURADO");
         Pageable pageable = PageRequest.of(0, 10);

@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -78,6 +79,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve aprovar sinistro com sucesso como analista")
     void deveAprovarSinistro_comSucesso_comoAnalista() {
         UUID id = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -104,6 +106,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve aprovar sinistro com sucesso como gestor")
     void deveAprovarSinistro_comSucesso_comoGestor() {
         UUID id = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -123,6 +126,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando usuário não estiver autenticado ao aprovar sinistro")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID id = UUID.randomUUID();
         AprovarSinistroRequestDTO dto = new AprovarSinistroRequestDTO(new BigDecimal("1000.00"));
@@ -134,6 +138,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o papel do usuário não tiver permissão para aprovar sinistro")
     void deveLancarExcecao_quandoPapelNaoPermitido() {
         UUID id = UUID.randomUUID();
         AprovarSinistroRequestDTO dto = new AprovarSinistroRequestDTO(new BigDecimal("1000.00"));
@@ -145,6 +150,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando sinistro não for encontrado ao tentar aprovar")
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
         UUID id = UUID.randomUUID();
         AprovarSinistroRequestDTO dto = new AprovarSinistroRequestDTO(new BigDecimal("1000.00"));
@@ -158,6 +164,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando a apólice associada não for encontrada")
     void deveLancarExcecao_quandoApoliceNaoEncontrada() {
         UUID id = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -176,6 +183,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o sinistro não estiver com status EM_ANALISE para aprovação")
     void deveLancarExcecao_quandoStatusInvalido() {
         UUID id = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -195,6 +203,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o valor aprovado for menor ou igual a zero")
     void deveLancarExcecao_quandoValorAprovadoMenorOuIgualAZero() {
         UUID id = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -213,6 +222,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o valor aprovado exceder o valor segurado da apólice")
     void deveLancarExcecao_quandoValorAprovadoExcedeValorSeguro() {
         UUID id = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -231,6 +241,7 @@ class AprovarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando tentar aprovar sinistro sem documentos anexados")
     void deveLancarExcecao_quandoAprovarSemDocumentos() {
         UUID id = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();

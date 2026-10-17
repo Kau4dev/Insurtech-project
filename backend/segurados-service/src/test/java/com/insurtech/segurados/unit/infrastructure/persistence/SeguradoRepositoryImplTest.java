@@ -5,6 +5,7 @@ import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
 import com.insurtech.segurados.infrastructure.persistence.SeguradoJpaEntity;
 import com.insurtech.segurados.infrastructure.persistence.SeguradoJpaRepository;
 import com.insurtech.segurados.infrastructure.persistence.SeguradoRepositoryImpl;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,6 +37,7 @@ class SeguradoRepositoryImplTest {
     private SeguradoRepositoryImpl repository;
 
     @Test
+    @DisplayName("Deve listar todos os segurados com paginação quando termo de busca for nulo")
     void deveListarTodos_quandoNomeForNulo() {
         Pageable pageable = PageRequest.of(0, 10);
         SeguradoJpaEntity entity = new SeguradoJpaEntity();
@@ -54,6 +56,7 @@ class SeguradoRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("Deve listar todos os segurados com paginação quando termo de busca for em branco")
     void deveListarTodos_quandoNomeForEmBranco() {
         Pageable pageable = PageRequest.of(0, 10);
         SeguradoJpaEntity entity = new SeguradoJpaEntity();
@@ -71,6 +74,7 @@ class SeguradoRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("Deve listar segurados filtrando por nome quando termo de busca não contiver dígitos")
     void deveListarPorNome_quandoNomeNaoConterDigitos() {
         Pageable pageable = PageRequest.of(0, 10);
         SeguradoJpaEntity entity = new SeguradoJpaEntity();
@@ -88,6 +92,7 @@ class SeguradoRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("Deve listar segurados filtrando por nome ou CPF/CNPJ quando termo contiver dígitos")
     void deveListarPorNomeOuCpfCnpj_quandoConterDigitos() {
         Pageable pageable = PageRequest.of(0, 10);
         SeguradoJpaEntity entity = new SeguradoJpaEntity();
@@ -107,6 +112,7 @@ class SeguradoRepositoryImplTest {
     }
 
     @Test
+    @DisplayName("Deve buscar segurado por usuarioId com sucesso")
     void deveBuscarPorUsuarioId_comSucesso() {
         UUID usuarioId = UUID.randomUUID();
         SeguradoJpaEntity entity = new SeguradoJpaEntity();

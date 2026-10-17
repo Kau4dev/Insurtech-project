@@ -8,6 +8,7 @@ import com.insurtech.notificacao.application.usecase.NotificarSinistroRegistrado
 import com.insurtech.notificacao.application.usecase.NotificarSinistroRejeitadoUseCase;
 import com.insurtech.notificacao.infrastructure.messaging.NotificacaoConsumer;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -58,6 +59,7 @@ class NotificacaoConsumerTest {
     }
 
     @Test
+    @DisplayName("Deve consumir evento de sinistro registrado com sucesso")
     void deveConsumirRegistradoComSucesso() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -78,6 +80,7 @@ class NotificacaoConsumerTest {
     }
 
     @Test
+    @DisplayName("Deve consumir evento de sinistro rejeitado com sucesso")
     void deveConsumirRejeitadoComSucesso() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -95,6 +98,7 @@ class NotificacaoConsumerTest {
     }
 
     @Test
+    @DisplayName("Deve consumir evento de liquidação com sucesso quando status for PROCESSADO")
     void deveConsumirLiquidacaoComSucesso_quandoStatusProcessado() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -112,6 +116,7 @@ class NotificacaoConsumerTest {
     }
 
     @Test
+    @DisplayName("Deve consumir evento de solicitação de documentos com sucesso")
     void deveConsumirDocumentoSolicitadoComSucesso() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -129,6 +134,7 @@ class NotificacaoConsumerTest {
     }
 
     @Test
+    @DisplayName("Deve consumir evento de documento recebido com sucesso")
     void deveConsumirDocumentoRecebidoComSucesso() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();

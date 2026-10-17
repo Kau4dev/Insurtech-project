@@ -10,6 +10,7 @@ import com.insurtech.sinistros.domain.model.HistoricoSinistro;
 import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,6 +40,7 @@ class MostrarHistoricoStatusUseCaseTest {
     private MostrarHistoricoStatusUseCase useCase;
 
     @Test
+    @DisplayName("Deve mostrar histórico de status do sinistro com sucesso")
     void deveMostrarHistorico_comSucesso() {
         UUID id = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -65,6 +67,7 @@ class MostrarHistoricoStatusUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado ao consultar histórico")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID id = UUID.randomUUID();
         doThrow(new UsuarioNaoAutenticadoException("Usuário não autenticado"))
@@ -75,6 +78,7 @@ class MostrarHistoricoStatusUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o sinistro não for encontrado ao consultar histórico")
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
         UUID id = UUID.randomUUID();
 
@@ -88,6 +92,7 @@ class MostrarHistoricoStatusUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o validador negar acesso do segurado ao histórico do sinistro")
     void deveLancarExcecao_quandoAcessoNegadoPeloValidator() {
         UUID id = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();

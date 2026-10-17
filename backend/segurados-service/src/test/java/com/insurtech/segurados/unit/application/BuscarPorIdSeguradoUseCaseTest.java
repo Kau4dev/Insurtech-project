@@ -11,6 +11,7 @@ import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
 import com.insurtech.segurados.infrastructure.security.UserContext;
 import com.insurtech.segurados.infrastructure.security.UserContextHolder;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,6 +48,7 @@ class BuscarPorIdSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve retornar segurado por ID com sucesso quando usuário possuir papel GESTOR")
     void deveRetornarSegurado_quandoExistir_comoGestor() {
         UUID id = UUID.randomUUID();
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
@@ -65,6 +67,7 @@ class BuscarPorIdSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve retornar segurado por ID quando o próprio segurado autenticado consultar seu cadastro")
     void deveRetornarSegurado_quandoSeguradoBuscaASiMesmo() {
         UUID id = UUID.randomUUID();
         UUID usuarioId = UUID.randomUUID();
@@ -85,6 +88,7 @@ class BuscarPorIdSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado quando segurado tentar buscar cadastro de outro segurado")
     void deveLancarExcecao_quandoSeguradoBuscaOutroSegurado() {
         UUID id = UUID.randomUUID();
         UUID usuarioLogadoId = UUID.randomUUID();
@@ -103,6 +107,7 @@ class BuscarPorIdSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado quando segurado tentar acessar cadastro sem usuário vinculado")
     void deveLancarExcecao_quandoSeguradoNaoPossuiUsuarioIdVinculado_eSeguradoTentaAcessar() {
         UUID id = UUID.randomUUID();
         setUserContext(UUID.randomUUID().toString(), "SEGURADO");
@@ -119,6 +124,7 @@ class BuscarPorIdSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao tentar buscar segurado por ID sem usuário autenticado")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID id = UUID.randomUUID();
 
@@ -127,6 +133,7 @@ class BuscarPorIdSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o segurado não for encontrado pelo ID")
     void deveLancarExcecao_quandoSeguradoNaoEncontrado() {
         UUID id = UUID.randomUUID();
         setUserContext(UUID.randomUUID().toString(), "GESTOR");

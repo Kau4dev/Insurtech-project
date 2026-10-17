@@ -2,6 +2,7 @@ package com.insurtech.liquidacao.integration;
 
 import com.insurtech.liquidacao.application.dto.SinistroAprovadoEventDTO;
 import com.insurtech.liquidacao.infrastructure.persistence.EventoPagamentoJpaRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,6 +49,7 @@ class ProcessarLiquidacaoIntegrationTest {
     private EventoPagamentoJpaRepository repository;
 
     @Test
+    @DisplayName("Deve processar liquidação e gravar no banco quando receber evento Kafka")
     void deveProcessarLiquidacaoEGravarNoBancoQuandoReceberEventoKafka() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();

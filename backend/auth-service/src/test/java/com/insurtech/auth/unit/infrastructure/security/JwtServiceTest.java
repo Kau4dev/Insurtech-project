@@ -4,6 +4,7 @@ import com.insurtech.auth.domain.model.Papel;
 import com.insurtech.auth.domain.model.Usuario;
 import com.insurtech.auth.infrastructure.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -25,6 +26,7 @@ class JwtServiceTest {
     }
 
     @Test
+    @DisplayName("Deve gerar token JWT válido com sucesso contendo ID e papel do usuário")
     void deveGerarETokenValido_comSucesso() {
         Usuario usuario = new Usuario();
         UUID userId = UUID.randomUUID();
@@ -41,6 +43,7 @@ class JwtServiceTest {
     }
 
     @Test
+    @DisplayName("Deve retornar falso ao validar token inválido, vazio ou nulo")
     void deveRetornarFalso_quandoTokenInvalidoOuNulo() {
         assertFalse(jwtService.isTokenValido("invalido"));
         assertFalse(jwtService.isTokenValido(""));

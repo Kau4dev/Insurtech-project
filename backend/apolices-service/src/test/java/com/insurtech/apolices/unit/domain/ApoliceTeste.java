@@ -7,6 +7,7 @@ import com.insurtech.apolices.domain.model.Cobertura;
 import com.insurtech.apolices.domain.model.Status;
 import com.insurtech.apolices.domain.model.TipoCobertura;
 import com.insurtech.apolices.domain.model.TipoSeguro;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ApoliceTeste {
 
     @Test
+    @DisplayName("Deve retornar vigente quando a apólice estiver ativa e dentro do período de vigência")
     void deveRetornarVigente_quandoDentroDoPrazo_eAtiva() {
         Apolice apolice = new Apolice();
         apolice.setStatus(Status.ATIVA);
@@ -27,6 +29,7 @@ public class ApoliceTeste {
     }
 
     @Test
+    @DisplayName("Deve retornar não vigente quando a apólice estiver fora do período de vigência")
     void deveRetornarNaoVigente_quandoForaDoPrazo() {
         Apolice apolice = new Apolice();
         apolice.setStatus(Status.ATIVA);
@@ -37,6 +40,7 @@ public class ApoliceTeste {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao tentar cancelar apólice que já está cancelada")
     void deveLancarExcecao_quandoCancelarApoliceJaCancelada() {
         Apolice apolice = new Apolice();
         apolice.setStatus(Status.CANCELADA);
@@ -45,6 +49,7 @@ public class ApoliceTeste {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao tentar cancelar apólice expirada")
     void deveLancarExcecao_quandoCancelarApoliceExpirada() {
         Apolice apolice = new Apolice();
         apolice.setStatus(Status.EXPIRADA);
@@ -53,6 +58,7 @@ public class ApoliceTeste {
     }
 
     @Test
+    @DisplayName("Deve cancelar apólice ativa com sucesso e atualizar timestamp")
     void deveCancelarApoliceComSucesso() {
         Apolice apolice = new Apolice();
         apolice.setStatus(Status.ATIVA);
@@ -63,6 +69,7 @@ public class ApoliceTeste {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao tentar suspender apólice cancelada")
     void deveLancarExcecao_quandoSuspenderApoliceCancelada() {
         Apolice apolice = new Apolice();
         apolice.setStatus(Status.CANCELADA);
@@ -71,6 +78,7 @@ public class ApoliceTeste {
     }
 
     @Test
+    @DisplayName("Deve suspender apólice ativa com sucesso")
     void deveSuspenderApoliceAtivaComSucesso() {
         Apolice apolice = new Apolice();
         apolice.setStatus(Status.ATIVA);
@@ -80,6 +88,7 @@ public class ApoliceTeste {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao tentar reativar apólice que já está ativa")
     void deveLancarExcecao_quandoReativarApoliceAtiva() {
         Apolice apolice = new Apolice();
         apolice.setStatus(Status.ATIVA);
@@ -88,6 +97,7 @@ public class ApoliceTeste {
     }
 
     @Test
+    @DisplayName("Deve reativar apólice suspensa com sucesso")
     void deveReativarApoliceSuspensaComSucesso() {
         Apolice apolice = new Apolice();
         apolice.setStatus(Status.SUSPENSA);
@@ -97,6 +107,7 @@ public class ApoliceTeste {
     }
 
     @Test
+    @DisplayName("Deve adicionar cobertura à apólice com sucesso quando compatível")
     void deveAdicionarCobertura_comSucesso() {
         Apolice apolice = new Apolice();
         apolice.setId(UUID.randomUUID());
@@ -113,6 +124,7 @@ public class ApoliceTeste {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao tentar adicionar cobertura incompatível com o tipo de seguro")
     void deveLancarExcecao_quandoAdicionarCoberturaIncompativel() {
         Apolice apolice = new Apolice();
         apolice.setId(UUID.randomUUID());

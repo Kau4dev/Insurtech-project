@@ -1,5 +1,6 @@
 package com.insurtech.liquidacao;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -30,6 +31,7 @@ class LiquidacaoServiceApplicationTests {
     }
 
     @Test
+    @DisplayName("Deve carregar o contexto da aplicação com sucesso")
     void contextLoads() {
     }
 

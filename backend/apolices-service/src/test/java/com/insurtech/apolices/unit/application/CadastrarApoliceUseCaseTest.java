@@ -21,6 +21,7 @@ import com.insurtech.apolices.infrastructure.security.UserContextHolder;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -65,6 +66,7 @@ class CadastrarApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve cadastrar apólice com sucesso quando usuário for gestor")
     void deveCadastrarApolice_comSucesso_comoGestor() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -99,6 +101,7 @@ class CadastrarApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve cadastrar apólice com sucesso quando usuário for admin")
     void deveCadastrarApolice_comSucesso_comoAdmin() {
         setUserContext(UUID.randomUUID().toString(), "ADMIN");
 
@@ -120,6 +123,7 @@ class CadastrarApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao cadastrar apólice sem autenticação")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         ApoliceRequestDTO dto = new ApoliceRequestDTO(
                 UUID.randomUUID(), "IT-AUTH", TipoSeguro.VIDA,
@@ -132,6 +136,7 @@ class CadastrarApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado ao cadastrar apólice com papel de analista")
     void deveLancarExcecao_quandoPapelAnalista() {
         setUserContext(UUID.randomUUID().toString(), "ANALISTA");
 
@@ -146,6 +151,7 @@ class CadastrarApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado ao cadastrar apólice com papel de segurado")
     void deveLancarExcecao_quandoPapelSegurado() {
         setUserContext(UUID.randomUUID().toString(), "SEGURADO");
 
@@ -160,6 +166,7 @@ class CadastrarApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve cadastrar apólice com coberturas gerando identificadores e vinculando apoliceId")
     void deveCadastrarApolice_comCoberturasGerandoIdsEapoliceId() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -204,6 +211,7 @@ class CadastrarApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao cadastrar apólice para segurado não encontrado")
     void deveLancarExcecao_quandoSeguradoNaoEncontrado() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -224,6 +232,7 @@ class CadastrarApoliceUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao cadastrar apólice com número já existente")
     void deveLancarExcecao_quandoApoliceJaCadastrada() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 

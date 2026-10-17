@@ -7,6 +7,7 @@ import com.insurtech.sinistros.domain.exception.AcessoNegadoException;
 import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.infrastructure.persistence.MetricasQueryService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,6 +35,7 @@ class MostrarMetricasUseCaseTest {
     private MostrarMetricasUseCase useCase;
 
     @Test
+    @DisplayName("Deve mostrar métricas do dashboard de sinistros com sucesso para gestor ou admin")
     void deveMostrarMetricas_comSucesso() {
         DashboardResponseDTO esperado = new DashboardResponseDTO(
                 Map.of(Status.EM_ANALISE, 2L, Status.APROVADO, 3L),
@@ -54,6 +56,7 @@ class MostrarMetricasUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado ao consultar métricas")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         doThrow(new UsuarioNaoAutenticadoException("Usuário não autenticado"))
                 .when(securityValidator).validarPapeis(anyString(), eq("GESTOR"), eq("ADMIN"));
@@ -63,6 +66,7 @@ class MostrarMetricasUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o papel do usuário não tiver permissão para consultar métricas")
     void deveLancarExcecao_quandoPapelNaoPermitido() {
         doThrow(new AcessoNegadoException("Acesso negado."))
                 .when(securityValidator).validarPapeis(anyString(), eq("GESTOR"), eq("ADMIN"));

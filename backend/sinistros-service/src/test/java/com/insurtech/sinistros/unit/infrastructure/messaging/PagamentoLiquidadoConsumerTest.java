@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,6 +46,7 @@ class PagamentoLiquidadoConsumerTest {
     }
 
     @Test
+    @DisplayName("Deve consumir evento com correlationId, atualizar status para pago e invalidar cache")
     void deveConsumirEventoComCorrelationIdEAtualizarStatusParaPago() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -73,6 +75,7 @@ class PagamentoLiquidadoConsumerTest {
     }
 
     @Test
+    @DisplayName("Deve consumir evento sem header gerando novo correlationId no MDC")
     void deveConsumirEventoSemHeaderEGerarCorrelationIdNoMdc() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -96,6 +99,7 @@ class PagamentoLiquidadoConsumerTest {
     }
 
     @Test
+    @DisplayName("Não deve atualizar status do sinistro quando o status do evento de liquidação for falha")
     void naoDeveAtualizarStatusQuandoPagamentoFalhar() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();

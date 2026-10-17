@@ -1,6 +1,7 @@
 package com.insurtech.notificacao.integration;
 
 import com.insurtech.notificacao.infrastructure.messaging.NotificacaoConsumer;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ class NotificacaoConsumerIT {
     private NotificacaoConsumer consumer;
 
     @Test
+    @DisplayName("Deve consumir evento de sinistro registrado e disparar notificação")
     void deveConsumirEventoSinistroRegistradoEDispararNotificacao() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -46,6 +48,7 @@ class NotificacaoConsumerIT {
     }
 
     @Test
+    @DisplayName("Deve consumir evento de sinistro rejeitado e disparar notificação")
     void deveConsumirEventoSinistroRejeitadoEDispararNotificacao() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -62,6 +65,7 @@ class NotificacaoConsumerIT {
     }
 
     @Test
+    @DisplayName("Deve consumir evento de pagamento liquidado e disparar notificação")
     void deveConsumirEventoPagamentoLiquidadoEDispararNotificacao() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -78,6 +82,7 @@ class NotificacaoConsumerIT {
     }
 
     @Test
+    @DisplayName("Deve consumir evento de documentos solicitados e disparar notificação")
     void deveConsumirEventoDocumentosSolicitadosEDispararNotificacao() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -94,6 +99,7 @@ class NotificacaoConsumerIT {
     }
 
     @Test
+    @DisplayName("Deve consumir evento de documento adicionado e disparar notificação")
     void deveConsumirEventoDocumentoAdicionadoEDispararNotificacao() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
