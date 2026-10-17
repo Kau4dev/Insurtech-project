@@ -40,17 +40,16 @@ public class KafkaSinistroEventPublisher implements EventPublisherPort {
             String payloadJson = objectMapper.writeValueAsString(event);
             String correlationId = MDC.get("correlationId");
 
-            OutboxEventJpaEntity outbox = OutboxEventJpaEntity.builder()
-                    .id(UUID.randomUUID())
-                    .aggregateType("SINISTRO")
-                    .aggregateId(aggregateId)
-                    .topic(topic)
-                    .payload(payloadJson)
-                    .correlationId(correlationId)
-                    .status("PENDENTE")
-                    .tentativas(0)
-                    .createdAt(Instant.now())
-                    .build();
+            OutboxEventJpaEntity outbox = new OutboxEventJpaEntity();
+            outbox.setId(UUID.randomUUID());
+            outbox.setAggregateType("SINISTRO");
+            outbox.setAggregateId(aggregateId);
+            outbox.setTopic(topic);
+            outbox.setPayload(payloadJson);
+            outbox.setCorrelationId(correlationId);
+            outbox.setStatus("PENDENTE");
+            outbox.setTentativas(0);
+            outbox.setCreatedAt(Instant.now());
 
             outboxRepository.save(outbox);
             log.info("[OUTBOX-ENQUEUE] Evento salvo no outbox: id={} | topico={} | correlationId={}",
