@@ -73,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider
+    <AuthContext
       value={{
         usuario,
         token,
@@ -84,6 +84,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }}
     >
       {children}
-    </AuthContext.Provider>
+    </AuthContext>
   );
 };

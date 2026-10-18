@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import type { PapelUsuario } from "../interfaces/enums";
 
@@ -86,12 +86,12 @@ export const RotaProtegida: React.FC<RotaProtegidaProps> = ({
               </span>
               ) não possui privilégios para visualizar este recurso.
             </p>
-            <a
-              href="/dashboard"
+            <Link
+              to="/dashboard"
               className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg bg-(--accent) text-white hover:brightness-105 transition-all"
             >
               Voltar ao Dashboard
-            </a>
+            </Link>
           </div>
         </div>
       );
