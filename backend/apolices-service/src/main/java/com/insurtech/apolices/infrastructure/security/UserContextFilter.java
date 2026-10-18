@@ -1,55 +1,47 @@
 package com.insurtech.apolices.infrastructure.security;
 
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.stereotype.Component;
-import java.io.IOException;
-
-import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.MDC;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @Component
-public class UserContextFilter implements Filter {
+public class UserContextFilter extends OncePerRequestFilter {
 
     public static final String CORRELATION_ID_HEADER = "X-Correlation-Id";
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-
-        // 1. Extrai ou gera Correlation ID
-        String correlationId = httpServletRequest.getHeader(CORRELATION_ID_HEADER);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String correlationId = request.getHeader(CORRELATION_ID_HEADER);
         if (correlationId == null || correlationId.isBlank()) {
             correlationId = UUID.randomUUID().toString();
         }
 
-        // 2. Coloca no MDC do SLF4J (disponível para todos os logs da thread)
         MDC.put("correlationId", correlationId);
 
-        String usuarioId = httpServletRequest.getHeader("X-Usuario-Id");
-        String usuarioPapel = httpServletRequest.getHeader("X-Usuario-Papel");
+        String usuarioId = request.getHeader("X-Usuario-Id");
+        String usuarioPapel = request.getHeader("X-Usuario-Papel");
 
         if (usuarioId != null && !usuarioId.isBlank()) {
             MDC.put("usuarioId", usuarioId);
         }
 
-        // 3. Alimenta o UserContextHolder existente
         UserContext context = UserContextHolder.getContext();
         context.setUsuarioId(usuarioId);
         context.setUsuarioPapel(usuarioPapel);
 
-        // 4. Devolve o header na resposta HTTP
-        httpServletResponse.setHeader(CORRELATION_ID_HEADER, correlationId);
+        response.setHeader(CORRELATION_ID_HEADER, correlationId);
 
         try {
-            chain.doFilter(request, response);
+            filterChain.doFilter(request, response);
         } finally {
-            // Limpa thread local e MDC para evitar vazamento entre requisições
             MDC.clear();
             UserContextHolder.clear();
         }
