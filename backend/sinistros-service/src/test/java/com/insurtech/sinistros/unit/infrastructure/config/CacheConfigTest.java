@@ -3,7 +3,8 @@ package com.insurtech.sinistros.unit.infrastructure.config;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.insurtech.sinistros.infrastructure.client.dto.*;
 import org.junit.jupiter.api.DisplayName;
@@ -20,19 +21,32 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CacheConfigTest {
 
-    @Test
-    @DisplayName("Deve serializar e desserializar SeguradoResponseDTO com campos Instant no Redis")
-    void deveSerializarEDesserializarSeguradoResponseDTOComInstant() {
+    private GenericJackson2JsonRedisSerializer criarSerializer() {
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType("com.insurtech.")
+                .allowIfBaseType("java.util.")
+                .allowIfBaseType("java.time.")
+                .allowIfBaseType("java.math.")
+                .build();
+
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.activateDefaultTyping(
-                LaissezFaireSubTypeValidator.instance,
+                ptv,
                 ObjectMapper.DefaultTyping.EVERYTHING,
                 JsonTypeInfo.As.PROPERTY
         );
 
-        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(mapper);
+        return GenericJackson2JsonRedisSerializer.builder()
+                .objectMapper(mapper)
+                .build();
+    }
+
+    @Test
+    @DisplayName("Deve serializar e desserializar SeguradoResponseDTO com campos Instant no Redis")
+    void deveSerializarEDesserializarSeguradoResponseDTOComInstant() {
+        GenericJackson2JsonRedisSerializer serializer = criarSerializer();
 
         SeguradoResponseDTO segurado = new SeguradoResponseDTO(
                 UUID.randomUUID(),
@@ -65,16 +79,7 @@ class CacheConfigTest {
     @Test
     @DisplayName("Deve serializar e desserializar ApoliceResponseDTO com campos Instant e LocalDate no Redis")
     void deveSerializarEDesserializarApoliceResponseDTOComInstantELocalDate() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.activateDefaultTyping(
-                LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.EVERYTHING,
-                JsonTypeInfo.As.PROPERTY
-        );
-
-        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(mapper);
+        GenericJackson2JsonRedisSerializer serializer = criarSerializer();
 
         ApoliceResponseDTO apolice = new ApoliceResponseDTO(
                 UUID.randomUUID(),
