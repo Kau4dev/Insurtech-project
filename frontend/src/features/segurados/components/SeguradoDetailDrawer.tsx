@@ -29,6 +29,8 @@ import {
 } from "../../../utils/enumUtils";
 import { extrairMensagemErro } from "../../../utils/errorUtils";
 import {
+  capitalizarPalavras,
+  capitalizarPrimeiraLetra,
   formatarCep,
   formatarCpfCnpj,
   formatarData,
@@ -171,7 +173,7 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={segurado.nomeRazaoSocial}
+        title={capitalizarPalavras(segurado.nomeRazaoSocial)}
       description={`Cadastrado como ${formatarTipoPessoa(segurado.tipoPessoa)}`}
       maxWidthClass="max-w-4xl"
     >
@@ -394,7 +396,7 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   <DetailField
                     label="Logradouro / Rua"
-                    value={endereco.rua || "-"}
+                    value={capitalizarPalavras(endereco.rua) || "-"}
                     className="sm:col-span-2"
                   />
                   <DetailField
@@ -403,17 +405,17 @@ export const SeguradoDetailDrawer: React.FC<SeguradoDetailDrawerProps> = ({
                   />
                   <DetailField
                     label="Bairro"
-                    value={endereco.bairro || "-"}
+                    value={capitalizarPalavras(endereco.bairro) || "-"}
                   />
                   <DetailField
                     label="Complemento"
-                    value={endereco.complemento || "-"}
+                    value={capitalizarPrimeiraLetra(endereco.complemento) || "-"}
                   />
                   <DetailField
                     label="Cidade / UF"
                     value={
                       endereco.cidade
-                        ? `${endereco.cidade}${endereco.uf ? ` - ${endereco.uf}` : ""}`
+                        ? `${capitalizarPalavras(endereco.cidade)}${endereco.uf ? ` - ${endereco.uf}` : ""}`
                         : endereco.uf || "-"
                     }
                   />

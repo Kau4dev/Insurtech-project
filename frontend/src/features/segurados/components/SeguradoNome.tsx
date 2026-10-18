@@ -1,4 +1,5 @@
 import React from "react";
+import { capitalizarPalavras } from "../../../utils/formatters";
 import { useSeguradoPorId } from "../hooks/useSegurados";
 
 interface SeguradoNomeProps {
@@ -23,5 +24,6 @@ export const SeguradoNome: React.FC<SeguradoNomeProps> = ({ seguradoId }) => {
       </span>
     );
   }
-  return <span>{segurado.nomeRazaoSocial}</span>;
+  return <span>{capitalizarPalavras(segurado.nomeRazaoSocial)}</span>;
 };
+

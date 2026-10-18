@@ -114,3 +114,61 @@ export function formatarData(dataStr?: string | null): string {
   }
   return dataStr;
 }
+
+/**
+ * Capitaliza cada palavra (Title Case) para nomes de pessoas, empresas, ruas e cidades,
+ * preservando preposições comuns em minúsculo quando não estão no início da frase.
+ * Ex: "joão silva" -> "João Silva"
+ *     "minha empresa" -> "Minha Empresa"
+ *     "rua das flores" -> "Rua das Flores"
+ *     "são jao" -> "São Jao"
+ */
+export function capitalizarPalavras(texto?: string | null): string {
+  if (!texto) return "";
+  const trimmed = texto.trim();
+  if (!trimmed) return "";
+
+  const preposicoes = new Set([
+    "de",
+    "da",
+    "do",
+    "das",
+    "dos",
+    "e",
+    "em",
+    "com",
+    "por",
+    "para",
+  ]);
+
+  return trimmed
+    .split(/\s+/)
+    .map((palavra, index) => {
+      // Se for sigla ou UF toda maiúscula (ex: LTDA, S/A, PR, SP), preserva se tiver 2+ letras maiúsculas
+      if (
+        palavra.length <= 4 &&
+        palavra === palavra.toUpperCase() &&
+        !/^[0-9]+$/.test(palavra)
+      ) {
+        return palavra;
+      }
+      const lower = palavra.toLowerCase();
+      if (index > 0 && preposicoes.has(lower)) {
+        return lower;
+      }
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join(" ");
+}
+
+/**
+ * Capitaliza apenas a primeira letra de uma sentença/string, mantendo o restante.
+ * Útil para campos como complemento ("apto 42, bloco b" -> "Apto 42, bloco b").
+ */
+export function capitalizarPrimeiraLetra(texto?: string | null): string {
+  if (!texto) return "";
+  const trimmed = texto.trim();
+  if (!trimmed) return "";
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
+

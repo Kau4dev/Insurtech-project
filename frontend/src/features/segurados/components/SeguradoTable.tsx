@@ -12,7 +12,11 @@ import {
   formatarTipoPessoa,
   getPessoaTipoBadgeVariant,
 } from "../../../utils/enumUtils";
-import { formatarCpfCnpj, formatarTelefone } from "../../../utils/formatters";
+import {
+  capitalizarPalavras,
+  formatarCpfCnpj,
+  formatarTelefone,
+} from "../../../utils/formatters";
 
 interface SeguradoTableProps {
   segurados: Segurado[];
@@ -54,14 +58,17 @@ export const SeguradoTable: React.FC<SeguradoTableProps> = ({
       <TableHeader columns={COLUNAS} />
       <tbody className="divide-y divide-(--border)">
         {segurados.map((segurado) => {
-          const localidade = [segurado.enderecoCidade, segurado.enderecoUf]
+          const cidadeFormatada = segurado.enderecoCidade
+            ? capitalizarPalavras(segurado.enderecoCidade)
+            : undefined;
+          const localidade = [cidadeFormatada, segurado.enderecoUf]
             .filter(Boolean)
             .join(" - ");
 
           return (
             <TableRow key={segurado.id || segurado.cpfCnpj}>
               <TableCell className="font-medium text-(--fg)">
-                <div>{segurado.nomeRazaoSocial}</div>
+                <div>{capitalizarPalavras(segurado.nomeRazaoSocial)}</div>
                 <div className="text-xs text-(--muted) font-normal">
                   {formatarTipoPessoa(segurado.tipoPessoa)}
                 </div>
