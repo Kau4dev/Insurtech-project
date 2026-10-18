@@ -82,8 +82,10 @@ services:
 
   notificacao-service:
     build: ./backend/notificacao-service
-    depends_on: [kafka]
+    depends_on: [postgres, kafka]
+    ports: ["8089:8089"]
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/notificacao_db
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
 
   gateway-service:
