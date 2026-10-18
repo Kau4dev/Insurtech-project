@@ -204,7 +204,8 @@ class AtualizarStatusApoliceUseCaseTest {
 
         when(repository.buscarPorId(apoliceId)).thenReturn(Optional.of(apolice));
 
-        assertThrows(StatusNaoSuportadoException.class, () -> useCase.executar(apoliceId, dto));
+        StatusNaoSuportadoException ex = assertThrows(StatusNaoSuportadoException.class, () -> useCase.executar(apoliceId, dto));
+        assertTrue(ex.getMessage().contains("Status não suportado para atualização manual: EXPIRADA"));
         verify(repository, never()).salvar(any());
     }
 }
