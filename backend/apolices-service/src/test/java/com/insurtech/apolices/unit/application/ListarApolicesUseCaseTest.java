@@ -131,7 +131,7 @@ class ListarApolicesUseCaseTest {
         UUID seguradoId = UUID.randomUUID();
         Pageable pageable = PageRequest.of(0, 10);
 
-        Request request = Request.create(Request.HttpMethod.GET, "url", Collections.emptyMap(), null, null, null);
+        Request request = Request.create(Request.HttpMethod.GET, "url", Collections.emptyMap(), Request.Body.empty(), null);
         FeignException.NotFound exception = new FeignException.NotFound("Not Found", request, null, null);
 
         when(client.buscarPorId(seguradoId)).thenThrow(exception);

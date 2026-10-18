@@ -222,7 +222,7 @@ class CadastrarApoliceUseCaseTest {
                 LocalDate.now(), LocalDate.now().plusYears(1), null
         );
 
-        Request request = Request.create(Request.HttpMethod.GET, "url", Collections.emptyMap(), null, null, null);
+        Request request = Request.create(Request.HttpMethod.GET, "url", Collections.emptyMap(), Request.Body.empty(), null);
         FeignException.NotFound exception = new FeignException.NotFound("Not Found", request, null, null);
 
         when(client.buscarPorId(seguradoId)).thenThrow(exception);

@@ -246,8 +246,8 @@ class AtribuirAnalistaUseCaseTest {
                         .request(Request.create(Request.HttpMethod.GET,
                                 "/api/v1/auth/usuarios",
                                 Collections.emptyMap(),
-                                new byte[0],
-                                Charset.defaultCharset()))
+                                Request.Body.empty(),
+                                null))
                         .build()
         );
     }

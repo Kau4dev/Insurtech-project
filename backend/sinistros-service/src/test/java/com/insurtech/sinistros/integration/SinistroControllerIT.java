@@ -688,7 +688,7 @@ class SinistroControllerIT extends IntegrationTestBase {
                 feign.Response.builder()
                         .status(404).reason("Not Found")
                         .request(Request.create(Request.HttpMethod.GET, "/api/v1/auth/usuarios",
-                                Collections.emptyMap(), new byte[0], Charset.defaultCharset()))
+                                Collections.emptyMap(), Request.Body.empty(), null))
                         .build()
         );
     }

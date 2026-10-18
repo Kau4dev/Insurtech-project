@@ -163,7 +163,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
         when(seguradoClient.buscarPorId(seguradoId)).thenThrow(
                 new feign.FeignException.NotFound("Not Found",
                         feign.Request.create(feign.Request.HttpMethod.GET, "/api/v1/segurados/" + seguradoId,
-                                java.util.Collections.emptyMap(), null, null, null),
+                                java.util.Collections.emptyMap(), feign.Request.Body.empty(), null),
                         null, null)
         );
 
