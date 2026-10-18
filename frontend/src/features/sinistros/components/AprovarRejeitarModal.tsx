@@ -207,7 +207,7 @@ export const AprovarRejeitarModal: React.FC<AprovarRejeitarModalProps> = ({
               </p>
             )}
             <p className="text-xs text-(--muted)">
-              Regra de negócio: o valor aprovado não pode exceder o limite
+              O valor aprovado não pode exceder o limite
               segurado da apólice. Ao confirmar, o sinistro mudará para{" "}
               <strong>APROVADO</strong> e será enviado para liquidação.
             </p>

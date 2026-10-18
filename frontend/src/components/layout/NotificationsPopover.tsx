@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { notificacoesApi, type NotificacaoResponse } from "../../api/notificacoesApi";
 
@@ -56,7 +56,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const carregarNotificacoes = async () => {
+  const carregarNotificacoes = useCallback(async () => {
     if (portalMode && !seguradoId) {
       return;
     }
@@ -76,11 +76,11 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
     } catch {
       // Falha silenciosa ou fallback
     }
-  };
+  }, [portalMode, seguradoId]);
 
   useEffect(() => {
     carregarNotificacoes();
-  }, [seguradoId, portalMode]);
+  }, [carregarNotificacoes]);
 
   const naoLidasCount = notificacoes.filter((n) => !n.lida).length;
 
@@ -108,7 +108,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
       document.removeEventListener("mousedown", handleClickFora);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, seguradoId, portalMode]);
+  }, [isOpen, carregarNotificacoes]);
 
   const marcarComoLida = async (id: string) => {
     setNotificacoes((prev) =>
