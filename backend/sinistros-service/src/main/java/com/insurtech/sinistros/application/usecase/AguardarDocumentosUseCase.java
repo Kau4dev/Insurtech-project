@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AguardarDocumentosUseCase {
 
@@ -24,7 +25,6 @@ public class AguardarDocumentosUseCase {
     private final SinistroSecurityValidator securityValidator;
     private final EventPublisherPort eventPublisher;
 
-    @Transactional
     public SinistroResponseDTO executar(UUID id) {
         securityValidator.validarPapeis(
                 "Acesso negado. Apenas analistas ou gestores podem solicitar documentos.",

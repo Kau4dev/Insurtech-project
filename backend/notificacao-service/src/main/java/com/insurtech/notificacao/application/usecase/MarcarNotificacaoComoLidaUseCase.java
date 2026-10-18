@@ -9,12 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class MarcarNotificacaoComoLidaUseCase {
 
     private final NotificacaoRepository repository;
 
-    @Transactional
     public void executar(UUID id) {
         Notificacao notificacao = repository.buscarPorId(id)
                 .orElseThrow(() -> new IllegalArgumentException("Notificação não encontrada com o ID: " + id));
@@ -22,7 +22,6 @@ public class MarcarNotificacaoComoLidaUseCase {
         repository.salvar(notificacao);
     }
 
-    @Transactional
     public void executarMarcarTodas(UUID seguradoId) {
         if (seguradoId != null) {
             repository.marcarTodasComoLidasPorSegurado(seguradoId);

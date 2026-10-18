@@ -19,6 +19,7 @@ import java.util.UUID;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ProcessarLiquidacaoUseCase {
 
