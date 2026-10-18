@@ -266,26 +266,28 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
                       retornar a análise.
                     </div>
                   </div>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => setModalUploadAberto(true)}
-                  >
-                    <svg
-                      className="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  {sinistro.analistaId && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setModalUploadAberto(true)}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                    Anexar Documento
-                  </Button>
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                      Anexar Documento
+                    </Button>
+                  )}
                 </div>
               )}
 
@@ -563,7 +565,7 @@ export const SinistroDetailDrawer: React.FC<SinistroDetailDrawerProps> = ({
               )}
 
               {sinistro.analistaId &&
-                !["APROVADO", "REJEITADO", "PAGO"].includes(statusAtual) && (
+                statusAtual === "AGUARDANDO_DOCUMENTOS" && (
                   <Button
                     variant="secondary"
                     onClick={() => setModalUploadAberto(true)}
