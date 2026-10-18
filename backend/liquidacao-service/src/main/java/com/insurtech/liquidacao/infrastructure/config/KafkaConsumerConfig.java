@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaConnectionDetails;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -22,7 +21,6 @@ import java.util.Map;
 
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
-@EnableKafka
 @Configuration
 public class KafkaConsumerConfig {
 
@@ -65,10 +63,6 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(consumerFactory());
 
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(
-                (record, exception) ->
-                        org.slf4j.LoggerFactory.getLogger(KafkaConsumerConfig.class)
-                                .error("Mensagem descartada apos 3 tentativas. topic={}, offset={}, erro={}",
-                                        record.topic(), record.offset(), exception.getMessage()),
                 new FixedBackOff(1000L, 3L)
         );
         factory.setCommonErrorHandler(errorHandler);
