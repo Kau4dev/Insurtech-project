@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { sinistrosApi } from "../../../api/sinistrosApi";
+import { sincronizarNotificacoes } from "../../../hooks/useNotificacoes";
 import type { DocumentoSinistroRequest } from "../../../interfaces/sinistros/documentoSinistroRequest";
 import type { FiltrosSinistros } from "../../../interfaces/sinistros/filtrosSinistros";
 import type {
@@ -19,7 +20,11 @@ export function useCadastrarSinistro() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (dto: SinistroRequest) => sinistrosApi.cadastrar(dto),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sinistros"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sinistros"] });
+      queryClient.invalidateQueries({ queryKey: ["notificacoes"] });
+      sincronizarNotificacoes();
+    },
   });
 }
 
@@ -44,7 +49,11 @@ export function useAguardarDocumentos() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => sinistrosApi.aguardarDocumentos(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sinistros"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sinistros"] });
+      queryClient.invalidateQueries({ queryKey: ["notificacoes"] });
+      sincronizarNotificacoes();
+    },
   });
 }
 
@@ -53,7 +62,11 @@ export function useAprovarSinistro() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: AprovarSinistro }) =>
       sinistrosApi.aprovar(id, dto),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sinistros"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sinistros"] });
+      queryClient.invalidateQueries({ queryKey: ["notificacoes"] });
+      sincronizarNotificacoes();
+    },
   });
 }
 
@@ -62,7 +75,11 @@ export function useRejeitarSinistro() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: RejeitarSinistro }) =>
       sinistrosApi.rejeitar(id, dto),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sinistros"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sinistros"] });
+      queryClient.invalidateQueries({ queryKey: ["notificacoes"] });
+      sincronizarNotificacoes();
+    },
   });
 }
 
@@ -71,7 +88,11 @@ export function useAdicionarDocumento() {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: DocumentoSinistroRequest }) =>
       sinistrosApi.adicionarDocumento(id, dto),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sinistros"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sinistros"] });
+      queryClient.invalidateQueries({ queryKey: ["notificacoes"] });
+      sincronizarNotificacoes();
+    },
   });
 }
 
