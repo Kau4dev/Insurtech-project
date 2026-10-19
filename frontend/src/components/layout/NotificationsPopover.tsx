@@ -1,50 +1,18 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { notificacoesApi, type NotificacaoResponse } from "../../api/notificacoesApi";
+import {
+  useNotificacoes,
+  type NotificacaoItem,
+  mapearTipo,
+  formatarTempo,
+} from "../../hooks/useNotificacoes";
 
-export interface NotificacaoItem {
-  id: string;
-  titulo: string;
-  descricao: string;
-  tipo: "sucesso" | "info" | "alerta" | "aviso";
-  tempo: string;
-  lida: boolean;
-  link?: string;
-}
+export type { NotificacaoItem };
+export { mapearTipo, formatarTempo };
 
 interface NotificationsPopoverProps {
   portalMode?: boolean; // Se true, links apontam para /portal/...
   seguradoId?: string;  // Se informado, filtra notificações deste segurado
-}
-
-function mapearTipo(tipo: NotificacaoResponse["tipo"]): NotificacaoItem["tipo"] {
-  switch (tipo) {
-    case "PAGAMENTO_LIQUIDADO":
-      return "sucesso";
-    case "SINISTRO_REJEITADO":
-      return "alerta";
-    case "DOCUMENTO_SOLICITADO":
-      return "aviso";
-    case "DOCUMENTO_RECEBIDO":
-    case "SINISTRO_REGISTRADO":
-    default:
-      return "info";
-  }
-}
-
-function formatarTempo(isoString: string): string {
-  try {
-    const data = new Date(isoString);
-    const diffMs = Date.now() - data.getTime();
-    const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1) return "Agora";
-    if (diffMin < 60) return `${diffMin}m atrás`;
-    const diffHoras = Math.floor(diffMin / 60);
-    if (diffHoras < 24) return `${diffHoras}h atrás`;
-    return data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-  } catch {
-    return "";
-  }
 }
 
 export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
@@ -52,37 +20,22 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
     seguradoId,
  }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [notificacoes, setNotificacoes] = useState<NotificacaoItem[]>([]);
+  const [limparTemporario, setLimparTemporario] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const carregarNotificacoes = useCallback(async () => {
-    if (portalMode && !seguradoId) {
-      return;
-    }
-    try {
-      const data = await notificacoesApi.listar(seguradoId);
-      const itens: NotificacaoItem[] = data.map((n) => ({
-        id: n.id,
-        titulo: n.titulo,
-        descricao: n.mensagem,
-        tipo: mapearTipo(n.tipo),
-        tempo: formatarTempo(n.criadoEm),
-        lida: n.lida,
-        // No portal leva para /portal, no backoffice leva para /sinistros
-        link: portalMode ? `/portal` : `/sinistros`,
-      }));
-      setNotificacoes(itens);
-    } catch {
-      // Falha silenciosa ou fallback
-    }
-  }, [portalMode, seguradoId]);
+  const {
+    notificacoes,
+    naoLidasCount,
+    marcarComoLida,
+    marcarTodasComoLidas,
+    refetch,
+  } = useNotificacoes({
+    portalMode,
+    seguradoId,
+  });
 
-  useEffect(() => {
-    carregarNotificacoes();
-  }, [carregarNotificacoes]);
-
-  const naoLidasCount = notificacoes.filter((n) => !n.lida).length;
+  const notificacoesExibidas = limparTemporario ? [] : notificacoes;
 
   useEffect(() => {
     const handleClickFora = (e: MouseEvent) => {
@@ -100,7 +53,8 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
     };
 
     if (isOpen) {
-      carregarNotificacoes();
+      setLimparTemporario(false);
+      refetch();
       document.addEventListener("mousedown", handleClickFora);
       document.addEventListener("keydown", handleKeyDown);
     }
@@ -108,30 +62,11 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
       document.removeEventListener("mousedown", handleClickFora);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, carregarNotificacoes]);
-
-  const marcarComoLida = async (id: string) => {
-    setNotificacoes((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, lida: true } : n)),
-    );
-    try {
-      await notificacoesApi.marcarComoLida(id);
-    } catch {
-      // ignore
-    }
-  };
-
-  const marcarTodasComoLidas = async () => {
-    setNotificacoes((prev) => prev.map((n) => ({ ...n, lida: true })));
-    try {
-      await notificacoesApi.marcarTodasComoLidas(seguradoId);
-    } catch {
-      // ignore
-    }
-  };
+  }, [isOpen, refetch]);
 
   const limparTodas = () => {
-    setNotificacoes([]);
+    setLimparTemporario(true);
+    marcarTodasComoLidas();
   };
 
   const handleItemClick = (item: NotificacaoItem) => {
@@ -272,7 +207,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                   Marcar como lidas
                 </button>
               )}
-              {notificacoes.length > 0 && (
+              {notificacoesExibidas.length > 0 && (
                 <button
                   type="button"
                   onClick={limparTodas}
@@ -287,7 +222,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
 
           {/* Lista de Notificações */}
           <div className="max-h-88 overflow-y-auto divide-y divide-(--border)">
-            {notificacoes.length === 0 ? (
+            {notificacoesExibidas.length === 0 ? (
               <div className="py-10 px-4 text-center">
                 <div className="w-10 h-10 rounded-full bg-(--surface-2) text-(--muted) mx-auto flex items-center justify-center mb-2.5">
                   <svg
@@ -312,7 +247,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
                 </p>
               </div>
             ) : (
-              notificacoes.map((item) => (
+              notificacoesExibidas.map((item) => (
                 <div
                   key={item.id}
                   onClick={() => handleItemClick(item)}

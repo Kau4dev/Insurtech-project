@@ -36,11 +36,18 @@ vi.mock("../hooks/useMeuPerfilSegurado", () => ({
   }),
 }));
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 function renderLayout(initialEntries = ["/portal"]) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <PortalLayout />
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={initialEntries}>
+        <PortalLayout />
+      </MemoryRouter>
+    </QueryClientProvider>
   );
 }
 
