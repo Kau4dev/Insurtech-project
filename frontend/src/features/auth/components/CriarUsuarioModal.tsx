@@ -60,9 +60,11 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
     handleSubmit,
     setValue,
     reset,
-    formState: { errors, isSubmitting },
+    watch,
+    formState: { errors, isSubmitting, dirtyFields },
   } = useForm<CriarUsuarioFormData>({
     resolver: zodResolver(criarUsuarioSchema),
+    mode: "onChange",
     defaultValues: {
       nome: "",
       email: "",
@@ -70,6 +72,11 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
       senha: "",
     },
   });
+
+  const nomeValue = watch("nome");
+  const emailValue = watch("email");
+  const senhaValue = watch("senha");
+  const papelValue = watch("papel");
 
   const handleGerarSenha = () => {
     const chars =
@@ -80,7 +87,7 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
     for (let i = 0; i < 12; i++) {
       pass += chars[array[i] % chars.length];
     }
-    setValue("senha", pass, { shouldValidate: true });
+    setValue("senha", pass, { shouldValidate: true, shouldDirty: true });
     setMostrarSenha(true);
   };
 
@@ -117,6 +124,13 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
         { value: "ANALISTA", label: "Analista (Operações e análise de sinistros)" },
       ];
 
+  const isNomeValido =
+    !errors.nome && !!dirtyFields.nome && !!nomeValue && nomeValue.trim().length >= 2;
+  const isEmailValido =
+    !errors.email && !!dirtyFields.email && !!emailValue && emailValue.includes("@");
+  const isSenhaValida =
+    !errors.senha && !!senhaValue && senhaValue.length >= 8;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -131,7 +145,14 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
         <Input
           label="Nome Completo"
           placeholder="Ex: Carlos Silva"
+          required
           error={errors.nome?.message}
+          isValid={isNomeValido}
+          helperText={
+            !errors.nome && !dirtyFields.nome
+              ? "Nome e sobrenome do colaborador."
+              : undefined
+          }
           {...register("nome")}
         />
 
@@ -139,7 +160,14 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
           label="E-mail Corporativo"
           type="email"
           placeholder="Ex: carlos.silva@insurtech.com"
+          required
           error={errors.email?.message}
+          isValid={isEmailValido}
+          helperText={
+            !errors.email && !dirtyFields.email
+              ? "Utilize o e-mail corporativo institucional."
+              : undefined
+          }
           {...register("email")}
         />
 
@@ -147,7 +175,9 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
           <Select
             label="Perfil de Acesso (Papel)"
             options={papelOptions}
+            required
             error={errors.papel?.message}
+            isValid={!errors.papel && !!papelValue}
             {...register("papel")}
           />
           {!isAdmin && (
@@ -157,12 +187,11 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
           )}
         </div>
 
-
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-[620] text-(--muted)">
-              Senha Inicial
-            </label>
+            <span className="text-xs font-medium text-(--fg)">
+              Senha Inicial <span className="text-red-500">*</span>
+            </span>
             <button
               type="button"
               onClick={handleGerarSenha}
@@ -181,63 +210,90 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
             </button>
           </div>
 
-          <div className="relative">
-            <input
-              type={mostrarSenha ? "text" : "password"}
-              placeholder="Mínimo 8 caracteres"
-              className={`w-full h-10 px-3 pr-10 border rounded-lg bg-(--surface) text-(--fg) text-sm focus:outline-none focus:ring-2 focus:ring-(--accent-soft) focus:border-(--accent) transition-all ${
-                errors.senha ? "border-red-500" : "border-(--border)"
-              }`}
-              {...register("senha")}
-            />
-            <button
-              type="button"
-              onClick={() => setMostrarSenha((prev) => !prev)}
-              className="absolute right-2.5 top-2.5 text-(--muted) hover:text-(--fg) cursor-pointer"
-              title={mostrarSenha ? "Ocultar senha" : "Exibir senha"}
-            >
-              {mostrarSenha ? (
-                <svg
-                  className="w-4.5 h-4.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          <Input
+            type={mostrarSenha ? "text" : "password"}
+            placeholder="Mínimo 8 caracteres"
+            required
+            error={errors.senha?.message}
+            isValid={isSenhaValida}
+            helperText={
+              !errors.senha
+                ? isSenhaValida
+                  ? "Senha preenchida com tamanho seguro (8+ caracteres)."
+                  : "Mínimo de 8 caracteres contendo letras e símbolos."
+                : undefined
+            }
+            rightElement={
+              <div className="flex items-center gap-1">
+                {isSenhaValida && (
+                  <span className="text-emerald-500 mr-0.5">
+                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                )}
+                {errors.senha && (
+                  <span className="text-red-500 mr-0.5">
+                    <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setMostrarSenha((prev) => !prev)}
+                  className="text-(--muted) hover:text-(--fg) p-1 cursor-pointer transition-colors"
+                  title={mostrarSenha ? "Ocultar senha" : "Exibir senha"}
+                  tabIndex={-1}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.8}
-                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="w-4.5 h-4.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.8}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.8}
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
-              )}
-            </button>
-          </div>
-          {errors.senha && (
-            <span className="text-red-500 text-xs block">
-              {errors.senha.message}
-            </span>
-          )}
+                  {mostrarSenha ? (
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.8}
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.8}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.8}
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            }
+            {...register("senha")}
+          />
         </div>
 
         <FormActions

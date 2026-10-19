@@ -123,5 +123,54 @@ describe("CriarUsuarioModal", () => {
       expect(handleSuccess).toHaveBeenCalledWith(mockCriado, "SenhaSegura!123");
     });
   });
+
+  it("deve exibir validação de estado em tempo real para email inválido e corrigir quando válido", async () => {
+    renderWithClient(
+      <CriarUsuarioModal
+        isOpen={true}
+        onClose={vi.fn()}
+        onSuccess={vi.fn()}
+      />,
+    );
+
+    const inputEmail = screen.getByLabelText(/E-mail Corporativo/i);
+
+    // Digita e-mail incompleto/inválido como no print do usuário ("carlosTeste@")
+    fireEvent.change(inputEmail, { target: { value: "carlosTeste@" } });
+
+    await waitFor(() => {
+      expect(screen.getByText("Formato de e-mail inválido")).toBeInTheDocument();
+      expect(inputEmail).toHaveAttribute("aria-invalid", "true");
+    });
+
+    // Corrige para e-mail corporativo válido
+    fireEvent.change(inputEmail, { target: { value: "carlos.silva@insurtech.com" } });
+
+    await waitFor(() => {
+      expect(screen.queryByText("Formato de e-mail inválido")).not.toBeInTheDocument();
+      expect(inputEmail).toHaveAttribute("aria-invalid", "false");
+    });
+  });
+
+  it("deve validar tamanho mínimo de nome e senha em tempo real", async () => {
+    renderWithClient(
+      <CriarUsuarioModal
+        isOpen={true}
+        onClose={vi.fn()}
+        onSuccess={vi.fn()}
+      />,
+    );
+
+    const inputNome = screen.getByLabelText(/Nome Completo/i);
+    const inputSenha = screen.getByPlaceholderText(/Mínimo 8 caracteres/i);
+
+    fireEvent.change(inputNome, { target: { value: "a" } });
+    fireEvent.change(inputSenha, { target: { value: "123" } });
+
+    await waitFor(() => {
+      expect(screen.getByText("Nome deve ter no mínimo 2 caracteres")).toBeInTheDocument();
+      expect(screen.getByText("Senha deve ter no mínimo 8 caracteres")).toBeInTheDocument();
+    });
+  });
 });
 
