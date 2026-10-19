@@ -107,7 +107,7 @@ describe("ApoliceSelectFilter", () => {
     expect(screen.queryByText("Regra de Negócio:")).not.toBeInTheDocument();
   });
 
-  it("deve exibir opções ao focar no input e permitir seleção", async () => {
+  it("deve exibir apenas opções ATIVAS por padrão ao focar no input e permitir seleção", async () => {
     const handleChange = vi.fn();
     renderComQueryClient(
       <ApoliceSelectFilter onChange={handleChange} label="Apólice Vinculada" />,
@@ -119,7 +119,8 @@ describe("ApoliceSelectFilter", () => {
     fireEvent.focus(input);
 
     expect(await screen.findByText("AP-2026-0001")).toBeInTheDocument();
-    expect(screen.getByText("AP-2026-0002")).toBeInTheDocument();
+    // Apenas apólices ATIVAS devem ser listadas por padrão
+    expect(screen.queryByText("AP-2026-0002")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByText("AP-2026-0001"));
     expect(handleChange).toHaveBeenCalledWith(
@@ -131,9 +132,31 @@ describe("ApoliceSelectFilter", () => {
     );
   });
 
+  it("deve permitir listar todas as apólices se apenasAtivas for false", async () => {
+    renderComQueryClient(
+      <ApoliceSelectFilter
+        onChange={vi.fn()}
+        label="Apólice Vinculada"
+        apenasAtivas={false}
+      />,
+    );
+
+    const input = screen.getByPlaceholderText(
+      "Digite o número da apólice, tipo ou status para buscar...",
+    );
+    fireEvent.focus(input);
+
+    expect(await screen.findByText("AP-2026-0001")).toBeInTheDocument();
+    expect(screen.getByText("AP-2026-0002")).toBeInTheDocument();
+  });
+
   it("deve filtrar por número ou tipo de seguro digitado", async () => {
     renderComQueryClient(
-      <ApoliceSelectFilter onChange={vi.fn()} label="Apólice Vinculada" />,
+      <ApoliceSelectFilter
+        onChange={vi.fn()}
+        label="Apólice Vinculada"
+        apenasAtivas={false}
+      />,
     );
 
     const input = screen.getByPlaceholderText(
@@ -156,7 +179,6 @@ describe("ApoliceSelectFilter", () => {
     );
 
     expect(await screen.findByText("AP-2026-0002")).toBeInTheDocument();
-    expect(screen.getByText("Regra de Negócio:")).toBeInTheDocument();
     expect(screen.getByText(/exige uma apólice/i)).toBeInTheDocument();
   });
 

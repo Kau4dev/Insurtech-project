@@ -9,6 +9,7 @@ import com.insurtech.sinistros.domain.exception.UsuarioNaoAutenticadoException;
 import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,6 +38,7 @@ class BuscarPorIdSinistroUseCaseTest {
     private BuscarPorIdSinistroUseCase useCase;
 
     @Test
+    @DisplayName("Deve buscar detalhes do sinistro por ID com sucesso")
     void deveBuscarPorId_comSucesso() {
         UUID id = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -60,6 +62,7 @@ class BuscarPorIdSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado ao buscar sinistro por ID")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID id = UUID.randomUUID();
         doThrow(new UsuarioNaoAutenticadoException("Usuário não autenticado"))
@@ -70,6 +73,7 @@ class BuscarPorIdSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o sinistro não for encontrado pelo ID")
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
         UUID id = UUID.randomUUID();
 
@@ -83,6 +87,7 @@ class BuscarPorIdSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o validador negar acesso do segurado ao sinistro por ID")
     void deveLancarExcecao_quandoAcessoNegadoPeloValidator() {
         UUID id = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();

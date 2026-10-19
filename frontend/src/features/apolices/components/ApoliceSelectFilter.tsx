@@ -17,6 +17,7 @@ export interface ApoliceSelectFilterProps {
   error?: string;
   label?: string;
   required?: boolean;
+  apenasAtivas?: boolean;
 }
 
 export const ApoliceSelectFilter: React.FC<ApoliceSelectFilterProps> = ({
@@ -26,6 +27,7 @@ export const ApoliceSelectFilter: React.FC<ApoliceSelectFilterProps> = ({
   error,
   label = "Apólice Vinculada",
   required = false,
+  apenasAtivas = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [termo, setTermo] = useState("");
@@ -70,6 +72,7 @@ export const ApoliceSelectFilter: React.FC<ApoliceSelectFilterProps> = ({
   // Carrega apólices (da busca ou padrão)
   const { data: apolicesData, isLoading } = useApolices({
     numeroApolice: debouncedTermo.trim() || undefined,
+    status: apenasAtivas ? "ATIVA" : undefined,
     size: 10,
   });
 
@@ -91,6 +94,7 @@ export const ApoliceSelectFilter: React.FC<ApoliceSelectFilterProps> = ({
   const termoLower = termo.toLowerCase().trim();
 
   const apolicesExibidas = apolices.filter((a) => {
+    if (apenasAtivas && a.status !== "ATIVA") return false;
     if (!termoLower) return true;
     const matchNumero = a.numeroApolice?.toLowerCase().includes(termoLower);
     const matchTipo =
@@ -181,7 +185,7 @@ export const ApoliceSelectFilter: React.FC<ApoliceSelectFilterProps> = ({
                   />
                 </svg>
                 <span>
-                  <strong>Regra de Negócio:</strong> Esta apólice está{" "}
+                  Esta apólice está{" "}
                   <strong>
                     {formatarStatusApolice(apoliceSelecionada.status)}
                   </strong>

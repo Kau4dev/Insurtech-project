@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { sinistrosApi } from "../../../api/sinistrosApi";
+import { sincronizarNotificacoes } from "../../../hooks/useNotificacoes";
 import { SinistroTimeline } from "../components/SinistroTimeline";
 import { UploadDocumentoSegurado } from "../components/UploadDocumentoSegurado";
 import { Badge, Button, DetailField } from "../../../components/ui";
@@ -15,6 +16,7 @@ import {
 
 export const PortalSinistroDetailPage: React.FC = () => {
   const { id = "" } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
   const [mensagemSucesso, setMensagemSucesso] = useState<string | null>(null);
 
   const {
@@ -83,6 +85,8 @@ export const PortalSinistroDetailPage: React.FC = () => {
       "Documento anexado com sucesso! O sinistro retornará para análise técnica."
     );
     refetch();
+    queryClient.invalidateQueries({ queryKey: ["notificacoes"] });
+    sincronizarNotificacoes();
     setTimeout(() => setMensagemSucesso(null), 6000);
   };
 

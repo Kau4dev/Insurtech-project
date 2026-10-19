@@ -23,6 +23,7 @@ import com.insurtech.sinistros.infrastructure.client.dto.Uf;
 import com.insurtech.sinistros.infrastructure.client.dto.UsuarioResponseDTO;
 import feign.FeignException;
 import feign.Request;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -69,6 +70,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     // ─── POST /sinistros ──────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve cadastrar sinistro com sucesso como analista e retornar HTTP 201 Created")
     void deveCadastrarSinistro_comoAnalista_retornar201() {
         UUID apoliceId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -128,6 +130,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 401 Unauthorized ao tentar cadastrar sinistro sem autenticação")
     void deveRetornar401_quandoCadastrarSinistroSemAutenticacao() {
         SinistroRequestDTO request = new SinistroRequestDTO(
                 "SIN-NO-AUTH", UUID.randomUUID(), UUID.randomUUID(),
@@ -142,6 +145,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 403 Forbidden ao tentar cadastrar sinistro com papel SEGURADO para outro segurado")
     void deveRetornar403_quandoCadastrarSinistroComPapelSegurado() {
         UUID seguradoId = UUID.randomUUID();
         SinistroRequestDTO request = new SinistroRequestDTO(
@@ -183,6 +187,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     // ─── GET /sinistros ───────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve listar sinistros com sucesso como gestor e retornar HTTP 200 OK")
     void deveListarSinistros_comoGestor_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-LIST-GESTOR", Status.REGISTRADO);
         repository.salvar(sinistro);
@@ -202,6 +207,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve listar apenas os próprios sinistros atribuídos como analista e retornar HTTP 200 OK")
     void deveListarSinistros_comoAnalista_retornarSomenteOsSeus() {
         UUID analistaId = UUID.randomUUID();
         Sinistro sinistro = createDummySinistro("SIN-LIST-ANALISTA", Status.REGISTRADO);
@@ -227,6 +233,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 401 Unauthorized ao listar sinistros sem autenticação")
     void deveRetornar401_quandoListarSinistrosSemAutenticacao() {
         ResponseEntity<ErrorResponse> response = restTemplate.exchange(
                 "/api/v1/sinistros", HttpMethod.GET, null, ErrorResponse.class
@@ -235,6 +242,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 403 Forbidden ao listar sinistros com papel SEGURADO na rota administrativa")
     void deveRetornar403_quandoListarSinistrosComPapelSegurado() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Usuario-Id", UUID.randomUUID().toString());
@@ -250,6 +258,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     // ─── GET /sinistros/{id} ─────────────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve buscar sinistro por ID com sucesso e retornar HTTP 200 OK")
     void deveBuscarSinistroPorId_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-GET-BY-ID", Status.REGISTRADO);
         repository.salvar(sinistro);
@@ -271,6 +280,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 404 Not Found quando o sinistro buscado não existir")
     void deveRetornar404_quandoSinistroNaoExiste() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Usuario-Id", UUID.randomUUID().toString());
@@ -288,6 +298,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     // ─── PATCH /sinistros/{id}/atribuir ──────────────────────────────────────
 
     @Test
+    @DisplayName("Deve atribuir analista ao sinistro como gestor e retornar HTTP 200 OK")
     void deveAtribuirAnalista_comoGestor_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR", Status.REGISTRADO);
         sinistro.setAnalistaId(null);
@@ -314,6 +325,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve permitir autoatribuição de analista ao sinistro e retornar HTTP 200 OK")
     void deveAtribuirAnalista_comoAnalista_autoAtribuicao_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-AUTO-ATRIBUIR", Status.REGISTRADO);
         sinistro.setAnalistaId(null);
@@ -339,6 +351,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 403 Forbidden quando analista tentar atribuir sinistro a outro analista")
     void deveRetornar403_quandoAnalistaTentaAtribuirAOutro() {
         Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-OUTRO", Status.REGISTRADO);
         sinistro.setAnalistaId(null);
@@ -362,6 +375,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 401 Unauthorized ao atribuir analista sem autenticação")
     void deveRetornar401_quandoAtribuirAnalistaSemAutenticacao() {
         Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-401", Status.REGISTRADO);
         sinistro.setAnalistaId(null);
@@ -377,6 +391,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 404 Not Found quando o analista não for encontrado no serviço de autenticação")
     void deveRetornar404_quandoAnalistaNaoEncontradoNoAuth() {
         Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-404", Status.REGISTRADO);
         sinistro.setAnalistaId(null);
@@ -399,6 +414,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 400 Bad Request quando o usuário atribuído não tiver papel de analista")
     void deveRetornar400_quandoAnalistaTemPapelInvalido() {
         Sinistro sinistro = createDummySinistro("SIN-ATRIBUIR-400", Status.REGISTRADO);
         sinistro.setAnalistaId(null);
@@ -425,6 +441,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     // ─── PATCH /sinistros/{id}/aprovar ────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve aprovar sinistro com sucesso como analista e retornar HTTP 200 OK")
     void deveAprovarSinistro_comoAnalista_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-APROVAR", Status.EM_ANALISE);
         addDummyDocument(sinistro);
@@ -456,6 +473,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 401 Unauthorized ao aprovar sinistro sem autenticação")
     void deveRetornar401_quandoAprovarSemAutenticacao() {
         Sinistro sinistro = createDummySinistro("SIN-APROVAR-401", Status.EM_ANALISE);
         repository.salvar(sinistro);
@@ -471,6 +489,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 403 Forbidden ao tentar aprovar sinistro com papel SEGURADO")
     void deveRetornar403_quandoAprovarComPapelSegurado() {
         Sinistro sinistro = createDummySinistro("SIN-APROVAR-403", Status.EM_ANALISE);
         repository.salvar(sinistro);
@@ -492,6 +511,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     // ─── PATCH /sinistros/{id}/rejeitar ───────────────────────────────────────
 
     @Test
+    @DisplayName("Deve rejeitar sinistro com sucesso como analista e retornar HTTP 200 OK")
     void deveRejeitarSinistro_comoAnalista_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-REJEITAR", Status.EM_ANALISE);
         addDummyDocument(sinistro);
@@ -515,6 +535,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 401 Unauthorized ao rejeitar sinistro sem autenticação")
     void deveRetornar401_quandoRejeitarSemAutenticacao() {
         Sinistro sinistro = createDummySinistro("SIN-REJEITAR-401", Status.EM_ANALISE);
         repository.salvar(sinistro);
@@ -530,6 +551,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 403 Forbidden ao tentar rejeitar sinistro com papel SEGURADO")
     void deveRetornar403_quandoRejeitarComPapelSegurado() {
         Sinistro sinistro = createDummySinistro("SIN-REJEITAR-403", Status.EM_ANALISE);
         repository.salvar(sinistro);
@@ -551,6 +573,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     // ─── GET /sinistros/dashboard/resumo ─────────────────────────────────────
 
     @Test
+    @DisplayName("Deve retornar métricas do dashboard com sucesso como gestor com HTTP 200 OK")
     void deveMostrarMetricasDashboard_comoGestor_retornar200() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Usuario-Id", UUID.randomUUID().toString());
@@ -566,6 +589,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 401 Unauthorized ao consultar dashboard sem autenticação")
     void deveRetornar401_quandoDashboardSemAutenticacao() {
         ResponseEntity<ErrorResponse> response = restTemplate.exchange(
                 "/api/v1/sinistros/dashboard/resumo", HttpMethod.GET,
@@ -575,6 +599,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 403 Forbidden ao tentar consultar dashboard com papel de analista")
     void deveRetornar403_quandoDashboardComPapelAnalista() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Usuario-Id", UUID.randomUUID().toString());
@@ -590,6 +615,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     // ─── Demais endpoints ─────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve alterar status do sinistro para aguardar documentos e retornar HTTP 200 OK")
     void deveAguardarDocumentos_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-DOCS", Status.EM_ANALISE);
         repository.salvar(sinistro);
@@ -609,6 +635,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve adicionar documento ao sinistro com sucesso e retornar HTTP 201 Created")
     void deveAdicionarDocumento_retornar201() {
         Sinistro sinistro = createDummySinistro("SIN-ADD-DOC", Status.AGUARDANDO_DOCUMENTOS);
         repository.salvar(sinistro);
@@ -634,6 +661,7 @@ class SinistroControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar histórico de alterações do sinistro com HTTP 200 OK")
     void deveMostrarHistorico_retornar200() {
         Sinistro sinistro = createDummySinistro("SIN-HISTORICO", Status.REGISTRADO);
         repository.salvar(sinistro);
@@ -660,7 +688,7 @@ class SinistroControllerIT extends IntegrationTestBase {
                 feign.Response.builder()
                         .status(404).reason("Not Found")
                         .request(Request.create(Request.HttpMethod.GET, "/api/v1/auth/usuarios",
-                                Collections.emptyMap(), new byte[0], Charset.defaultCharset()))
+                                Collections.emptyMap(), Request.Body.empty(), null))
                         .build()
         );
     }

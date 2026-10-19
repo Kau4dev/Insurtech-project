@@ -299,7 +299,7 @@ export const SinistroDocumentosPage: React.FC = () => {
             </span>
           </div>
 
-          {!["APROVADO", "REJEITADO", "PAGO"].includes(sinistro.status) && (
+          {sinistro.status === "AGUARDANDO_DOCUMENTOS" && (
             <Button
               variant="primary"
               size="sm"

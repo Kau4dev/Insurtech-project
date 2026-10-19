@@ -320,9 +320,9 @@ export const MicroserviceTimelineCard: React.FC<
     <div className="bg-(--surface) border border-(--border) rounded-(--radius) p-5 shadow-xs flex flex-col justify-between gap-5 h-full">
       {/* 1. Cabeçalho com Título, Seletor e Status */}
       <div className="shrink-0 space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <h2 className="text-[15px] font-semibold text-(--fg) tracking-tight">
+        <div className="flex items-start sm:items-center justify-between gap-2.5">
+          <div className="min-w-0">
+            <h2 className="text-[14.5px] font-semibold text-(--fg) tracking-tight">
               Esteira de microsserviços
             </h2>
             <p className="text-[11.5px] text-(--muted) mt-0.5">
@@ -331,7 +331,7 @@ export const MicroserviceTimelineCard: React.FC<
           </div>
           <Badge
             variant={getSinistroStatusBadgeVariant(sinistroAtivo.status)}
-            className="text-[10px] uppercase font-semibold px-2 py-0.5"
+            className="text-[10px] uppercase font-semibold px-2.5 py-0.5 shrink-0 whitespace-nowrap leading-tight tracking-wide"
           >
             {formatarStatusSinistro(sinistroAtivo.status)}
           </Badge>
@@ -343,27 +343,56 @@ export const MicroserviceTimelineCard: React.FC<
             <span className="text-[11px] text-(--muted) shrink-0 font-medium">
               Inspecionando:
             </span>
-            <select
-              value={sinistroAtivo.id}
-              onChange={(e) => onSelecionarSinistro?.(e.target.value)}
-              className="text-[12px] font-medium text-(--fg) bg-(--surface-2) border border-(--border) rounded-lg px-2.5 py-1.5 min-h-9.5 truncate focus:outline-none focus:ring-1 focus:ring-(--accent) w-full cursor-pointer"
-            >
-              {sinistros.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.numeroSinistro} • {s.seguradoNome || "Segurado"} (
-                  {formatarStatusSinistro(s.status)})
-                </option>
-              ))}
-            </select>
+            <div className="relative w-full rounded-lg border border-(--border) bg-(--surface-2) focus-within:ring-1 focus-within:ring-(--accent) focus-within:border-(--accent) transition-all">
+              {/* Pré-visualização personalizada fechada: mostra APENAS o número do sinistro */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 flex items-center justify-between px-2.5 py-1.5 text-[12px] font-semibold text-(--fg)"
+              >
+                <span className="font-mono truncate">{sinistroAtivo.numeroSinistro}</span>
+                <svg
+                  className="w-3.5 h-3.5 text-(--muted) shrink-0 ml-1.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+
+              {/* Select nativo sobreposto com opacidade 0 para acionar o dropdown nativo com opções completas ao clicar */}
+              <select
+                value={sinistroAtivo.id}
+                onChange={(e) => onSelecionarSinistro?.(e.target.value)}
+                className="opacity-0 relative z-10 w-full min-h-9 px-2.5 py-1.5 text-[12px] cursor-pointer bg-transparent border-0 focus:outline-none appearance-none"
+              >
+                {sinistros.map((s) => (
+                  <option key={s.id} value={s.id} className="bg-(--surface) text-(--fg) py-1">
+                    {s.numeroSinistro} • {s.seguradoNome || "Segurado"} (
+                    {formatarStatusSinistro(s.status)})
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         ) : (
-          <div className="text-[12px] text-(--muted) truncate bg-(--surface-2)/60 px-2.5 py-1.5 rounded-lg border border-(--border)/60">
-            <span className="font-semibold text-(--fg)">
-              {sinistroAtivo.numeroSinistro}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-(--muted) shrink-0 font-medium">
+              Inspecionando:
             </span>
-            {sinistroAtivo.seguradoNome && (
-              <span> • {sinistroAtivo.seguradoNome}</span>
-            )}
+            <div className="text-[12px] text-(--muted) truncate bg-(--surface-2)/60 px-2.5 py-1.5 rounded-lg border border-(--border)/60 w-full">
+              <span className="font-mono font-semibold text-(--fg)">
+                {sinistroAtivo.numeroSinistro}
+              </span>
+              {sinistroAtivo.seguradoNome && (
+                <span> • {sinistroAtivo.seguradoNome}</span>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -377,7 +406,7 @@ export const MicroserviceTimelineCard: React.FC<
               <div className="absolute -left-6 top-0.5 flex items-center justify-center">
                 {step.status === "completed" && (
                   <div
-                    className="w-5.5 h-5.5 rounded-full bg-emerald-600 text-white flex items-center justify-center ring-4 ring-(--surface)"
+                    className="w-5.5 h-5.5 shrink-0 rounded-full bg-emerald-600 text-white flex items-center justify-center ring-4 ring-(--surface)"
                     title="Etapa concluída"
                   >
                     <svg
@@ -398,7 +427,7 @@ export const MicroserviceTimelineCard: React.FC<
 
                 {step.status === "in_progress" && (
                   <div
-                    className="w-5.5 h-5.5 rounded-full bg-amber-600 text-white flex items-center justify-center ring-4 ring-(--surface) animate-pulse"
+                    className="w-5.5 h-5.5 shrink-0 rounded-full bg-amber-600 text-white flex items-center justify-center ring-4 ring-(--surface) animate-pulse"
                     title="Etapa em processamento"
                   >
                     <div className="w-2 h-2 rounded-full bg-white" />
@@ -407,7 +436,7 @@ export const MicroserviceTimelineCard: React.FC<
 
                 {step.status === "rejected" && (
                   <div
-                    className="w-5.5 h-5.5 rounded-full bg-rose-600 text-white flex items-center justify-center ring-4 ring-(--surface)"
+                    className="w-5.5 h-5.5 shrink-0 rounded-full bg-rose-600 text-white flex items-center justify-center ring-4 ring-(--surface)"
                     title="Sinistro rejeitado"
                   >
                     <svg
@@ -428,7 +457,7 @@ export const MicroserviceTimelineCard: React.FC<
 
                 {step.status === "skipped" && (
                   <div
-                    className="w-5.5 h-5.5 rounded-full bg-(--surface-2) border-2 border-(--border) flex items-center justify-center ring-4 ring-(--surface)"
+                    className="w-5.5 h-5.5 shrink-0 rounded-full bg-(--surface-2) border-2 border-(--border) flex items-center justify-center ring-4 ring-(--surface)"
                     title="Etapa não aplicável"
                   >
                     <div className="w-2 h-0.5 bg-(--muted)" />
@@ -437,7 +466,7 @@ export const MicroserviceTimelineCard: React.FC<
 
                 {step.status === "pending" && (
                   <div
-                    className="w-5.5 h-5.5 rounded-full bg-(--surface-2) border-2 border-(--border) flex items-center justify-center ring-4 ring-(--surface)"
+                    className="w-5.5 h-5.5 shrink-0 rounded-full bg-(--surface-2) border-2 border-(--border) flex items-center justify-center ring-4 ring-(--surface)"
                     title="Aguardando etapa anterior"
                   >
                     <div className="w-1.5 h-1.5 rounded-full bg-(--faint)" />

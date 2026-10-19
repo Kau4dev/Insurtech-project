@@ -26,6 +26,7 @@ import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -88,7 +89,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     private ApoliceResponseDTO apolice(UUID apoliceId, UUID seguradoId,
-                                       com.insurtech.sinistros.infrastructure.client.dto.Status status) {
+                                        com.insurtech.sinistros.infrastructure.client.dto.Status status) {
         return new ApoliceResponseDTO(
                 apoliceId, seguradoId, "AP-1",
                 null, new BigDecimal("50000.00"), new BigDecimal("1000.00"),
@@ -105,6 +106,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve cadastrar sinistro com sucesso como analista")
     void deveCadastrarSinistro_comSucesso_comoAnalista() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -152,6 +154,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve cadastrar sinistro com sucesso como segurado proprietário")
     void deveCadastrarSinistro_comSucesso_comoSeguradoDono() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -180,6 +183,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o validador recusar cadastro para segurado diferente do usuário logado")
     void deveLancarExcecao_quandoValidatorRecusaSeguradoDeOutro() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -199,6 +203,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado ao cadastrar sinistro")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         SinistroRequestDTO dto = new SinistroRequestDTO(
                 "SIN-AUTH", UUID.randomUUID(), UUID.randomUUID(),
@@ -212,6 +217,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o papel do usuário não for permitido para cadastrar sinistro")
     void deveLancarExcecao_quandoPapelNaoPermitido() {
         SinistroRequestDTO dto = new SinistroRequestDTO(
                 "SIN-403", UUID.randomUUID(), UUID.randomUUID(),
@@ -225,6 +231,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o segurado não for encontrado pelo validador")
     void deveLancarExcecao_quandoSeguradoNaoEncontradoPeloValidator() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -244,6 +251,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando a apólice não for encontrada no serviço de apólices")
     void deveLancarExcecao_quandoApoliceNaoEncontrada() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -267,6 +275,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o serviço de apólices retornar apólice nula")
     void deveLancarExcecao_quandoApoliceRetornarNula() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -281,6 +290,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando a apólice informada não pertencer ao segurado")
     void deveLancarExcecao_quandoApoliceNaoPertenceAoSegurado() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -296,6 +306,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando a apólice não estiver com status ativo")
     void deveLancarExcecao_quandoApoliceNaoEstiverAtiva() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -312,6 +323,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando a data de ocorrência for uma data futura")
     void deveLancarExcecao_quandoDataOcorrenciaFutura() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -327,6 +339,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando a data de ocorrência for anterior ao início da vigência da apólice")
     void deveLancarExcecao_quandoDataOcorrenciaAnteriorAoInicioDaVigencia() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -360,6 +373,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando a data de ocorrência for posterior ao término da vigência da apólice")
     void deveLancarExcecao_quandoDataOcorrenciaPosteriorAoFimDaVigencia() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -393,6 +407,7 @@ class CadastrarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o número do sinistro já estiver cadastrado no sistema")
     void deveLancarExcecao_quandoSinistroJaCadastrado() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();

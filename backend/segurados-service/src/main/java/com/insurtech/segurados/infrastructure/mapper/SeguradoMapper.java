@@ -8,8 +8,9 @@ import com.insurtech.segurados.infrastructure.persistence.SeguradoJpaEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface SeguradoMapper {
 
     Segurado toDomain(SeguradoRequestDTO dto);

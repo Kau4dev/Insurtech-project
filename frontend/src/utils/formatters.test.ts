@@ -13,6 +13,8 @@ import {
   maskCpf,
   maskCpfCnpj,
   maskTelefone,
+  capitalizarPalavras,
+  capitalizarPrimeiraLetra,
 } from "./formatters";
 
 describe("formatters utils", () => {
@@ -154,6 +156,51 @@ describe("formatters utils", () => {
     it("deve retornar '-' para valor nulo ou indefinido", () => {
       expect(formatarData(null)).toBe("-");
       expect(formatarData(undefined)).toBe("-");
+    });
+  });
+
+  describe("capitalizarPalavras", () => {
+    it("deve capitalizar primeira letra de cada palavra em minúsculo", () => {
+      expect(capitalizarPalavras("teste")).toBe("Teste");
+      expect(capitalizarPalavras("ruaa")).toBe("Ruaa");
+      expect(capitalizarPalavras("são jao")).toBe("São Jao");
+      expect(capitalizarPalavras("minha empresa")).toBe("Minha Empresa");
+      expect(capitalizarPalavras("joão da silva")).toBe("João da Silva");
+    });
+
+    it("deve preservar preposições em minúsculo no meio do texto", () => {
+      expect(capitalizarPalavras("rua das flores")).toBe("Rua das Flores");
+      expect(capitalizarPalavras("av do estado")).toBe("Av do Estado");
+      expect(capitalizarPalavras("barueri de são paulo")).toBe("Barueri de São Paulo");
+    });
+
+    it("deve capitalizar preposição se ela for a primeira palavra", () => {
+      expect(capitalizarPalavras("de paula")).toBe("De Paula");
+    });
+
+    it("deve preservar siglas maiúsculas comuns (ex: LTDA, PR, SP)", () => {
+      expect(capitalizarPalavras("minha empresa LTDA")).toBe("Minha Empresa LTDA");
+      expect(capitalizarPalavras("são jao PR")).toBe("São Jao PR");
+    });
+
+    it("deve retornar string vazia para valores nulos, indefinidos ou vazios", () => {
+      expect(capitalizarPalavras(null)).toBe("");
+      expect(capitalizarPalavras(undefined)).toBe("");
+      expect(capitalizarPalavras("")).toBe("");
+      expect(capitalizarPalavras("   ")).toBe("");
+    });
+  });
+
+  describe("capitalizarPrimeiraLetra", () => {
+    it("deve capitalizar apenas a primeira letra da frase/expressão", () => {
+      expect(capitalizarPrimeiraLetra("apto 42, bloco b")).toBe("Apto 42, bloco b");
+      expect(capitalizarPrimeiraLetra("casa dos fundos")).toBe("Casa dos fundos");
+    });
+
+    it("deve retornar string vazia para valores nulos ou vazios", () => {
+      expect(capitalizarPrimeiraLetra(null)).toBe("");
+      expect(capitalizarPrimeiraLetra(undefined)).toBe("");
+      expect(capitalizarPrimeiraLetra("")).toBe("");
     });
   });
 });

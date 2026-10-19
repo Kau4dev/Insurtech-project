@@ -18,6 +18,7 @@ import com.insurtech.segurados.infrastructure.security.UserContextHolder;
 import feign.FeignException;
 import feign.Request;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -73,6 +74,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve cadastrar segurado com sucesso quando usuário possuir papel GESTOR")
     void deveCadastrarSegurado_comSucesso_comoGestor() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -104,6 +106,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve provisionar usuário automaticamente com sucesso quando usuarioId for nulo")
     void deveProvisionarUsuarioAutomaticamente_quandoUsuarioIdNulo_comSucesso() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -146,6 +149,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o email já estiver cadastrado no auth-service")
     void deveLancarExcecao_quandoEmailJaCadastradoNoAuth() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -166,6 +170,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o cliente de autenticação falhar com erro genérico")
     void deveLancarExcecao_quandoAuthClientFalharComErroGenerico() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -185,6 +190,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve cadastrar segurado com sucesso quando usuário possuir papel ADMIN")
     void deveCadastrarSegurado_comSucesso_comoAdmin() {
         setUserContext(UUID.randomUUID().toString(), "ADMIN");
 
@@ -206,6 +212,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao tentar cadastrar segurado sem usuário autenticado")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         SeguradoRequestDTO dto = criarDtoPadrao(UUID.randomUUID(), "12345678901");
 
@@ -214,6 +221,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado ao tentar cadastrar segurado com papel ANALISTA")
     void deveLancarExcecao_quandoPapelAnalista() {
         setUserContext(UUID.randomUUID().toString(), "ANALISTA");
         SeguradoRequestDTO dto = criarDtoPadrao(UUID.randomUUID(), "12345678901");
@@ -223,6 +231,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado ao tentar cadastrar segurado com papel SEGURADO")
     void deveLancarExcecao_quandoPapelSegurado() {
         setUserContext(UUID.randomUUID().toString(), "SEGURADO");
         SeguradoRequestDTO dto = criarDtoPadrao(UUID.randomUUID(), "12345678901");
@@ -232,6 +241,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não for encontrado no auth-service")
     void deveLancarExcecao_quandoUsuarioNaoEncontradoNoAuth() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
         UUID usuarioId = UUID.randomUUID();
@@ -247,6 +257,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário encontrado não estiver ativo")
     void deveLancarExcecao_quandoUsuarioNaoEstiverAtivo() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
         UUID usuarioId = UUID.randomUUID();
@@ -264,6 +275,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não possuir papel SEGURADO")
     void deveLancarExcecao_quandoUsuarioNaoPossuirPapelSegurado() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
         UUID usuarioId = UUID.randomUUID();
@@ -281,6 +293,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário já possuir um segurado cadastrado")
     void deveLancarExcecao_quandoUsuarioJaPossuiSeguradoCadastrado() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
         UUID usuarioId = UUID.randomUUID();
@@ -295,6 +308,7 @@ class CadastrarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o CPF ou CNPJ já estiver cadastrado")
     void deveLancarExcecao_quandoCpfCnpjJaCadastrado() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
         UUID usuarioId = UUID.randomUUID();

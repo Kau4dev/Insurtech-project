@@ -5,6 +5,7 @@ import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.model.TipoSinistro;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -27,6 +28,7 @@ class PagamentoLiquidadoConsumerIT extends IntegrationTestBase {
     private SinistroRepository repository;
 
     @Test
+    @DisplayName("Deve marcar sinistro como pago ao receber evento de liquidação de pagamento com sucesso via Kafka")
     void deveMarcarComoPagoQuandoReceberEventoPagamentoLiquidadoComSucesso() {
         // Arrange
         UUID sinistroId = UUID.randomUUID();

@@ -7,6 +7,7 @@ import com.insurtech.sinistros.domain.model.DocumentoSinistro;
 import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.model.TipoDocumento;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SinistroTeste {
 
     @Test
+    @DisplayName("Deve aprovar sinistro com sucesso no modelo de domínio")
     void deveAprovarSinistro_comSucesso() {
         Sinistro sinistro = new Sinistro();
         sinistro.setId(UUID.randomUUID());
@@ -36,6 +38,7 @@ public class SinistroTeste {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao aprovar sinistro sem documentos anexados")
     void deveLancarExcecao_quandoAprovarSinistroSemDocumentos() {
         Sinistro sinistro = new Sinistro();
         sinistro.setId(UUID.randomUUID());
@@ -46,6 +49,7 @@ public class SinistroTeste {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao aprovar sinistro com status diferente de EM_ANALISE")
     void deveLancarExcecao_quandoAprovarSinistroComStatusInvalido() {
         Sinistro sinistro = new Sinistro();
         sinistro.setId(UUID.randomUUID());
@@ -56,6 +60,7 @@ public class SinistroTeste {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao aprovar sinistro com valor superior ao limite da apólice")
     void deveLancarExcecao_quandoAprovarValorMaiorQueApolice() {
         Sinistro sinistro = new Sinistro();
         sinistro.setId(UUID.randomUUID());
@@ -66,6 +71,7 @@ public class SinistroTeste {
     }
 
     @Test
+    @DisplayName("Deve mudar status para EM_ANALISE e registrar histórico ao adicionar documento quando o status for AGUARDANDO_DOCUMENTOS")
     void deveMudarStatusParaEmAnalise_quandoAdicionarDocumentoEStatusForAguardandoDocumentos() {
         Sinistro sinistro = new Sinistro();
         sinistro.setId(UUID.randomUUID());
@@ -89,6 +95,7 @@ public class SinistroTeste {
     }
 
     @Test
+    @DisplayName("Não deve mudar status ao adicionar documento se o status atual não for AGUARDANDO_DOCUMENTOS")
     void naoDeveMudarStatus_quandoAdicionarDocumentoEStatusNaoForAguardandoDocumentos() {
         Sinistro sinistro = new Sinistro();
         sinistro.setId(UUID.randomUUID());

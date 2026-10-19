@@ -59,7 +59,7 @@ public class ApoliceController implements ApoliceControllerDocs {
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApoliceResponseDTO> atualizarStatus(
             @PathVariable UUID id,
-            @RequestBody @Valid AtualizarStatusApoliceDTO dto) throws StatusNaoSuportadoException {
+            @RequestBody @Valid AtualizarStatusApoliceDTO dto) {
         ApoliceResponseDTO apolice = atualizarStatusApolice.executar(id, dto);
         return ResponseEntity.status(HttpStatus.OK).body(apolice);
     }

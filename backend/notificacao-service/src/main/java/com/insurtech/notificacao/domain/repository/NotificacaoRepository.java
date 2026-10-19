@@ -12,6 +12,7 @@ public interface NotificacaoRepository {
     List<Notificacao> listarPorSeguradoId(UUID seguradoId, Boolean apenasNaoLidas);
     List<Notificacao> listarTodas(Boolean apenasNaoLidas);
     void marcarTodasComoLidasPorSegurado(UUID seguradoId);
+    void marcarTodasComoLidasInterno();
     void marcarTodasComoLidas();
 }
 

@@ -6,6 +6,8 @@ import com.insurtech.liquidacao.application.port.EventPublisherPort;
 import com.insurtech.liquidacao.application.usecase.ProcessarLiquidacaoUseCase;
 import com.insurtech.liquidacao.domain.model.EventoPagamento;
 import com.insurtech.liquidacao.domain.repository.EventoPagamentoRepository;
+import com.insurtech.liquidacao.infrastructure.persistence.inbox.InboxEventJpaRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -29,10 +31,14 @@ class ProcessarLiquidacaoUseCaseTest {
     @Mock
     private EventPublisherPort eventPublisher;
 
+    @Mock
+    private InboxEventJpaRepository inboxRepository;
+
     @InjectMocks
     private ProcessarLiquidacaoUseCase useCase;
 
     @Test
+    @DisplayName("Deve processar liquidação e publicar evento de sucesso")
     void deveProcessarLiquidacaoEPublicarEventoSucesso() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -44,11 +50,12 @@ class ProcessarLiquidacaoUseCaseTest {
                 new BigDecimal("1000.00")
         );
 
-        when(repository.existePorEventoIdOrigem(eventoIdOrigem)).thenReturn(false);
+        when(inboxRepository.existsByMessageId(eventoIdOrigem)).thenReturn(false);
 
         useCase.executar(dto, eventoIdOrigem);
 
-        // Verifica que salvou 2 vezes (como PENDENTE e depois PROCESSADO)
+        // Verifica que salvou no Inbox e 2 vezes no repository (como PENDENTE e depois PROCESSADO)
+        verify(inboxRepository, times(1)).save(any());
         verify(repository, times(2)).salvar(any(EventoPagamento.class));
         
         // Verifica que o evento de sucesso foi publicado
@@ -62,23 +69,24 @@ class ProcessarLiquidacaoUseCaseTest {
     }
 
     @Test
-    void deveIgnorarMensagem_quandoEventoJaFoiProcessado() {
-        String eventoIdOrigem = UUID.randomUUID().toString();
+    @DisplayName("Deve ignorar mensagem duplicada quando já existir no Inbox")
+    void deveIgnorarMensagemDuplicadaQuandoJaExistirNoInbox() {
         SinistroAprovadoEventDTO dto = new SinistroAprovadoEventDTO(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                new BigDecimal("1000.00")
+                UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("15000.00")
         );
+        String messageId = UUID.randomUUID().toString();
 
-        when(repository.existePorEventoIdOrigem(eventoIdOrigem)).thenReturn(true);
+        when(inboxRepository.existsByMessageId(messageId)).thenReturn(true);
 
-        useCase.executar(dto, eventoIdOrigem);
+        useCase.executar(dto, messageId);
 
+        // Verifica que NÃO tentou salvar pagamento nem publicar evento
         verify(repository, never()).salvar(any());
         verify(eventPublisher, never()).publicarPagamentoLiquidado(any());
     }
 
     @Test
+    @DisplayName("Deve publicar evento de falha quando ocorre erro no processamento")
     void devePublicarEventoDeFalha_quandoOcorreErroNoProcessamento() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -90,7 +98,7 @@ class ProcessarLiquidacaoUseCaseTest {
                 new BigDecimal("1000.00")
         );
 
-        when(repository.existePorEventoIdOrigem(eventoIdOrigem)).thenReturn(false);
+        when(inboxRepository.existsByMessageId(eventoIdOrigem)).thenReturn(false);
         
         // Força um erro no repositório na SEGUNDA vez que for chamado
         doAnswer(invocation -> null) // 1ª chamada passa normal (salvar pendente)

@@ -11,10 +11,12 @@ import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
 import com.insurtech.segurados.infrastructure.security.UserContextHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BuscarPorIdSeguradoUseCase {
 

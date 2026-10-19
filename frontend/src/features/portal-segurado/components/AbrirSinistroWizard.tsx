@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, FormErrorBanner, Input, Select } from "../../../components/ui";
 import { useMinhasApolices } from "../hooks/useMinhasApolices";
 import { sinistrosApi } from "../../../api/sinistrosApi";
+import { sincronizarNotificacoes } from "../../../hooks/useNotificacoes";
 import type { TipoSinistro } from "../../../interfaces/enums";
 import type { SinistroRequest } from "../../../interfaces/sinistros/sinistroRequest";
 import { formatarData, formatarMoeda } from "../../../utils/formatters";
@@ -31,6 +33,7 @@ export const AbrirSinistroWizard: React.FC<AbrirSinistroWizardProps> = ({
   onSuccess,
   onCancel,
 }) => {
+  const queryClient = useQueryClient();
   const [etapa, setEtapa] = useState<1 | 2 | 3>(1);
   const [apoliceIdSelecionada, setApoliceIdSelecionada] = useState<string>(
     apoliceInicialId || ""
@@ -150,6 +153,9 @@ export const AbrirSinistroWizard: React.FC<AbrirSinistroWizardProps> = ({
 
     try {
       const novoSinistro = await sinistrosApi.cadastrar(payload);
+      queryClient.invalidateQueries({ queryKey: ["sinistros"] });
+      queryClient.invalidateQueries({ queryKey: ["notificacoes"] });
+      sincronizarNotificacoes();
       if (novoSinistro.id) {
         onSuccess(novoSinistro.id);
       }

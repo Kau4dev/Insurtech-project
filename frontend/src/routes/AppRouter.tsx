@@ -11,6 +11,7 @@ import {
 import { ApolicesListPage } from "../pages/ApolicesListPage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { LoginPage } from "../pages/LoginPage";
+import { NotFoundPage } from "../pages/NotFoundPage";
 import { SeguradosListPage } from "../pages/SeguradosListPage";
 import { SinistroDocumentosPage } from "../pages/SinistroDocumentosPage";
 import { SinistrosListPage } from "../pages/SinistrosListPage";
@@ -55,6 +56,10 @@ export const router = createBrowserRouter([
         path: "sinistros/:id",
         element: <PortalSinistroDetailPage />,
       },
+      {
+        path: "*",
+        element: <NotFoundPage />,
+      },
     ],
   },
   {
@@ -66,7 +71,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        path: "/",
+        index: true,
         element: <DashboardPage />,
       },
       {
@@ -99,14 +104,12 @@ export const router = createBrowserRouter([
       },
       {
         path: "*",
-        element: (
-          <div className="p-8 w-full h-full flex items-center justify-center text-(--fg) font-medium">
-            <h1 className="font-mono text-3xl uppercase text-(--accent-ink) font-semibold">
-              Página não encontrada!
-            </h1>
-          </div>
-        ),
+        element: <NotFoundPage />,
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);

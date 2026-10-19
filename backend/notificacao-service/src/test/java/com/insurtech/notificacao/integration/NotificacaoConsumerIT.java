@@ -1,6 +1,7 @@
 package com.insurtech.notificacao.integration;
 
 import com.insurtech.notificacao.infrastructure.messaging.NotificacaoConsumer;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ class NotificacaoConsumerIT {
     private NotificacaoConsumer consumer;
 
     @Test
+    @DisplayName("Deve consumir evento de sinistro registrado e disparar notificação")
     void deveConsumirEventoSinistroRegistradoEDispararNotificacao() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -41,11 +43,12 @@ class NotificacaoConsumerIT {
         kafkaTemplate.send("sinistro.registrado", payload);
 
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
-            Mockito.verify(consumer).consumirRegistrado(contains("SIN-IT-123"));
+            Mockito.verify(consumer).consumirRegistrado(Mockito.argThat(r -> r != null && r.value() != null && r.value().contains("SIN-IT-123")));
         });
     }
 
     @Test
+    @DisplayName("Deve consumir evento de sinistro rejeitado e disparar notificação")
     void deveConsumirEventoSinistroRejeitadoEDispararNotificacao() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -57,11 +60,12 @@ class NotificacaoConsumerIT {
         kafkaTemplate.send("sinistro.rejeitado", payload);
 
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
-            Mockito.verify(consumer).consumirRejeitado(contains("Falta de comprovantes"));
+            Mockito.verify(consumer).consumirRejeitado(Mockito.argThat(r -> r != null && r.value() != null && r.value().contains("Falta de comprovantes")));
         });
     }
 
     @Test
+    @DisplayName("Deve consumir evento de pagamento liquidado e disparar notificação")
     void deveConsumirEventoPagamentoLiquidadoEDispararNotificacao() {
         UUID sinistroId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -73,7 +77,41 @@ class NotificacaoConsumerIT {
         kafkaTemplate.send("pagamento.liquidado", payload);
 
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
-            Mockito.verify(consumer).consumirLiquidacao(contains("PROCESSADO"));
+            Mockito.verify(consumer).consumirLiquidacao(Mockito.argThat(r -> r != null && r.value() != null && r.value().contains("PROCESSADO")));
+        });
+    }
+
+    @Test
+    @DisplayName("Deve consumir evento de documentos solicitados e disparar notificação")
+    void deveConsumirEventoDocumentosSolicitadosEDispararNotificacao() {
+        UUID sinistroId = UUID.randomUUID();
+        UUID seguradoId = UUID.randomUUID();
+        String payload = String.format(
+                "{\"sinistroId\":\"%s\",\"seguradoId\":\"%s\",\"numeroSinistro\":\"SIN-DOC-123\",\"dataSolicitacao\":\"2026-10-16T18:00:00Z\"}",
+                sinistroId, seguradoId
+        );
+
+        kafkaTemplate.send("sinistro.documentos-solicitados", payload);
+
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+            Mockito.verify(consumer).consumirDocumentoSolicitado(Mockito.argThat(r -> r != null && r.value() != null && r.value().contains("SIN-DOC-123")));
+        });
+    }
+
+    @Test
+    @DisplayName("Deve consumir evento de documento adicionado e disparar notificação")
+    void deveConsumirEventoDocumentoAdicionadoEDispararNotificacao() {
+        UUID sinistroId = UUID.randomUUID();
+        UUID seguradoId = UUID.randomUUID();
+        String payload = String.format(
+                "{\"sinistroId\":\"%s\",\"seguradoId\":\"%s\",\"numeroSinistro\":\"SIN-DOC-456\",\"nomeArquivo\":\"cnh.pdf\",\"tipoDocumento\":\"DOCUMENTO_PESSOAL\",\"dataUpload\":\"2026-10-16T18:00:00Z\"}",
+                sinistroId, seguradoId
+        );
+
+        kafkaTemplate.send("sinistro.documento-adicionado", payload);
+
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
+            Mockito.verify(consumer).consumirDocumentoRecebido(Mockito.argThat(r -> r != null && r.value() != null && r.value().contains("cnh.pdf")));
         });
     }
 }

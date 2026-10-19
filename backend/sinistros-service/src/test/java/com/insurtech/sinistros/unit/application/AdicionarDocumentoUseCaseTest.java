@@ -15,6 +15,8 @@ import com.insurtech.sinistros.domain.model.TipoDocumento;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
 import com.insurtech.sinistros.infrastructure.security.UserContext;
+import com.insurtech.sinistros.application.port.EventPublisherPort;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,6 +42,9 @@ class AdicionarDocumentoUseCaseTest {
     @Mock
     private SinistroSecurityValidator securityValidator;
 
+    @Mock
+    private EventPublisherPort eventPublisher;
+
     @InjectMocks
     private AdicionarDocumentoUseCase useCase;
 
@@ -51,6 +56,7 @@ class AdicionarDocumentoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve adicionar documento ao sinistro com sucesso como analista")
     void deveAdicionarDocumento_comSucesso_comoAnalista() {
         UUID id = UUID.randomUUID();
         UUID usuarioId = UUID.randomUUID();
@@ -82,9 +88,11 @@ class AdicionarDocumentoUseCaseTest {
         verify(securityValidator, times(1)).validarAutenticacao();
         verify(securityValidator, times(1)).validarPropriedadeSegurado(sinistro.getSeguradoId(), "Acesso negado. Você só pode adicionar documentos aos seus próprios sinistros.");
         verify(repository, times(1)).salvar(sinistro);
+        verify(eventPublisher, times(1)).publicarDocumentoAdicionado(any());
     }
 
     @Test
+    @DisplayName("Deve adicionar documento ao sinistro com sucesso como segurado proprietário e alterar status para em análise")
     void deveAdicionarDocumento_comSucesso_comoSeguradoDono() {
         UUID id = UUID.randomUUID();
         UUID usuarioId = UUID.randomUUID();
@@ -115,9 +123,11 @@ class AdicionarDocumentoUseCaseTest {
         assertEquals(Status.EM_ANALISE, sinistro.getStatus()); // transição automática
         verify(securityValidator, times(1)).validarPropriedadeSegurado(eq(seguradoId), anyString());
         verify(repository, times(1)).salvar(sinistro);
+        verify(eventPublisher, times(1)).publicarDocumentoAdicionado(any());
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o validador recusar o acesso do segurado")
     void deveLancarExcecao_quandoValidatorRecusaAcesso() {
         UUID id = UUID.randomUUID();
         UUID usuarioId = UUID.randomUUID();
@@ -143,6 +153,7 @@ class AdicionarDocumentoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID id = UUID.randomUUID();
         AdicionarDocumentoRequestDTO dto = new AdicionarDocumentoRequestDTO(TipoDocumento.BOLETIM_OCORRENCIA, "BO.pdf", "http://url");
@@ -154,6 +165,7 @@ class AdicionarDocumentoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o sinistro não for encontrado")
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
         UUID id = UUID.randomUUID();
         UUID usuarioId = UUID.randomUUID();
@@ -167,6 +179,7 @@ class AdicionarDocumentoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando tentar adicionar documento em sinistro sem analista atribuído")
     void deveLancarExcecao_quandoAnalistaNaoAtribuido() {
         UUID id = UUID.randomUUID();
         UUID usuarioId = UUID.randomUUID();

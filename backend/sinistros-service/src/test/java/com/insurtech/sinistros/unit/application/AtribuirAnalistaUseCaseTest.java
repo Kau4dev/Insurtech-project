@@ -19,6 +19,7 @@ import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
 import com.insurtech.sinistros.infrastructure.security.UserContext;
 import feign.FeignException;
 import feign.Request;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -60,6 +61,7 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve atribuir analista ao sinistro com sucesso como gestor")
     void deveAtribuirAnalista_comoGestor_comSucesso() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
@@ -89,6 +91,7 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve atribuir analista ao sinistro com sucesso como administrador")
     void deveAtribuirAnalista_comoAdmin_comSucesso() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
@@ -108,6 +111,7 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve permitir autoatribuição de analista com sucesso")
     void deveAtribuirAnalista_comoAnalista_autoAtribuicao_comSucesso() {
         UUID analistaId = UUID.randomUUID();
         UUID sinistroId = UUID.randomUUID();
@@ -127,6 +131,7 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando analista tentar atribuir sinistro a outro analista")
     void deveLancarExcecao_quandoAnalistaTentaAtribuirAOutroAnalista() {
         UUID analistaLogadoId = UUID.randomUUID();
         UUID outroAnalistaId = UUID.randomUUID();
@@ -139,6 +144,7 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado ao atribuir analista")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
@@ -150,6 +156,7 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não tiver permissão para atribuir analista")
     void deveLancarExcecao_quandoUsuarioNaoTemPermissao() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
@@ -161,6 +168,7 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o analista informado não for encontrado no serviço de autenticação")
     void deveLancarExcecao_quandoAnalistaNaoEncontrado() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
@@ -175,6 +183,7 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário selecionado não tiver o papel de analista")
     void deveLancarExcecao_quandoAnalistaTemPapelInvalido() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
@@ -189,6 +198,7 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o sinistro não for encontrado ao atribuir analista")
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
@@ -206,6 +216,7 @@ class AtribuirAnalistaUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o status do sinistro não permitir atribuição de analista")
     void deveLancarExcecao_quandoStatusInvalido() {
         UUID sinistroId = UUID.randomUUID();
         UUID analistaId = UUID.randomUUID();
@@ -235,8 +246,8 @@ class AtribuirAnalistaUseCaseTest {
                         .request(Request.create(Request.HttpMethod.GET,
                                 "/api/v1/auth/usuarios",
                                 Collections.emptyMap(),
-                                new byte[0],
-                                Charset.defaultCharset()))
+                                Request.Body.empty(),
+                                null))
                         .build()
         );
     }

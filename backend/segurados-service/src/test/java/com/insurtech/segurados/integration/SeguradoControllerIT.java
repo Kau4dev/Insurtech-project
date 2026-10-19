@@ -9,6 +9,7 @@ import com.insurtech.segurados.domain.model.Uf;
 import com.insurtech.segurados.infrastructure.client.AuthClient;
 import com.insurtech.segurados.infrastructure.client.dto.Papel;
 import com.insurtech.segurados.infrastructure.client.dto.UsuarioResponseDTO;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -45,6 +46,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     // ─── POST /segurados ─────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve cadastrar segurado com sucesso com papel GESTOR e retornar HTTP 201")
     void deveCadastrarSegurado_comoGestor_retornar201() {
         UUID usuarioId = UUID.randomUUID();
         mockUsuarioValido(usuarioId);
@@ -70,6 +72,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve cadastrar segurado com sucesso com papel ADMIN e retornar HTTP 201")
     void deveCadastrarSegurado_comoAdmin_retornar201() {
         UUID usuarioId = UUID.randomUUID();
         mockUsuarioValido(usuarioId);
@@ -95,6 +98,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 401 ao tentar cadastrar segurado sem autenticação")
     void deveRetornar401_quandoCadastrarSeguradoSemAutenticacao() {
         UUID usuarioId = UUID.randomUUID();
 
@@ -114,6 +118,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 403 ao tentar cadastrar segurado com papel ANALISTA")
     void deveRetornar403_quandoCadastrarSeguradoComPapelAnalista() {
         UUID usuarioId = UUID.randomUUID();
 
@@ -138,6 +143,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 409 ao tentar cadastrar segurado com CPF ou CNPJ duplicado")
     void deveRetornar409_quandoCpfCnpjDuplicado() {
         UUID usuarioId = UUID.randomUUID();
         mockUsuarioValido(usuarioId);
@@ -166,6 +172,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 400 ao tentar cadastrar segurado com payload inválido")
     void deveRetornar400_quandoPayloadInvalido() {
         SeguradoRequestDTO dto = new SeguradoRequestDTO(
                 UUID.randomUUID(),
@@ -190,6 +197,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     // ─── GET /segurados ───────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve retornar HTTP 404 ao buscar segurado inexistente por ID")
     void deveRetornar404_quandoSeguradoNaoExiste() {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Usuario-Id", UUID.randomUUID().toString());
@@ -206,6 +214,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     // ─── PUT /segurados/{id} ─────────────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve atualizar segurado com sucesso com papel GESTOR e retornar HTTP 200")
     void deveAtualizarSegurado_comoGestor_retornar200() {
         // Primeiro cadastra como GESTOR
         UUID usuarioId = UUID.randomUUID();
@@ -246,6 +255,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 401 ao tentar atualizar segurado sem autenticação")
     void deveRetornar401_quandoAtualizarSeguradoSemAutenticacao() {
         SeguradoUpdateDTO dto = new SeguradoUpdateDTO(
                 "Nome", "email@email.com", null, null, null, null, null, null
@@ -260,6 +270,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 403 ao tentar atualizar segurado com papel ANALISTA")
     void deveRetornar403_quandoAtualizarSeguradoComPapelAnalista() {
         SeguradoUpdateDTO dto = new SeguradoUpdateDTO(
                 "Nome", "email@email.com", null, null, null, null, null, null
@@ -278,6 +289,7 @@ class SeguradoControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar HTTP 403 ao tentar atualizar segurado com papel SEGURADO")
     void deveRetornar403_quandoAtualizarSeguradoComPapelSegurado() {
         SeguradoUpdateDTO dto = new SeguradoUpdateDTO(
                 "Nome", "email@email.com", null, null, null, null, null, null

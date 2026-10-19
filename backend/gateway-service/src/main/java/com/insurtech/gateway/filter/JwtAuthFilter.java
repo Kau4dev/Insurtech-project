@@ -2,9 +2,11 @@ package com.insurtech.gateway.filter;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -28,6 +30,16 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
     @Value("${jwt.secret}")
     private String jwtSecret;
+
+    private JwtParser jwtParser;
+
+    @PostConstruct
+    public void init() {
+        if (jwtSecret != null) {
+            SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+            this.jwtParser = Jwts.parser().verifyWith(key).build();
+        }
+    }
 
     // rotas que não precisam de token
     private static final List<String> PUBLIC_ROUTES = List.of(
@@ -76,16 +88,17 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
         String token = authHeader.substring(BEARER_PREFIX.length());
 
-        // valida o token localmente (sem chamar o auth-service a cada requisição)
-        if (!isTokenValido(token)) {
+        // valida o token e extrai claims uma única vez
+        Claims claims = parseClaims(token);
+        if (claims == null) {
             log.warn("Token inválido para path: {}", path);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
 
         // extrai claims e propaga nos headers para os serviços downstream
-        String usuarioId = extrairUsuarioId(token);
-        String papel = extrairPapel(token);
+        String usuarioId = claims.getSubject();
+        String papel = claims.get("papel", String.class);
 
         ServerHttpRequest mutatedRequest = exchange.getRequest()
                 .mutate()
@@ -105,32 +118,14 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         return PUBLIC_ROUTES.stream().anyMatch(path::startsWith);
     }
 
-    private boolean isTokenValido(String token) {
+    private Claims parseClaims(String token) {
         try {
-            getClaims(token);
-            return true;
+            if (jwtParser == null) {
+                init();
+            }
+            return jwtParser.parseSignedClaims(token).getPayload();
         } catch (JwtException | IllegalArgumentException e) {
-            return false;
+            return null;
         }
-    }
-
-    private String extrairUsuarioId(String token) {
-        return getClaims(token).getSubject();
-    }
-
-    private String extrairPapel(String token) {
-        return getClaims(token).get("papel", String.class);
-    }
-
-    private Claims getClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 }

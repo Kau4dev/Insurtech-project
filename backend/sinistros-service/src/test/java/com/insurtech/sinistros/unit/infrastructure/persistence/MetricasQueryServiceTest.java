@@ -4,6 +4,7 @@ import com.insurtech.sinistros.application.dto.response.DashboardResponseDTO;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.persistence.MetricasQueryService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,6 +29,7 @@ class MetricasQueryServiceTest {
     private MetricasQueryService service;
 
     @Test
+    @DisplayName("Deve calcular resumo de métricas com sucesso consolidando totais e valores")
     void deveCalcularResumoComSucesso() {
         Map<Status, Long> contagem = Map.of(Status.EM_ANALISE, 2L, Status.APROVADO, 3L);
         when(repository.contarPorStatus()).thenReturn(contagem);
@@ -45,6 +47,7 @@ class MetricasQueryServiceTest {
     }
 
     @Test
+    @DisplayName("Deve calcular resumo de métricas tratando valores nulos do repositório como zero")
     void deveCalcularResumoTratandoValoresNulosDoRepositorio() {
         Map<Status, Long> contagem = Map.of(Status.REGISTRADO, 1L);
         when(repository.contarPorStatus()).thenReturn(contagem);

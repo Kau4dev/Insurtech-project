@@ -14,6 +14,7 @@ import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
 import com.insurtech.segurados.infrastructure.security.UserContext;
 import com.insurtech.segurados.infrastructure.security.UserContextHolder;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -54,6 +55,7 @@ class AtualizarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve atualizar segurado com sucesso quando usuário possuir papel GESTOR")
     void deveAtualizarSegurado_comSucesso_comoGestor() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 
@@ -88,6 +90,7 @@ class AtualizarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve atualizar segurado com sucesso quando usuário possuir papel ADMIN")
     void deveAtualizarSegurado_comSucesso_comoAdmin() {
         setUserContext(UUID.randomUUID().toString(), "ADMIN");
 
@@ -110,6 +113,7 @@ class AtualizarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção ao tentar atualizar segurado sem usuário autenticado")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID id = UUID.randomUUID();
         SeguradoUpdateDTO dto = new SeguradoUpdateDTO(null, null, null, null, null, null, null, null);
@@ -119,6 +123,7 @@ class AtualizarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado ao tentar atualizar segurado com papel ANALISTA")
     void deveLancarExcecao_quandoPapelAnalista() {
         setUserContext(UUID.randomUUID().toString(), "ANALISTA");
 
@@ -130,6 +135,7 @@ class AtualizarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado ao tentar atualizar segurado com papel SEGURADO")
     void deveLancarExcecao_quandoPapelSegurado() {
         setUserContext(UUID.randomUUID().toString(), "SEGURADO");
 
@@ -141,6 +147,7 @@ class AtualizarSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o segurado não for encontrado para atualização")
     void deveLancarExcecao_quandoSeguradoNaoEncontrado() {
         setUserContext(UUID.randomUUID().toString(), "GESTOR");
 

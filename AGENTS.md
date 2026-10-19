@@ -7,9 +7,9 @@ InsurTech: insurance claims/underwriting (P&C) platform, event-driven microservi
 - 7 **independent** Spring Boot 3.5.16 / Java 21 Maven apps under `backend/`. Each has its own `pom.xml` + `./mvnw` wrapper. **No parent/root pom and no multi-module build** — build and test each service from its own directory.
 - Clean Architecture inside every service: layers `interfaces` (controllers/exception handlers) → `application` (usecase + dto + port) → `domain` ↔ `infrastructure` (persistence, mapper, messaging, client, security). Tests mirror this as `unit/` and `integration/`.
 - Ports: gateway `8080`, auth `8084`, segurados `8085`, apolices `8086`, sinistros `8087`, liquidacao `8088`, notificacao `8089`.
-- One Postgres database **per service** (`auth_db`, `segurados_db`, ...) created by `init-databases.sql`. DB user/pass `insurtech`/`insurtech`, overridable via `SPRING_DATASOURCE_URL/USERNAME/PASSWORD`. Kafka at `localhost:9092`.
-- `liquidacao-service` and `notificacao-service` are **headless Kafka consumers** (no business REST API); `gateway-service` is reactive WebFlux and the only entry the frontend should call.
-- Frontend is a React 19 + Vite + Tailwind v4 app (`frontend/`, own `AGENTS.md`). Fully implemented (Dashboard, Sinistros, Apólices, Segurados, Login, HeaderSearch, Notifications, RotaProtegida); calls backend only via the gateway (`:8080`).
+- One Postgres database **per service** (`auth_db`, `segurados_db`, `notificacao_db`, ...) created by `init-databases.sql`. DB user/pass `insurtech`/`insurtech`, overridable via `SPRING_DATASOURCE_URL/USERNAME/PASSWORD`. Kafka at `localhost:9092`.
+- `liquidacao-service` is the only **headless Kafka consumer** (no business REST API). `notificacao-service` has its own PostgreSQL database (`notificacao_db`), Flyway migrations, and REST API (`/api/v1/notificacoes`) on port `8089`. `gateway-service` is reactive WebFlux and the only entry the frontend should call.
+- Frontend is a React 19 + Vite + Tailwind v4 app (`frontend/`, own `AGENTS.md`). Fully implemented (Backoffice Dashboard, Sinistros, Apólices, Segurados, Login, HeaderSearch, Notifications, Portal do Segurado B2C); calls backend only via the gateway (`:8080`).
 
 ## Commands (run from `backend/<service>`)
 
@@ -17,12 +17,16 @@ InsurTech: insurance claims/underwriting (P&C) platform, event-driven microservi
 - Integr. tests: `./mvnw test -Dtest='*IT'` (plain `./mvnw test` **skips them**: no surefire/failsafe config, so `*IT` classes are compiled but not run by default). Unit tests are `*Test`.
 - Run all of a service: `./mvnw test -Dtest='*Test,*IT'`
 - Run a service locally: `./mvnw spring-boot:run`
-- Infra only: `docker compose up -d postgres kafka`. Microservice builds are **commented out** in `docker-compose.yml` — they are run manually, not via compose.
+- Infra only: `docker compose up -d postgres kafka redis`. Microservice builds are **commented out** in `docker-compose.yml` — they are run manually, not via compose.
 
 ## Testing gotchas
 
 - Unit tests use JUnit 5 + Mockito, no Spring context.
-- Integration tests (`*IT`) extend an abstract `IntegrationTestBase` and use **Testcontainers** (PostgreSQL 16 + Kafka) → **Docker must be running**; they self-provide the datasource (sinistros via `@ServiceConnection`, auth via `@DynamicPropertySource`). There is **no `application-test.properties`** — don't assume one exists.
+- Spring Boot 3.5 mock standard: ALWAYS use `@MockitoBean` and `@MockitoSpyBean` from `org.springframework.test.context.bean.override.mockito.*`. Deprecated `@MockBean` / `@SpyBean` must NOT be used.
+- Integration tests (`*IT`):
+  - Database services (`sinistros-service`, `auth-service`, `segurados-service`, `apolices-service`) extend an abstract `IntegrationTestBase` and use **Testcontainers** (PostgreSQL 16 + Kafka) → **Docker must be running**; they self-provide the datasource (sinistros via `@ServiceConnection`, auth via `@DynamicPropertySource`).
+  - `notificacao-service` uses **H2 in-memory** (`<scope>test</scope>`) configured in `src/test/resources/application-test.properties` (`spring.flyway.enabled=false`, `ddl-auto=create-drop`) + `@EmbeddedKafka`, running fast and decoupled from Docker in CI.
+  - `gateway-service` tests run with `WebTestClient` and mock `@MockitoBean RedisRateLimiter`. To pass reliably in CI without Redis, `management.health.redis.enabled=false` is enforced in `src/test/resources/application-test.properties` and test class properties.
 - Test method names and domain exception classes are in **Portuguese** (e.g. `deveMarcarComoPagoQuandoReceberEvento...`, `SinistroNaoEncontradoException`). Follow this convention.
 
 ## Conventions & gotchas
@@ -57,6 +61,16 @@ InsurTech: insurance claims/underwriting (P&C) platform, event-driven microservi
   - The plaintext generated password is exposed *strictly once* in the creation response (`UsuarioCriadoResponseDTO`) for administrative dispatch and NEVER logged or stored unhashed (BCrypt strength 12 in `auth_db`).
   - `segurados-service` orchestrates user creation via OpenFeign `AuthClient.cadastrarUsuario` during customer creation when `usuarioId` is omitted, linking the generated UUID automatically without manual frontend UUID inputs.
 - For authz tests/IT, set `X-Usuario-Id` and `X-Usuario-Papel` (or mock `SinistroSecurityValidator` in UseCase unit tests; test the validator itself in `SinistroSecurityValidatorTest`).
+
+## Gateway & Rate Limiting
+
+- **Token Bucket Rate Limiting (Redis)**:
+  - `gateway-service` implements `RequestRateLimiterGatewayFilterFactory` backed by Redis (`ReactiveRedisTemplate`).
+  - Key Resolvers in `RateLimiterConfig`:
+    - `userKeyResolver`: Resolves by `X-Usuario-Id` header (authenticated requests) or falls back to IP/anonymous.
+    - `ipKeyResolver`: Resolves by client IP inspecting `X-Forwarded-For` and `RemoteAddress`.
+  - Exceeding the rate limit immediately returns `HTTP 429 Too Many Requests` with standard rate limit response headers.
+  - Public routes (`/actuator/**`, `/api/v1/auth/login`) bypass JWT validation in `JwtAuthFilter`.
 
 ## Kafka notes
 

@@ -9,6 +9,7 @@ import com.insurtech.apolices.domain.model.Status;
 import com.insurtech.apolices.domain.model.TipoCobertura;
 import com.insurtech.apolices.domain.model.TipoSeguro;
 import com.insurtech.apolices.infrastructure.client.SeguradoClient;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -37,6 +38,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     // ─── POST /apolices ──────────────────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve cadastrar apólice com perfil de gestor e retornar status 201")
     void deveCadastrarApolice_comoGestor_retornar201() {
         UUID seguradoId = UUID.randomUUID();
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
@@ -63,6 +65,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve cadastrar apólice com perfil de admin e retornar status 201")
     void deveCadastrarApolice_comoAdmin_retornar201() {
         UUID seguradoId = UUID.randomUUID();
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
@@ -86,6 +89,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar status 401 ao cadastrar apólice sem autenticação")
     void deveRetornar401_quandoCadastrarApoliceSemAutenticacao() {
         ApoliceRequestDTO dto = new ApoliceRequestDTO(
                 UUID.randomUUID(), "IT-TEST-401", TipoSeguro.VIDA,
@@ -101,6 +105,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar status 403 ao cadastrar apólice com perfil de analista")
     void deveRetornar403_quandoCadastrarApoliceComPapelAnalista() {
         ApoliceRequestDTO dto = new ApoliceRequestDTO(
                 UUID.randomUUID(), "IT-TEST-403-ANALISTA", TipoSeguro.VIDA,
@@ -121,6 +126,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve cadastrar apólice com coberturas e retornar status 201")
     void deveCadastrarApolice_comCoberturas_retornar201() {
         UUID seguradoId = UUID.randomUUID();
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
@@ -151,12 +157,13 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar status 404 ao cadastrar apólice quando o segurado não existe")
     void deveRetornar404_quandoSeguradoNaoExiste() {
         UUID seguradoId = UUID.randomUUID();
         when(seguradoClient.buscarPorId(seguradoId)).thenThrow(
                 new feign.FeignException.NotFound("Not Found",
                         feign.Request.create(feign.Request.HttpMethod.GET, "/api/v1/segurados/" + seguradoId,
-                                java.util.Collections.emptyMap(), null, null, null),
+                                java.util.Collections.emptyMap(), feign.Request.Body.empty(), null),
                         null, null)
         );
 
@@ -179,6 +186,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar status 409 ao cadastrar apólice com número já existente")
     void deveRetornar409_quandoApoliceJaExiste() {
         UUID seguradoId = UUID.randomUUID();
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
@@ -207,6 +215,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     // ─── GET /apolices/{id} ──────────────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve buscar apólice por ID e retornar status 200")
     void deveBuscarApolicePorId_retornar200() {
         UUID seguradoId = UUID.randomUUID();
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
@@ -238,6 +247,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar status 404 quando a apólice não existe")
     void deveRetornar404_quandoApoliceNaoExiste() {
         ResponseEntity<String> response = restTemplate.getForEntity(
                 "/api/v1/apolices/" + UUID.randomUUID(), String.class
@@ -248,6 +258,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     // ─── PATCH /apolices/{id}/status ─────────────────────────────────────────
 
     @Test
+    @DisplayName("Deve cancelar apólice com perfil de gestor e retornar status 200")
     void deveCancelarApolice_comoGestor_retornar200() {
         UUID seguradoId = UUID.randomUUID();
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
@@ -280,6 +291,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar status 401 ao atualizar status da apólice sem autenticação")
     void deveRetornar401_quandoAtualizarStatusSemAutenticacao() {
         AtualizarStatusApoliceDTO statusDto = new AtualizarStatusApoliceDTO(Status.CANCELADA);
 
@@ -292,6 +304,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar status 403 ao atualizar status da apólice com perfil de analista")
     void deveRetornar403_quandoAtualizarStatusComPapelAnalista() {
         AtualizarStatusApoliceDTO statusDto = new AtualizarStatusApoliceDTO(Status.CANCELADA);
 
@@ -308,6 +321,7 @@ class ApoliceControllerIT extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Deve retornar status 400 ao atualizar apólice com status não suportado")
     void deveRetornar400_quandoStatusNaoSuportado() {
         UUID seguradoId = UUID.randomUUID();
         when(seguradoClient.buscarPorId(seguradoId)).thenReturn(null);
@@ -335,6 +349,6 @@ class ApoliceControllerIT extends IntegrationTestBase {
                 new HttpEntity<>(statusDto, headers), String.class
         );
 
-            assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 }

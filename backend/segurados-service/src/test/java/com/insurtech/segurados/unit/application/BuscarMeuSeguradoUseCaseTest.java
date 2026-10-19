@@ -11,6 +11,7 @@ import com.insurtech.segurados.infrastructure.mapper.SeguradoMapper;
 import com.insurtech.segurados.infrastructure.security.UserContext;
 import com.insurtech.segurados.infrastructure.security.UserContextHolder;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,6 +48,7 @@ class BuscarMeuSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve retornar segurado quando usuário autenticado possuir cadastro vinculado")
     void deveRetornarSegurado_quandoUsuarioAutenticadoPossuirSegurado() {
         UUID usuarioId = UUID.randomUUID();
         setUserContext(usuarioId.toString(), "SEGURADO");
@@ -66,12 +68,14 @@ class BuscarMeuSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         assertThrows(UsuarioNaoAutenticadoException.class, () -> useCase.executar());
         verifyNoInteractions(repository, mapper);
     }
 
     @Test
+    @DisplayName("Deve lançar exceção de acesso negado quando papel do usuário não for SEGURADO")
     void deveLancarExcecao_quandoPapelNaoForSegurado() {
         UUID usuarioId = UUID.randomUUID();
         setUserContext(usuarioId.toString(), "GESTOR");
@@ -81,6 +85,7 @@ class BuscarMeuSeguradoUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando segurado não for encontrado para o usuário autenticado")
     void deveLancarExcecao_quandoSeguradoNaoEncontradoParaOUsuario() {
         UUID usuarioId = UUID.randomUUID();
         setUserContext(usuarioId.toString(), "SEGURADO");

@@ -24,7 +24,7 @@ public class AtualizarStatusApoliceUseCase {
     private final ApoliceRepository repository;
     private final ApoliceMapper mapper;
 
-    public ApoliceResponseDTO executar(UUID id, AtualizarStatusApoliceDTO novoStatus) throws StatusNaoSuportadoException {
+    public ApoliceResponseDTO executar(UUID id, AtualizarStatusApoliceDTO novoStatus) {
         String usuarioId = UserContextHolder.getContext().getUsuarioId();
         String usuarioPapel = UserContextHolder.getContext().getUsuarioPapel();
 
@@ -43,7 +43,7 @@ public class AtualizarStatusApoliceUseCase {
             case CANCELADA -> apolice.cancelar();
             case SUSPENSA -> apolice.suspender();
             case ATIVA -> apolice.reativar();
-            default -> throw new StatusNaoSuportadoException("Status não suportado para atualização manual: " + novoStatus);
+            default -> throw new StatusNaoSuportadoException("Status não suportado para atualização manual: " + novoStatus.status() + ". Apenas ATIVA, SUSPENSA ou CANCELADA são permitidos.");
         }
 
         repository.salvar(apolice);

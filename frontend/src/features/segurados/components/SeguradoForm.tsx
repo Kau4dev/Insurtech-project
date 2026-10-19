@@ -21,6 +21,8 @@ import type {
 } from "../../../interfaces/segurados/seguradoRequest";
 import {
   apenasNumeros,
+  capitalizarPalavras,
+  capitalizarPrimeiraLetra,
   maskCep,
   maskCpfCnpj,
   maskTelefone,
@@ -160,23 +162,59 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
     });
   };
 
+  const handleCapitalizeFieldBlur =
+    (
+      fieldName:
+        | "nomeRazaoSocial"
+        | "enderecoRua"
+        | "enderecoBairro"
+        | "enderecoCidade",
+    ) =>
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      const formatado = capitalizarPalavras(e.target.value);
+      if (formatado !== e.target.value) {
+        setValue(fieldName, formatado, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    };
+
+  const handleComplementoBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const formatado = capitalizarPrimeiraLetra(e.target.value);
+    if (formatado !== e.target.value) {
+      setValue("enderecoComplemento", formatado, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  };
+
   const handleFormSubmit = async (data: SeguradoFormData) => {
     const telLimpo = apenasNumeros(data.telefone);
     const cepLimpo = apenasNumeros(data.enderecoCep);
 
+    const ruaFormatada = capitalizarPalavras(data.enderecoRua);
+    const bairroFormatado = capitalizarPalavras(data.enderecoBairro);
+    const complementoFormatado = capitalizarPrimeiraLetra(
+      data.enderecoComplemento,
+    );
+    const cidadeFormatada = capitalizarPalavras(data.enderecoCidade);
+    const nomeFormatado = capitalizarPalavras(data.nomeRazaoSocial);
+
     const enderecoPayload = enderecoParaApi({
-      rua: data.enderecoRua,
+      rua: ruaFormatada,
       numero: data.enderecoNumero,
-      bairro: data.enderecoBairro,
-      complemento: data.enderecoComplemento,
-      cidade: data.enderecoCidade,
+      bairro: bairroFormatado,
+      complemento: complementoFormatado,
+      cidade: cidadeFormatada,
       uf: data.enderecoUf,
       cep: cepLimpo.length > 0 ? cepLimpo : undefined,
     });
 
     if (isEdicao) {
       const updatePayload: SeguradoUpdateRequest = {
-        nomeRazaoSocial: data.nomeRazaoSocial.trim(),
+        nomeRazaoSocial: nomeFormatado.trim(),
         email: data.email.trim(),
         telefone: telLimpo.length > 0 ? telLimpo : undefined,
         dataNascimento:
@@ -193,7 +231,7 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
       const createPayload: SeguradoRequest = {
         usuarioId: data.usuarioId?.trim() ? data.usuarioId.trim() : undefined,
         tipoPessoa: data.tipoPessoa as "PF" | "PJ",
-        nomeRazaoSocial: data.nomeRazaoSocial.trim(),
+        nomeRazaoSocial: nomeFormatado.trim(),
         cpfCnpj: apenasNumeros(data.cpfCnpj),
         email: data.email.trim(),
         telefone: telLimpo.length > 0 ? telLimpo : undefined,
@@ -261,7 +299,9 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
                 : "Ex: Minha Empresa LTDA"
             }
             error={errors.nomeRazaoSocial?.message}
-            {...register("nomeRazaoSocial")}
+            {...register("nomeRazaoSocial", {
+              onBlur: handleCapitalizeFieldBlur("nomeRazaoSocial"),
+            })}
           />
 
           <Input
@@ -315,7 +355,9 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
                 label="Logradouro / Rua"
                 placeholder="Ex: Av. Paulista"
                 error={errors.enderecoRua?.message}
-                {...register("enderecoRua")}
+                {...register("enderecoRua", {
+                  onBlur: handleCapitalizeFieldBlur("enderecoRua"),
+                })}
               />
             </div>
 
@@ -334,7 +376,9 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
                 label="Bairro"
                 placeholder="Ex: Bela Vista"
                 error={errors.enderecoBairro?.message}
-                {...register("enderecoBairro")}
+                {...register("enderecoBairro", {
+                  onBlur: handleCapitalizeFieldBlur("enderecoBairro"),
+                })}
               />
             </div>
 
@@ -343,7 +387,9 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
                 label="Complemento"
                 placeholder="Ex: Apto 42, Bloco B"
                 error={errors.enderecoComplemento?.message}
-                {...register("enderecoComplemento")}
+                {...register("enderecoComplemento", {
+                  onBlur: handleComplementoBlur,
+                })}
               />
             </div>
 
@@ -353,7 +399,9 @@ export const SeguradoForm: React.FC<SeguradoFormProps> = ({
                 label="Cidade"
                 placeholder="Ex: São Paulo"
                 error={errors.enderecoCidade?.message}
-                {...register("enderecoCidade")}
+                {...register("enderecoCidade", {
+                  onBlur: handleCapitalizeFieldBlur("enderecoCidade"),
+                })}
               />
             </div>
 

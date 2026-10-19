@@ -232,7 +232,7 @@ export const AtribuirAnalistaModal: React.FC<AtribuirAnalistaModalProps> = ({
               )}
 
             <p className="text-xs text-(--muted)">
-              Regra de negócio: o analista selecionado deve ser um usuário ativo
+              O analista selecionado deve ser um usuário ativo
               com perfil <strong>Analista</strong> ou <strong>Gestor</strong>. Ao
               atribuir, o sinistro mudará para <strong>EM ANÁLISE</strong>.
             </p>

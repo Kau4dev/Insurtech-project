@@ -4,6 +4,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -60,6 +61,7 @@ class JwtAuthFilterTest {
             "/v3/api-docs",
             "/swagger-ui/index.html"
     })
+    @DisplayName("Deve permitir requisições para rotas públicas sem token JWT")
     void devePermitirRotaPublicaSemToken(String rotaPublica) {
         // Arrange
         when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
@@ -75,6 +77,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
+    @DisplayName("Deve bloquear com 401 Unauthorized quando o header Authorization não for informado")
     void deveBloquearRequisicaoSemHeaderAuthorization() {
         // Arrange
         MockServerHttpRequest request = MockServerHttpRequest.get("/api/v1/sinistros").build();
@@ -90,6 +93,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
+    @DisplayName("Deve bloquear com 401 Unauthorized quando o header Authorization estiver malformado")
     void deveBloquearRequisicaoComHeaderMalformado() {
         // Arrange
         MockServerHttpRequest request = MockServerHttpRequest.get("/api/v1/sinistros")
@@ -107,6 +111,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
+    @DisplayName("Deve bloquear com 401 Unauthorized quando o token JWT for inválido")
     void deveBloquearRequisicaoComTokenInvalido() {
         // Arrange
         MockServerHttpRequest request = MockServerHttpRequest.get("/api/v1/sinistros")
@@ -124,6 +129,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
+    @DisplayName("Deve bloquear com 401 Unauthorized quando o token JWT estiver expirado")
     void deveBloquearRequisicaoComTokenExpirado() {
         // Arrange
         String tokenExpirado = gerarToken("123", "ANALISTA", -1000L);
@@ -142,6 +148,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
+    @DisplayName("Deve propagar headers X-Usuario-Id e X-Usuario-Papel quando o token JWT for válido")
     void devePropagarHeadersQuandoTokenForValido() {
         // Arrange
         when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
@@ -166,6 +173,7 @@ class JwtAuthFilterTest {
     }
 
     @Test
+    @DisplayName("Deve permitir requisições de pre-flight OPTIONS sem token JWT")
     void devePermitirRequisicaoOptionsSemToken() {
         // Arrange
         when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());

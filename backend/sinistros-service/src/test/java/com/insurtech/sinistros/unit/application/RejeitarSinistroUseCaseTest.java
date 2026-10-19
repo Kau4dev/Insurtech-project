@@ -17,6 +17,7 @@ import com.insurtech.sinistros.domain.model.Sinistro;
 import com.insurtech.sinistros.domain.model.Status;
 import com.insurtech.sinistros.domain.repository.SinistroRepository;
 import com.insurtech.sinistros.infrastructure.mapper.SinistroMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -62,6 +63,7 @@ class RejeitarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve rejeitar sinistro com sucesso como analista")
     void deveRejeitarSinistro_comSucesso_comoAnalista() {
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Falta de documentacao");
@@ -84,6 +86,7 @@ class RejeitarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve rejeitar sinistro com sucesso como gestor")
     void deveRejeitarSinistro_comSucesso_comoGestor() {
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Fraude detectada");
@@ -98,6 +101,7 @@ class RejeitarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado ao rejeitar sinistro")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Motivo");
@@ -109,6 +113,7 @@ class RejeitarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o papel do usuário não tiver permissão para rejeitar sinistro")
     void deveLancarExcecao_quandoPapelNaoPermitido() {
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Motivo");
@@ -120,6 +125,7 @@ class RejeitarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o sinistro não for encontrado ao tentar rejeitar")
     void deveLancarExcecao_quandoSinistroNaoEncontrado() {
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Falta de documentacao");
@@ -134,6 +140,7 @@ class RejeitarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o sinistro não estiver com status EM_ANALISE para rejeição")
     void deveLancarExcecao_quandoStatusInvalido() {
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Falta de documentacao");
@@ -148,6 +155,7 @@ class RejeitarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o motivo da rejeição for nulo ou vazio")
     void deveLancarExcecao_quandoMotivoRejeicaoNuloOuVazio() {
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("   ");
@@ -161,6 +169,7 @@ class RejeitarSinistroUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando tentar rejeitar sinistro sem documentos anexados")
     void deveLancarExcecao_quandoRejeitarSemDocumentos() {
         UUID id = UUID.randomUUID();
         RejeitarSinistroRequestDTO dto = new RejeitarSinistroRequestDTO("Motivo");

@@ -16,6 +16,7 @@ import com.insurtech.sinistros.infrastructure.security.UserContext;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -61,6 +62,7 @@ class ListarSinistrosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar sinistros com sucesso como gestor")
     void deveListarSinistros_comSucesso_comoGestor() {
         when(securityValidator.validarPapeis(anyString(), any(), any(), any(), any()))
                 .thenReturn(criarContexto(UUID.randomUUID().toString(), "GESTOR"));
@@ -76,6 +78,7 @@ class ListarSinistrosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve forçar filtro de analistaId ao listar sinistros como analista")
     void deveListarSinistros_comoAnalista_forcaFiltroAnalistaId() {
         UUID analistaId = UUID.randomUUID();
         when(securityValidator.validarPapeis(anyString(), any(), any(), any(), any()))
@@ -92,6 +95,7 @@ class ListarSinistrosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar sinistros com sucesso para o segurado proprietário")
     void deveListarSinistros_comSucesso_comoSeguradoDono() {
         UUID usuarioId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -110,6 +114,7 @@ class ListarSinistrosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o validador recusar a consulta de sinistros de outro segurado")
     void deveLancarExcecao_quandoValidatorRecusaSegurado() {
         UUID usuarioId = UUID.randomUUID();
         UUID seguradoId = UUID.randomUUID();
@@ -125,6 +130,7 @@ class ListarSinistrosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar sinistros aplicando filtros de segurado e apólice como gestor")
     void deveListarSinistros_comFiltrosSeguradoEApoliceEncontrados_comoGestor() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();
@@ -144,6 +150,7 @@ class ListarSinistrosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o usuário não estiver autenticado ao listar sinistros")
     void deveLancarExcecao_quandoUsuarioNaoAutenticado() {
         doThrow(new UsuarioNaoAutenticadoException("Usuário não autenticado"))
                 .when(securityValidator).validarPapeis(anyString(), any(), any(), any(), any());
@@ -154,6 +161,7 @@ class ListarSinistrosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o papel do usuário não for permitido para listar sinistros")
     void deveLancarExcecao_quandoPapelNaoPermitido() {
         doThrow(new AcessoNegadoException("Acesso negado."))
                 .when(securityValidator).validarPapeis(anyString(), any(), any(), any(), any());
@@ -164,6 +172,7 @@ class ListarSinistrosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando o segurado filtrado não for encontrado")
     void deveLancarExcecao_quandoSeguradoNaoEncontrado_comoGestor() {
         UUID seguradoId = UUID.randomUUID();
         when(securityValidator.validarPapeis(anyString(), any(), any(), any(), any()))
@@ -178,6 +187,7 @@ class ListarSinistrosUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar exceção quando a apólice filtrada não for encontrada")
     void deveLancarExcecao_quandoApoliceNaoEncontrada() {
         UUID seguradoId = UUID.randomUUID();
         UUID apoliceId = UUID.randomUUID();

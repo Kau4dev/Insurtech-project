@@ -96,14 +96,25 @@ export const LoginPage: React.FC = () => {
     }
     return false;
   });
+  const [sessaoExpiradaToastAberto, setSessaoExpiradaToastAberto] = useState<boolean>(() => {
+    if (
+      typeof window !== "undefined" &&
+      sessionStorage.getItem("insurtech_sessao_expirada") === "true"
+    ) {
+      sessionStorage.removeItem("insurtech_sessao_expirada");
+      return true;
+    }
+    return false;
+  });
 
   const {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors, touchedFields },
   } = useForm<FormInputs>({
     resolver: zodResolver(loginSchema),
+    mode: "onTouched",
     defaultValues: { email: "", senha: "" },
   });
 
@@ -161,14 +172,19 @@ export const LoginPage: React.FC = () => {
           autoComplete="username"
           inputMode="email"
           spellCheck={false}
+          aria-invalid={errors.email ? "true" : "false"}
           {...register("email")}
-          className={`w-full h-11 sm:h-10 px-3.5 sm:px-3 text-[15px] sm:text-sm border rounded-lg bg-(--surface) focus:outline-none focus:ring-2 focus:ring-(--accent-soft) focus:border-(--accent) transition-all ${
-            errors.email ? "border-red-500" : "border-(--border-strong)"
+          className={`w-full h-11 sm:h-10 px-3.5 sm:px-3 text-[15px] sm:text-sm border rounded-lg bg-(--surface) focus:outline-none focus:ring-2 transition-all ${
+            errors.email
+              ? "border-red-500 focus:ring-red-500/15 focus:border-red-500"
+              : touchedFields.email
+                ? "border-emerald-500/70 focus:ring-emerald-500/15 focus:border-emerald-500"
+                : "border-(--border-strong) focus:ring-(--accent-soft) focus:border-(--accent)"
           }`}
           placeholder="colaborador@empresa.com.br"
         />
         {errors.email && (
-          <span className="text-red-500 text-[12px] mt-1 block">
+          <span role="alert" className="text-red-500 text-[12px] mt-1 block">
             {errors.email.message}
           </span>
         )}
@@ -182,14 +198,19 @@ export const LoginPage: React.FC = () => {
           type="password"
           id="senha"
           autoComplete="current-password"
+          aria-invalid={errors.senha ? "true" : "false"}
           {...register("senha")}
-          className={`w-full h-11 sm:h-10 px-3.5 sm:px-3 text-[15px] sm:text-sm border rounded-lg bg-(--surface) focus:outline-none focus:ring-2 focus:ring-(--accent-soft) focus:border-(--accent) transition-all ${
-            errors.senha ? "border-red-500" : "border-(--border-strong)"
+          className={`w-full h-11 sm:h-10 px-3.5 sm:px-3 text-[15px] sm:text-sm border rounded-lg bg-(--surface) focus:outline-none focus:ring-2 transition-all ${
+            errors.senha
+              ? "border-red-500 focus:ring-red-500/15 focus:border-red-500"
+              : touchedFields.senha
+                ? "border-emerald-500/70 focus:ring-emerald-500/15 focus:border-emerald-500"
+                : "border-(--border-strong) focus:ring-(--accent-soft) focus:border-(--accent)"
           }`}
           placeholder="••••••••"
         />
         {errors.senha && (
-          <span className="text-red-500 text-[12px] mt-1 block">
+          <span role="alert" className="text-red-500 text-[12px] mt-1 block">
             {errors.senha.message}
           </span>
         )}
@@ -396,6 +417,15 @@ export const LoginPage: React.FC = () => {
         variant="info"
         durationMs={6000}
         onClose={() => setLogoutToastAberto(false)}
+      />
+
+      <ToastNotification
+        isOpen={sessaoExpiradaToastAberto}
+        title="Sessão desconectada"
+        message="Acesso encerrado devido a conflito de perfil ou expiração de sessão. Faça login novamente."
+        variant="warning"
+        durationMs={7000}
+        onClose={() => setSessaoExpiradaToastAberto(false)}
       />
     </>
   );

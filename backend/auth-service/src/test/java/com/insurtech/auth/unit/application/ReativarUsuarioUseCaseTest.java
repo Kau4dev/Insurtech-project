@@ -8,6 +8,7 @@ import com.insurtech.auth.domain.model.Papel;
 import com.insurtech.auth.domain.model.Usuario;
 import com.insurtech.auth.domain.repository.UsuarioRepository;
 import com.insurtech.auth.infrastructure.mapper.UsuarioMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,6 +39,7 @@ class ReativarUsuarioUseCaseTest {
     private ReativarUsuarioUseCase useCase;
 
     @Test
+    @DisplayName("Deve reativar usuário com sucesso")
     void deveAtivarUsuarioComSucesso() {
         UUID id = UUID.randomUUID();
         Usuario inativo = new Usuario();
@@ -61,6 +63,7 @@ class ReativarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar IllegalStateException quando o usuário já estiver ativo")
     void deveLancarExcecaoQuandoUsuarioJaEstiverAtivo() {
         UUID id = UUID.randomUUID();
         Usuario ativo = new Usuario();
@@ -74,6 +77,7 @@ class ReativarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar UsuarioNaoEncontradoException quando o usuário não for encontrado")
     void deveLancarExcecaoQuandoUsuarioNaoEncontrado() {
         UUID id = UUID.randomUUID();
         when(repository.buscarPorId(id)).thenReturn(Optional.empty());

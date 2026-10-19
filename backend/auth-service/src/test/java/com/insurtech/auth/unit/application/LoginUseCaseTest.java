@@ -10,6 +10,7 @@ import com.insurtech.auth.domain.model.Papel;
 import com.insurtech.auth.domain.model.Usuario;
 import com.insurtech.auth.domain.repository.UsuarioRepository;
 import com.insurtech.auth.infrastructure.security.JwtService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,6 +40,7 @@ class LoginUseCaseTest {
     private LoginUseCase loginUseCase;
 
     @Test
+    @DisplayName("Deve realizar login com sucesso quando as credenciais forem válidas")
     void deveRealizarLogin_comSucesso() {
         LoginRequestDTO dto = new LoginRequestDTO("test@email.com", "password123");
         
@@ -68,6 +70,7 @@ class LoginUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar EmailNaoEncontradoException quando o e-mail não for encontrado")
     void deveLancarExcecao_quandoEmailNaoEncontrado() {
         LoginRequestDTO dto = new LoginRequestDTO("nonexistent@email.com", "password123");
 
@@ -80,6 +83,7 @@ class LoginUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar UsuarioInativoException quando o usuário estiver inativo")
     void deveLancarExcecao_quandoUsuarioInativo() {
         LoginRequestDTO dto = new LoginRequestDTO("inactive@email.com", "password123");
 
@@ -100,6 +104,7 @@ class LoginUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar SenhaIncorretaException quando a senha for incorreta")
     void deveLancarExcecao_quandoSenhaIncorreta() {
         LoginRequestDTO dto = new LoginRequestDTO("test@email.com", "wrongPassword");
 

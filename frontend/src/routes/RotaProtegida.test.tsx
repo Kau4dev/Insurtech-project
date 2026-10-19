@@ -1,20 +1,26 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RotaProtegida } from "./RotaProtegida";
 
 const mockUseAuth = vi.fn();
+const mockLogout = vi.fn();
 
 vi.mock("../context/useAuth", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
 describe("RotaProtegida", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("deve exibir tela de validação quando isLoading for true", () => {
     mockUseAuth.mockReturnValue({
       isLoading: true,
       isAuthenticated: false,
       usuario: null,
+      logout: mockLogout,
     });
 
     render(
@@ -34,6 +40,7 @@ describe("RotaProtegida", () => {
       isLoading: false,
       isAuthenticated: false,
       usuario: null,
+      logout: mockLogout,
     });
 
     render(
@@ -56,15 +63,16 @@ describe("RotaProtegida", () => {
     expect(screen.queryByText("Conteúdo Secreto")).not.toBeInTheDocument();
   });
 
-  it("deve exibir Acesso Restrito se o papel do usuário não for permitido", () => {
+  it("deve exibir Acesso Restrito se o papel do usuário interno não for permitido para a rota específica", () => {
     mockUseAuth.mockReturnValue({
       isLoading: false,
       isAuthenticated: true,
       usuario: { id: "u1", nome: "Analista", papel: "ANALISTA" },
+      logout: mockLogout,
     });
 
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={["/usuarios"]}>
         <RotaProtegida papeisPermitidos={["ADMIN", "GESTOR"]}>
           <div>Área Administrativa</div>
         </RotaProtegida>
@@ -80,6 +88,7 @@ describe("RotaProtegida", () => {
       isLoading: false,
       isAuthenticated: true,
       usuario: { id: "u1", nome: "Gestor", papel: "GESTOR" },
+      logout: mockLogout,
     });
 
     render(
@@ -98,6 +107,7 @@ describe("RotaProtegida", () => {
       isLoading: false,
       isAuthenticated: false,
       usuario: null,
+      logout: mockLogout,
     });
 
     render(
@@ -120,11 +130,12 @@ describe("RotaProtegida", () => {
     expect(screen.queryByText("Apólices do Segurado")).not.toBeInTheDocument();
   });
 
-  it("deve redirecionar SEGURADO para /portal ao tentar acessar rota interna restrita", () => {
+  it("deve redirecionar SEGURADO para /portal sem disparar logout ao tentar acessar rota interna", () => {
     mockUseAuth.mockReturnValue({
       isLoading: false,
       isAuthenticated: true,
       usuario: { id: "seg-1", nome: "Segurado", papel: "SEGURADO" },
+      logout: mockLogout,
     });
 
     render(
@@ -138,20 +149,22 @@ describe("RotaProtegida", () => {
               </RotaProtegida>
             }
           />
-          <Route path="/portal" element={<div>Portal do Segurado Home</div>} />
+          <Route path="/portal" element={<div>Portal do Segurado</div>} />
         </Routes>
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Portal do Segurado Home")).toBeInTheDocument();
+    expect(screen.getByText("Portal do Segurado")).toBeInTheDocument();
     expect(screen.queryByText("Dashboard Interno")).not.toBeInTheDocument();
+    expect(mockLogout).not.toHaveBeenCalled();
   });
 
-  it("deve redirecionar usuário interno para /dashboard ao tentar acessar /portal", () => {
+  it("deve redirecionar usuário interno para /dashboard sem disparar logout ao tentar acessar /portal", () => {
     mockUseAuth.mockReturnValue({
       isLoading: false,
       isAuthenticated: true,
       usuario: { id: "adm-1", nome: "Admin", papel: "ADMIN" },
+      logout: mockLogout,
     });
 
     render(
@@ -165,12 +178,13 @@ describe("RotaProtegida", () => {
               </RotaProtegida>
             }
           />
-          <Route path="/dashboard" element={<div>Dashboard Administrativo</div>} />
+          <Route path="/dashboard" element={<div>Dashboard Interno</div>} />
         </Routes>
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Dashboard Administrativo")).toBeInTheDocument();
+    expect(screen.getByText("Dashboard Interno")).toBeInTheDocument();
     expect(screen.queryByText("Portal do Segurado")).not.toBeInTheDocument();
+    expect(mockLogout).not.toHaveBeenCalled();
   });
 });

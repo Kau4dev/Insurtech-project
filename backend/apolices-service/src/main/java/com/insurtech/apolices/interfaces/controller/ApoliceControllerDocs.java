@@ -75,5 +75,5 @@ public interface ApoliceControllerDocs {
     })
     ResponseEntity<ApoliceResponseDTO> atualizarStatus(
             @Parameter(description = "ID da apólice (UUID)", required = true) UUID id,
-            AtualizarStatusApoliceDTO dto) throws StatusNaoSuportadoException;
+            AtualizarStatusApoliceDTO dto);
 }

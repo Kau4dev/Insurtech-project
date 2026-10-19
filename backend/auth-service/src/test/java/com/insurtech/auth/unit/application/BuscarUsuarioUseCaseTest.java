@@ -9,6 +9,7 @@ import com.insurtech.auth.domain.model.Usuario;
 import com.insurtech.auth.domain.repository.UsuarioRepository;
 import com.insurtech.auth.infrastructure.mapper.UsuarioMapper;
 import com.insurtech.auth.infrastructure.security.JwtService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,6 +38,7 @@ class BuscarUsuarioUseCaseTest {
     private BuscarUsuarioUseCase buscarUsuarioUseCase;
 
     @Test
+    @DisplayName("Deve buscar usuário por token JWT com sucesso")
     void deveBuscarUsuarioPorToken_comSucesso() {
         String token = "valid-jwt-token";
         UUID userId = UUID.randomUUID();
@@ -70,6 +72,7 @@ class BuscarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar TokenInvalidoException quando o token JWT for inválido")
     void deveLancarExcecao_quandoTokenInvalido() {
         String token = "invalid-jwt-token";
 
@@ -84,6 +87,7 @@ class BuscarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar UsuarioNaoEncontradoException quando usuário do token não for encontrado")
     void deveLancarExcecao_quandoUsuarioNaoEncontrado() {
         String token = "valid-jwt-token-but-no-user";
         UUID userId = UUID.randomUUID();
@@ -101,6 +105,7 @@ class BuscarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve buscar usuário por ID com sucesso")
     void deveBuscarUsuarioPorId_comSucesso() {
         UUID userId = UUID.randomUUID();
 
@@ -131,6 +136,7 @@ class BuscarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve lançar UsuarioNaoEncontradoException quando usuário não for encontrado pelo ID")
     void deveLancarExcecao_quandoUsuarioNaoEncontradoPorId() {
         UUID userId = UUID.randomUUID();
 
@@ -144,6 +150,7 @@ class BuscarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar todos os usuários sem filtro de status")
     void deveListarTodosUsuarios_semFiltro() {
         Usuario usuario = new Usuario();
         usuario.setId(UUID.randomUUID());
@@ -160,6 +167,7 @@ class BuscarUsuarioUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve listar usuários aplicando filtro por status ativo")
     void deveListarUsuarios_comFiltroAtivo() {
         Usuario usuario = new Usuario();
         usuario.setId(UUID.randomUUID());
