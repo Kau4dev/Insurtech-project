@@ -69,5 +69,30 @@ class BuscarNotificacoesUseCaseTest {
         assertEquals(1, resultado.size());
         verify(repository).listarTodas(null);
     }
+
+    @Test
+    @DisplayName("Deve diferenciar leitura quando usuário for SEGURADO vs INTERNO")
+    void deveDiferenciarLeituraPorPerfil() {
+        UUID seguradoId = UUID.randomUUID();
+        Notificacao notif = new Notificacao();
+        notif.setId(UUID.randomUUID());
+        notif.setSeguradoId(seguradoId);
+        notif.setTitulo("Aviso");
+        notif.setMensagem("Mensagem");
+        notif.setTipo(TipoNotificacao.SINISTRO_REGISTRADO);
+        notif.setLidaSegurado(true);
+        notif.setLidaInterno(false);
+        notif.setCriadoEm(Instant.now());
+
+        // Contexto Segurado: deve ver lida = true
+        when(repository.listarPorSeguradoId(seguradoId, null)).thenReturn(List.of(notif));
+        List<NotificacaoResponseDTO> resSegurado = useCase.executar(seguradoId, null);
+        assertTrue(resSegurado.getFirst().lida());
+
+        // Contexto Interno: deve ver lida = false
+        when(repository.listarTodas(null)).thenReturn(List.of(notif));
+        List<NotificacaoResponseDTO> resInterno = useCase.executar(null, null);
+        assertFalse(resInterno.getFirst().lida());
+    }
 }
 

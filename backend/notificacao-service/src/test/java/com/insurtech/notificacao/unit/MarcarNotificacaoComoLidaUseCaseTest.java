@@ -58,5 +58,59 @@ class MarcarNotificacaoComoLidaUseCaseTest {
 
         verify(repository).marcarTodasComoLidas();
     }
+
+    @Test
+    @DisplayName("Deve marcar como lida apenas para segurado quando papel for SEGURADO")
+    void deveMarcarComoLidaApenasSegurado() {
+        UUID id = UUID.randomUUID();
+        Notificacao notif = new Notificacao();
+        notif.setId(id);
+        notif.setLida(false);
+        notif.setLidaSegurado(false);
+        notif.setLidaInterno(false);
+
+        com.insurtech.notificacao.infrastructure.security.UserContext ctx =
+                com.insurtech.notificacao.infrastructure.security.UserContextHolder.getContext();
+        ctx.setUsuarioPapel("SEGURADO");
+
+        try {
+            when(repository.buscarPorId(id)).thenReturn(Optional.of(notif));
+
+            useCase.executar(id);
+
+            assertTrue(notif.isLidaSegurado());
+            assertFalse(notif.isLidaInterno());
+            verify(repository).salvar(notif);
+        } finally {
+            com.insurtech.notificacao.infrastructure.security.UserContextHolder.clear();
+        }
+    }
+
+    @Test
+    @DisplayName("Deve marcar como lida apenas interno quando papel for ANALISTA")
+    void deveMarcarComoLidaApenasInterno() {
+        UUID id = UUID.randomUUID();
+        Notificacao notif = new Notificacao();
+        notif.setId(id);
+        notif.setLida(false);
+        notif.setLidaSegurado(false);
+        notif.setLidaInterno(false);
+
+        com.insurtech.notificacao.infrastructure.security.UserContext ctx =
+                com.insurtech.notificacao.infrastructure.security.UserContextHolder.getContext();
+        ctx.setUsuarioPapel("ANALISTA");
+
+        try {
+            when(repository.buscarPorId(id)).thenReturn(Optional.of(notif));
+
+            useCase.executar(id);
+
+            assertFalse(notif.isLidaSegurado());
+            assertTrue(notif.isLidaInterno());
+            verify(repository).salvar(notif);
+        } finally {
+            com.insurtech.notificacao.infrastructure.security.UserContextHolder.clear();
+        }
+    }
 }
 
