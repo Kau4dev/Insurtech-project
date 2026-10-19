@@ -3,12 +3,9 @@ import { useNavigate } from "react-router-dom";
 import {
   useNotificacoes,
   type NotificacaoItem,
-  mapearTipo,
-  formatarTempo,
 } from "../../hooks/useNotificacoes";
 
 export type { NotificacaoItem };
-export { mapearTipo, formatarTempo };
 
 interface NotificationsPopoverProps {
   portalMode?: boolean; // Se true, links apontam para /portal/...

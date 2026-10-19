@@ -11,7 +11,7 @@ import {
 } from "../utils/tokenStorage";
 import { AuthContext } from "./authContextInstance";
 
-export const isPublicAuthRoute = (path?: string): boolean => {
+const isPublicAuthRoute = (path?: string): boolean => {
   if (!path) return false;
   return (
     path === "/login" ||
@@ -20,7 +20,7 @@ export const isPublicAuthRoute = (path?: string): boolean => {
   );
 };
 
-export const isRoleCompatibleWithLocation = (
+const isRoleCompatibleWithLocation = (
   papel?: string | null,
   pathname?: string,
 ): boolean => {

@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import {
   FormActions,
@@ -60,7 +60,7 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
     handleSubmit,
     setValue,
     reset,
-    watch,
+    control,
     formState: { errors, isSubmitting, dirtyFields },
   } = useForm<CriarUsuarioFormData>({
     resolver: zodResolver(criarUsuarioSchema),
@@ -73,10 +73,10 @@ export const CriarUsuarioModal: React.FC<CriarUsuarioModalProps> = ({
     },
   });
 
-  const nomeValue = watch("nome");
-  const emailValue = watch("email");
-  const senhaValue = watch("senha");
-  const papelValue = watch("papel");
+  const nomeValue = useWatch({ control, name: "nome" });
+  const emailValue = useWatch({ control, name: "email" });
+  const senhaValue = useWatch({ control, name: "senha" });
+  const papelValue = useWatch({ control, name: "papel" });
 
   const handleGerarSenha = () => {
     const chars =
