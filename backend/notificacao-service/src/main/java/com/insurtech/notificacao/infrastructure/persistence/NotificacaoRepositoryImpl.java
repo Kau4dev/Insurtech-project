@@ -33,7 +33,7 @@ public class NotificacaoRepositoryImpl implements NotificacaoRepository {
     public List<Notificacao> listarPorSeguradoId(UUID seguradoId, Boolean apenasNaoLidas) {
         List<NotificacaoEntity> entities;
         if (Boolean.TRUE.equals(apenasNaoLidas)) {
-            entities = jpaRepository.findBySeguradoIdAndLidaOrderByCriadoEmDesc(seguradoId, false);
+            entities = jpaRepository.findBySeguradoIdAndLidaSeguradoOrderByCriadoEmDesc(seguradoId, false);
         } else {
             entities = jpaRepository.findBySeguradoIdOrderByCriadoEmDesc(seguradoId);
         }
@@ -44,7 +44,7 @@ public class NotificacaoRepositoryImpl implements NotificacaoRepository {
     public List<Notificacao> listarTodas(Boolean apenasNaoLidas) {
         List<NotificacaoEntity> entities;
         if (Boolean.TRUE.equals(apenasNaoLidas)) {
-            entities = jpaRepository.findByLidaOrderByCriadoEmDesc(false);
+            entities = jpaRepository.findByLidaInternoOrderByCriadoEmDesc(false);
         } else {
             entities = jpaRepository.findAllByOrderByCriadoEmDesc();
         }
@@ -55,6 +55,12 @@ public class NotificacaoRepositoryImpl implements NotificacaoRepository {
     @Transactional
     public void marcarTodasComoLidasPorSegurado(UUID seguradoId) {
         jpaRepository.marcarTodasComoLidasPorSegurado(seguradoId);
+    }
+
+    @Override
+    @Transactional
+    public void marcarTodasComoLidasInterno() {
+        jpaRepository.marcarTodasComoLidasInterno();
     }
 
     @Override
@@ -71,6 +77,8 @@ public class NotificacaoRepositoryImpl implements NotificacaoRepository {
                 domain.getMensagem(),
                 domain.getTipo(),
                 domain.isLida(),
+                domain.isLidaSegurado(),
+                domain.isLidaInterno(),
                 domain.getCriadoEm()
         );
     }
@@ -83,6 +91,8 @@ public class NotificacaoRepositoryImpl implements NotificacaoRepository {
         domain.setMensagem(entity.getMensagem());
         domain.setTipo(entity.getTipo());
         domain.setLida(entity.isLida());
+        domain.setLidaSegurado(entity.isLidaSegurado());
+        domain.setLidaInterno(entity.isLidaInterno());
         domain.setCriadoEm(entity.getCriadoEm());
         return domain;
     }

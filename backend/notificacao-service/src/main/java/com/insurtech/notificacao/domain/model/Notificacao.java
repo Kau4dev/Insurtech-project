@@ -21,10 +21,42 @@ public class Notificacao {
     private String mensagem;
     private TipoNotificacao tipo;
     private boolean lida = false;
+    private boolean lidaSegurado = false;
+    private boolean lidaInterno = false;
     private Instant criadoEm;
+
+    public void setLida(boolean lida) {
+        this.lida = lida;
+        if (lida) {
+            this.lidaSegurado = true;
+            this.lidaInterno = true;
+        } else {
+            this.lidaSegurado = false;
+            this.lidaInterno = false;
+        }
+    }
+
+    public void marcarComoLidaSegurado() {
+        this.lidaSegurado = true;
+        this.lida = true;
+    }
+
+    public void marcarComoLidaInterno() {
+        this.lidaInterno = true;
+    }
+
+    public void marcarComoLida(String papel) {
+        if ("SEGURADO".equalsIgnoreCase(papel)) {
+            marcarComoLidaSegurado();
+        } else {
+            marcarComoLidaInterno();
+        }
+    }
 
     public void marcarComoLida() {
         this.lida = true;
+        this.lidaSegurado = true;
+        this.lidaInterno = true;
     }
 
     public void validar() {

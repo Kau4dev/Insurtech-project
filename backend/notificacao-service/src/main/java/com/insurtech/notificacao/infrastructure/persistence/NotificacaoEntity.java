@@ -37,6 +37,12 @@ public class NotificacaoEntity {
     @Column(nullable = false)
     private boolean lida;
 
+    @Column(name = "lida_segurado", nullable = false)
+    private boolean lidaSegurado = false;
+
+    @Column(name = "lida_interno", nullable = false)
+    private boolean lidaInterno = false;
+
     @Column(name = "criado_em", nullable = false)
     private Instant criadoEm;
 }
