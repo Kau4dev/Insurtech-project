@@ -27,10 +27,40 @@
 
 </div>
 
+> [!NOTE]
+> **Platform Highlights in 5 Lines (TL;DR):**
+> 1. **Enterprise Event-Driven Ecosystem**: 7 decoupled microservices built with Java 21 / Spring Boot 3.5 following Clean Architecture, DDD, and a modern React 19 + Tailwind CSS v4 SPA.
+> 2. **Bulletproof Transactional Consistency**: *Transactional Outbox* and *Transactional Inbox* patterns backed by Apache Kafka (KRaft), enforcing *Effectively-Once* semantics with zero loss or duplication of settlement events.
+> 3. **Hardened Security & Session Isolation**: Enterprise hierarchical RBAC, centralized Anti-IDOR protection, high-entropy CSPRNG password generation, and per-tab session isolation with `sessionStorage` priority.
+> 4. **Native Observability & Resilience**: End-to-end distributed tracing via Correlation ID across all tiers without additional APM containers, supported by Resilience4j circuit breakers and distributed Redis rate limiting.
+> 5. **Proven Quality & Zero Regressions**: 520 automated tests (334 backend with Testcontainers + 186 frontend with Vitest) running with 100% pass rate and zero failures on CI/CD pipelines.
+
+---
+
+## Visual Platform Showcase
+
+<div align="center">
+  <img src="./docs/assets/fluxo-sinistro.gif" alt="Event-Driven Claims and Settlement Operational Workflow" width="95%" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+  <p><em>End-to-end lifecycle demonstration: Claim Intake ➔ Regulation & Approval ➔ Settlement via Kafka (Inbox/Outbox) ➔ Real-Time Notification</em></p>
+</div>
+
+<br/>
+
+| **B2B Backoffice (Operational Dashboard)** | **B2C Customer Portal (Policyholder Area)** |
+|:---:|:---:|
+| [![B2B Dashboard](./docs/assets/dashboard-b2b.png)](./docs/assets/dashboard-b2b.png) | [![Customer Portal](./docs/assets/portal-segurado.png)](./docs/assets/portal-segurado.png) |
+| *Real-time KPI metrics, adjuster work queue & event pipeline* | *Active policies overview, claim intake & live tracking* |
+
+| **Claim Regulation & Document Verification (Drawer)** | **Apache Kafka UI (Real Topics & Event Logs)** |
+|:---:|:---:|
+| [![Claim Analysis](./docs/assets/analise-sinistro-drawer.png)](./docs/assets/analise-sinistro-drawer.png) | [![Kafka UI Topics](./docs/assets/kafka-ui-topics.png)](./docs/assets/kafka-ui-topics.png) |
+| *Auditing timeline, formal document review & approval action* | *Domain topics, non-blocking retry queues & Dead Letter Topics* |
+
 ---
 
 ## Table of Contents
 
+- [Visual Platform Showcase](#visual-platform-showcase)
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
@@ -45,7 +75,7 @@
 - [Technical & Architectural Highlights](#technical--architectural-highlights)
   - [Transactional Outbox Pattern](#1-transactional-outbox-pattern-sinistros-service)
   - [Transactional Inbox Pattern & Strict Idempotency](#2-transactional-inbox-pattern-liquidacao-service--strict-idempotency)
-  - [Lightweight Distributed Observability](#3-lightweight-distributed-observability-zero-extra-ram)
+  - [Lightweight Distributed Observability](#3-lightweight-distributed-observability-no-additional-apm-containers)
   - [Bidirectional Document Request & Notification Workflow](#4-bidirectional-document-request--notification-workflow)
   - [B2B User Provisioning & High-Entropy Password Generation](#5-b2b-user-provisioning--high-entropy-password-generation)
   - [Centralized Security Validator Pattern & Anti-IDOR](#6-centralized-security-validator-pattern--anti-idor)
@@ -817,9 +847,9 @@ The **Transactional Inbox Pattern** solves this end-to-end:
 
 ---
 
-### 3. Lightweight Distributed Observability (Zero Extra RAM)
+### 3. Lightweight Distributed Observability (No Additional APM Containers)
 
-The platform adopts an enterprise distributed tracing and observability architecture with high efficiency, **requiring no heavy APM containers (no Prometheus, no Grafana, no Jaeger)** and consuming **0 MB of extra RAM**.
+The platform adopts an enterprise distributed tracing and observability architecture with high efficiency, **requiring no additional APM containers (no Prometheus, no Grafana, no Jaeger)** and maintaining **minimal JVM memory overhead**, operating natively via Correlation ID in SLF4J/MDC and unified structured logging.
 
 ```
 [HTTP Request]
@@ -953,7 +983,7 @@ To avoid fragmented, duplicated security logic and guarantee complete protection
   * `validarPropriedadeSegurado(seguradoId, mensagem)`: Guarantees that requests from the Policyholder Portal (`SEGURADO`) only query resources belonging to their own verified `seguradoId`.
   * `buscarEValidarPropriedadeSegurado(seguradoId, mensagem)`: Fetches the customer via Feign and verifies ownership against `X-Usuario-Id`.
 * **Frontend Session Isolation**:
-  JWT tokens stored under distinct `localStorage` keys (`insurtech_token_internal` for B2B and `insurtech_token_portal` for B2C) prevent cross-contamination when the same operator uses the Backoffice and Portal in simultaneous tabs.
+  JWT tokens managed with priority in per-tab `sessionStorage` and dedicated keys (`insurtech_token_internal` for B2B and `insurtech_token_portal` for B2C), with persistence fallback in `localStorage` to avoid accidental sign-outs and prevent cross-contamination when the same operator uses the Backoffice and Portal in simultaneous tabs.
 * **Database-per-Service with 6 Isolated Databases**:
   `auth_db`, `segurados_db`, `apolices_db`, `sinistros_db`, `liquidacao_db`, `notificacao_db`. Zero coupling via physical foreign keys across microservices.
 

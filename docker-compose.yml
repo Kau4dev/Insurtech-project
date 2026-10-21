@@ -37,6 +37,16 @@ services:
     ports:
       - "${REDIS_PORT:-6379}:6379"
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "${KAFKA_UI_PORT:-8082}:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    depends_on:
+      - kafka
+
   auth-service:
     build: ./backend/auth-service
     depends_on: [postgres]
