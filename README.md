@@ -27,10 +27,40 @@
 
 </div>
 
+> [!NOTE]
+> **Destaques da Plataforma em 5 Linhas (TL;DR):**
+> 1. **Ecossistema Enterprise Event-Driven**: 7 microsserviços desacoplados em Java 21 / Spring Boot 3.5 com Clean Architecture, DDD e SPA moderna em React 19 + Tailwind CSS v4.
+> 2. **Consistência Transacional Sem Falhas**: Padrões *Transactional Outbox* e *Transactional Inbox* com Apache Kafka (KRaft), garantindo entrega *Effectively-Once* sem perda ou duplicidade de eventos financeiros de liquidação.
+> 3. **Segurança Avançada e Isolamento**: RBAC hierárquico corporativo, proteção Anti-IDOR centralizada, senhas seguras geradas via CSPRNG de alta entropia e isolamento de sessão por aba com prioridade em `sessionStorage`.
+> 4. **Observabilidade e Resiliência Nativas**: Rastreabilidade distribuída ponta a ponta com Correlation ID em todas as camadas sem containers adicionais de APM, com resiliência via Resilience4j e rate limiting distribuído no Redis.
+> 5. **Qualidade Comprovada em Testes**: 520 testes automatizados (334 backend com Testcontainers + 186 frontend com Vitest) executando com 100% de sucesso e zero falhas em CI/CD.
+
+---
+
+## Demonstração Visual da Plataforma
+
+<div align="center">
+  <img src="./docs/assets/fluxo-sinistro.gif" alt="Fluxo Operacional de Sinistros e Liquidação Event-Driven" width="95%" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+  <p><em>Demonstração do ciclo completo: Abertura do Sinistro ➔ Análise e Aprovação ➔ Liquidação via Kafka (Inbox/Outbox) ➔ Notificação em Tempo Real</em></p>
+</div>
+
+<br/>
+
+| **Backoffice B2B (Dashboard Operacional)** | **Portal do Segurado B2C (Área do Cliente)** |
+|:---:|:---:|
+| [![Dashboard B2B](./docs/assets/dashboard-b2b.png)](./docs/assets/dashboard-b2b.png) | [![Portal do Segurado](./docs/assets/portal-segurado.png)](./docs/assets/portal-segurado.png) |
+| *Métricas em tempo real, fila pericial e esteira de eventos* | *Consulta de apólices ativas, acionamento e acompanhamento* |
+
+| **Regulação Técnica e Anexos (Drawer)** | **Apache Kafka UI (Tópicos & Eventos Reais)** |
+|:---:|:---:|
+| [![Análise do Sinistro](./docs/assets/analise-sinistro-drawer.png)](./docs/assets/analise-sinistro-drawer.png) | [![Kafka UI Tópicos](./docs/assets/kafka-ui-topics.png)](./docs/assets/kafka-ui-topics.png) |
+| *Linha do tempo pericial, conferência documental e aprovação* | *Tópicos de negócio, filas de retry não-bloqueantes e DLT* |
+
 ---
 
 ## Índice
 
+- [Demonstração Visual da Plataforma](#demonstração-visual-da-plataforma)
 - [Visão Geral](#visão-geral)
 - [Arquitetura](#arquitetura)
 - [Stack Tecnológica](#stack-tecnológica)
@@ -45,7 +75,7 @@
 - [Diferenciais Técnicos](#diferenciais-técnicos)
   - [Transactional Outbox Pattern](#1-transactional-outbox-pattern-sinistros-service)
   - [Transactional Inbox Pattern & Idempotência Estrita](#2-transactional-inbox-pattern-liquidacao-service--idempotência-estrita)
-  - [Observabilidade Leve Distribuída](#3-observabilidade-leve-distribuída-zero-ram-extra)
+  - [Observabilidade Leve Distribuída](#3-observabilidade-leve-distribuída-sem-containers-adicionais-de-apm)
   - [Ciclo Bidirecional de Solicitação e Notificação de Documentos](#4-ciclo-bidirecional-de-solicitação-e-notificação-de-documentos)
   - [Provisionamento B2B de Usuários e Geração de Senhas de Alta Entropia](#5-provisionamento-b2b-de-usuários-e-geração-de-senhas-de-alta-entropia)
   - [Centralized Security Validator Pattern & Anti-IDOR](#6-centralized-security-validator-pattern--anti-idor)
@@ -817,9 +847,9 @@ O **Transactional Inbox Pattern** resolve isso de ponta a ponta:
 
 ---
 
-### 3. Observabilidade Leve Distribuída (Zero RAM Extra)
+### 3. Observabilidade Leve Distribuída (Sem Containers Adicionais de APM)
 
-A plataforma adota uma solução corporativa de observabilidade e rastreabilidade distribuída de alta eficiência, **sem necessidade de containers pesados de APM (sem Prometheus, sem Grafana, sem Jaeger)** e com **0 MB de consumo de memória RAM adicional**.
+A plataforma adota uma solução corporativa de observabilidade e rastreabilidade distribuída de alta eficiência, **sem necessidade de containers adicionais de APM (sem Prometheus, sem Grafana, sem Jaeger)** e com **baixíssimo overhead de memória na JVM**, operando nativamente via Correlation ID no SLF4J/MDC e logs estruturados unificados.
 
 ```
 [Requisição HTTP]
@@ -953,7 +983,7 @@ Para evitar dispersão e duplicação de lógica de segurança e garantir prote�
   * `validarPropriedadeSegurado(seguradoId, mensagem)`: Garante que requisições originadas pelo Portal do Segurado (`SEGURADO`) só acessem ou filtrem recursos pertencentes ao seu próprio `seguradoId` verificado no `segurados-service`.
   * `buscarEValidarPropriedadeSegurado(seguradoId, mensagem)`: Busca o segurado via Feign e valida a titularidade do recurso contra o `X-Usuario-Id` do contexto de segurança.
 * **Isolamento de Sessão no Frontend**:
-  Tokens JWT armazenados em chaves separadas no `localStorage` (`insurtech_token_internal` para B2B e `insurtech_token_portal` para B2C) evitam contaminação cruzada quando o mesmo operador utiliza o Backoffice e o Portal em abas simultâneas.
+  Tokens JWT gerenciados com prioridade em `sessionStorage` por aba e chaves dedicadas (`insurtech_token_internal` para B2B e `insurtech_token_portal` para B2C), com fallback de persistência em `localStorage` para evitar deslogamentos acidentais e prevenir contaminação cruzada quando o mesmo operador utiliza o Backoffice e o Portal em abas simultâneas.
 * **Database-per-Service com 6 Databases Isolados**:
   `auth_db`, `segurados_db`, `apolices_db`, `sinistros_db`, `liquidacao_db`, `notificacao_db`. Zero acoplamento por foreign keys físicas entre microsserviços.
 
